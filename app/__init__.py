@@ -3,6 +3,7 @@
 from flask import Flask
 from flask.ext.mongoengine import MongoEngine
 import redis
+import tencentyun
 # from flask.ext.bootstrap import Bootstrap
 # from flask.ext.mail import Mail
 # from flask.ext.sqlalchemy import SQLAlchemy
@@ -13,7 +14,7 @@ from core import search
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
-
+conf = config['default']
 
 '''
 from flask.ext.moment import Moment  # 集成moment.js到Jinja2模板的Flask扩展。
@@ -25,9 +26,9 @@ moment = Moment()
 pagedown = PageDown()
 '''
 
-
 db = MongoEngine()
 rs= redis.StrictRedis(host='localhost', port=6379, db=0)
+q_image = tencentyun.ImageV2(conf.QCLOUD_APPID,conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
 
 searchwhoosh = search.WhooshExpert()
 login_manager = LoginManager()

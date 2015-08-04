@@ -136,7 +136,7 @@ class WorkExp(db.EmbeddedDocument):  # 工作经历
     end = db.IntField(default=common.getstamp(), db_field='e')  # 结束时间
     name = db.StringField(default='',max_length=64, db_field='n')  # 公司名称
     job = db.StringField(default='',max_length=40, db_field='j')  # 职位
-    intro = db.StringField(default='',db_field='i')  # 简介
+    intro = db.StringField(default='',db_field='i')  # 简介 暂停使用
 
     def to_json(self):
         json_we = {
@@ -144,7 +144,7 @@ class WorkExp(db.EmbeddedDocument):  # 工作经历
             'end': self.end,
             'name': self.name.encode('utf-8'),
             'job': self.job.encode('utf-8'),
-            'intro': self.intro.encode('utf-8')
+            #'intro': self.intro.encode('utf-8')
         }
         return json_we
 
@@ -287,6 +287,16 @@ class User(UserMixin, db.Document):  # 会员
 	            User.objects(_id=self._id).update_one(**update)
 	        else:
 	        	pass
+
+    def updateworkexp(self):
+        #更新工作经历 - 用户
+        if self._id > 0:
+            update = {}
+            if len(self.workexp) > 0:
+                update['set__workexp'] = self.workexp
+                User.objects(_id=self._id).update_one(**update)
+                return 1
+        return 0
 
     @staticmethod
     def updatestate(uid,state):
