@@ -1,0 +1,4 @@
+#!D:\project\flask\venv\Scripts\python.exe
+# EASY-INSTALL-SCRIPT: 'pylint==1.4.3','pylint-gui'
+__requires__ = 'pylint==1.4.3'
+__import__('pkg_resources').run_script('pylint==1.4.3', 'pylint-gui')
