@@ -74,7 +74,7 @@ def index():
 
         #print common.getappointmentid(Appointment.createid())
         #test_user.addappointment()
-        test_user.iniuserformat()
+        #test_user.iniuserformat()
         # test_user.adduser()
         # 	test_user.iniroleformat()
         # test_user.addappointment()

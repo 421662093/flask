@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+#用户API类
+
 from flask import make_response, request, current_app, url_for
 from . import api
 from .decorators import permission_required
@@ -101,7 +103,8 @@ def update_user_workexp():
                 weitem.name = item['name']
                 weitem.job = item['job']
                 #weitem.intro = '总技术负责移动终端研发'
-                we.append(weitem)
+                if len(weitem.name)<65 and len(weitem.job)<41:
+                    we.append(weitem)
             user.workexp = we
             state = user.updateworkexp()
             return "{'state':"+str(state)+"}"
@@ -121,35 +124,28 @@ def update_user_edu():
         list -- 工作经历数组 (由多个工作经历字典组成)
             start -- 工作起始时间 (必填，时间戳)
             end -- 工作结束时间 (必填，时间戳)
-            name -- 公司名称 (必填)
-            job -- 职位名称 (必填)
+            name -- 学校名称 (必填)
+            dip -- 学历 (必填)
+            major -- 专业 (必填)
     '''
-
-    start = db.IntField(default=common.getstamp(),  db_field='s')  # 开始时间
-    end = db.IntField(default=common.getstamp(),  db_field='e')  # 结束时间
-    name = db.StringField(default='',max_length=64, db_field='n')  # 学校名称
-    dip = db.StringField(default='', max_length=40, db_field='d')  # 文凭
-    major = db.StringField(default='', db_field='m')  # 专业
-
-
     if request.method == 'POST':
         data = request.get_json()
 
-        _id = data['_id']
         _list = data['list']
-        we = []
+        edu = []
         user = User()
-        user._id = _id
+        user._id = data['_id']
         for item in _list:
-            weitem = WorkExp()
-            weitem.start = item['start']
-            weitem.end = item['end']
-            weitem.name = item['name']
-            weitem.job = item['job']
-            #weitem.intro = '总技术负责移动终端研发'
-            we.append(weitem)
-        user.workexp = we
-        state = user.updateworkexp()
+            eduitem1 = Edu()
+            eduitem1.start = item['start']
+            eduitem1.end = item['end']
+            eduitem1.name = item['name']
+            eduitem1.dip = item['dip']
+            eduitem1.major = item['major']
+            if len(eduitem1.name)<65 and len(eduitem1.dip)<41 and len(eduitem1.major)<21:
+                edu.append(eduitem1)
+        user.edu = edu
+        state = user.updateedu()
         return "{'state':"+str(state)+"}"
 
 @api.route('/appointment/list')

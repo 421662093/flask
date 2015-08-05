@@ -154,7 +154,7 @@ class Edu(db.EmbeddedDocument):  # 教育背景
     end = db.IntField(default=common.getstamp(),  db_field='e')  # 结束时间
     name = db.StringField(default='',max_length=64, db_field='n')  # 学校名称
     dip = db.StringField(default='', max_length=40, db_field='d')  # 文凭
-    major = db.StringField(default='', db_field='m')  # 专业
+    major = db.StringField(default='',max_length=20, db_field='m')  # 专业
 
     def to_json(self):
         json_edu = {
@@ -294,6 +294,16 @@ class User(UserMixin, db.Document):  # 会员
             update = {}
             if len(self.workexp) > 0:
                 update['set__workexp'] = self.workexp
+                User.objects(_id=self._id).update_one(**update)
+                return 1
+        return 0
+
+    def updateedu(self):
+        #更新教育背景 - 用户
+        if self._id > 0:
+            update = {}
+            if len(self.edu) > 0:
+                update['set__edu'] = self.edu
                 User.objects(_id=self._id).update_one(**update)
                 return 1
         return 0

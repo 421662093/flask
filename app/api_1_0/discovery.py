@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+#发现API类
+
 from flask import make_response, request, current_app, url_for
 from . import api
 from .decorators import permission_required
