@@ -8,8 +8,14 @@ from ..core.common import jsonify
 from ..core import common
 from config import config
 
-
 @api.route('/sys/list')
 #@permission_required(Permission.DISCOVERY)
-def get_sys_class():  # 预约列表
+def get_sys_class():
+    '''
+    获取领域和行业数据
+
+    URL:/sys/list
+    GET 参数: 
+        无
+    '''
     return jsonify(domain=config['default'].DOMAIN, industry=config['default'].INDUSTRY)
