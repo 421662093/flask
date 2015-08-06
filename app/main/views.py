@@ -71,7 +71,6 @@ def index():
         '''
 
         from ..tests import test_expert, test_user, test_discovery, test_sys
-
         #print common.getappointmentid(Appointment.createid())
         #test_user.addappointment()
         #test_user.iniuserformat()

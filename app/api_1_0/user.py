@@ -5,7 +5,7 @@
 from flask import make_response, request, current_app, url_for
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User,WorkExp,Edu, Appointment,collection
+from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection
 from ..core.common import jsonify
 from ..core import common
 import logging
@@ -191,9 +191,26 @@ def get_user_thinktank():
     GET 参数: 
         无
     '''
-    u_info = User.getinfo(uid=73)
+    u_info = User.getinfo(uid=23)
     tt_list = User.getthinktanklist_uid(u_info.thinktank)
     if tt_list is not None:
         return jsonify(list=[item.to_json(5) for item in tt_list])
+    else:
+        return jsonify(list=[])
+
+@api.route('/user/message', methods=['GET'])
+@api.route('/user/message/<int:pageindex>', methods=['GET'])
+def get_user_message(pageindex=1):
+    '''
+    获取用户消息列表
+
+    URL:/user/message
+        /user/message/<int:pageindex>
+    GET 参数:
+        pageindex -- 页码 (默认 1)
+    '''
+    m_list = Message.getlist(uid=23,index=pageindex)
+    if m_list is not None:
+        return jsonify(list=[item.to_json() for item in m_list])
     else:
         return jsonify(list=[])

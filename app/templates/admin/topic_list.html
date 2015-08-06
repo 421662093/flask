@@ -18,7 +18,6 @@
 {% endblock %}
 
 {% block content %}
-			
 			<!-- BEGIN PAGE CONTENT-->
 			<div class="row">
 				<div class="col-md-12 col-sm-12">
@@ -37,6 +36,17 @@
 								<a href="{{ url_for('.topic_edit') }}" class="btn btn-default btn-sm">
 								<i class="fa fa-refresh"></i> 添加 </a>
 							</div>
+							{% if index==-1 %}
+							<div class="actions">
+								<a href="{{ url_for('.topic_list') }}" class="btn btn-default btn-sm">
+								<i class="fa fa-refresh"></i> 返回列表 </a>
+							</div>
+							{% endif %}
+							<div class="actions">
+								<input type="text" id="search" style="color:#000000" value="{{text}}" />
+								<a href="javascript:;" onclick="searchfun()" class="btn btn-default btn-sm">搜索 </a>
+							</div>
+							
 						</div>
 						<div class="portlet-body">
 							<div class="table-responsive">
@@ -88,7 +98,7 @@
 								</tbody>
 								</table>
 							</div>
-
+							{% if index>-1 %}
 							<div class="row">
 							<div class="col-md-5 col-sm-12">
 							<div class="dataTables_info" id="sample_1_info" role="status" aria-live="polite">
@@ -103,6 +113,7 @@
 							</div>
 							</div>
 							</div>
+							{% endif %}
 						</div>
 					</div>
 				</div>
@@ -126,12 +137,20 @@
 <script src="/static/admin/pages/scripts/ecommerce-orders.js"></script>
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
-        jQuery(document).ready(function() {    
-            Metronic.init(); // init metronic core components
-			Layout.init(); // init current layout
-			QuickSidebar.init(); // init quick sidebar
-			Demo.init(); // init demo features
-            EcommerceOrders.init();
-        });
+jQuery(document).ready(function() {    
+    Metronic.init(); // init metronic core components
+	Layout.init(); // init current layout
+	QuickSidebar.init(); // init quick sidebar
+	Demo.init(); // init demo features
+    EcommerceOrders.init();
+});
+
+function searchfun(){
+	var searchtext = $('#search').val()
+	if(searchtext.length>0)
+	{
+		location.href='{{ url_for('.topic_list') }}/search/'+searchtext
+	}
+}
 </script>
 {% endblock %}

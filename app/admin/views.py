@@ -43,6 +43,17 @@ def upfile():
 					return '{"ret":0}'
 	return '{"ret":0}'
 
+@admin.route('/userlist/search/<string:text>', methods=['GET'])
+@admin.route('/userlist/search/<int:roid>/<string:text>', methods=['GET'])
+def user_list_search(text='',roid=2):
+    if len(text)>0:
+        userlist = User.list_search(roid,text)
+        for item in userlist:
+            item.role = Role.getinfo(item.role_id)
+        func = {'getdomain': common.getdomain,'getindustry': common.getindustry,'stamp2time': common.stamp2time,'getuserstate':common.getuserstate}
+        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,text=text,index=-1)
+
+
 @admin.route('/userlist', methods=['GET', 'POST'])  # , methods=['GET', 'POST']
 @admin.route('/userlist/<int:roid>', methods=['GET', 'POST'])
 @admin.route('/userlist/<int:roid>/<int:index>', methods=['GET', 'POST'])
@@ -55,10 +66,14 @@ def user_list(roid=2,index=1):
     if request.method == 'POST':
         _type = request.args.get('type','')
         uid = request.args.get('uid',0,type=int)
-        if _type=='state' and uid>0:
-            User.updatestate(uid,1)
-            flash('用户审核通过')
-            return redirect(url_for('.user_list',roid=roid))
+        if uid>0:
+            if _type=='state':# 审核通过
+                User.updatestate(uid,1)
+                flash('用户审核通过')
+            elif _type=='unstate': # 设为待审核
+                User.updatestate(uid,-2)
+                flash('用户已下线')
+        return redirect(url_for('.user_list',roid=roid))
     else:
     	pagesize = 8
     	count = User.getcount(roid=roid)
@@ -90,13 +105,16 @@ def user_edit(roid=2,id=0):
         user.role_id = roid #request.form.get('roleid',0)
         user.name = form.name.data
         user.username = form.username.data
-        user.email = form.email.data
-        user.password_hash = form.password.data
+        user.email = request.form.get('email','')
+        if id==0:
+            user.password_hash = '123456'
+        else:
+            user.password_hash = form.password.data
         user.confirmed = 1 #request.form.get('confirmed',1)
         user.domainid = request.form.get('domainid',0)
         user.industryid = request.form.get('industryid',0)
         user.sex = request.form.get('sex',1)
-        user.job = form.job.data
+        user.job = request.form.get('job','')
         user.geo = [float(i.strip()) for i in request.form.get('geo','0,0').split(',')]
         user.intro = request.form.get('intro','')
         user.fileurl = request.form.get('fileurl','')
@@ -172,15 +190,30 @@ def plugin_list():
 
         return render_template('admin/plugin_list.html',size=rs.dbsize())
 
+@admin.route('/topiclist/search/<string:text>', methods=['GET'])
+def user_topiclist_search(text=''):
+    if len(text)>0:
+        topiclist = Topic.list_search(-2,text)
+        func = {'stamp2time': common.stamp2time}
+        return render_template('admin/topic_list.html', topiclist=topiclist,func=func,uid=-2,text=text,index=-1)
+
+@admin.route('/topicteamlist/search/<string:text>', methods=['GET'])
+def user_topicteamlist_search(text=''):
+    if len(text)>0:
+        topiclist = Topic.list_search(-1,text)
+        func = {'stamp2time': common.stamp2time}
+        return render_template('admin/topicteam_list.html', topiclist=topiclist,func=func,uid=-1,text=text,index=-1)
+
+
 @admin.route('/topiclist',methods=['GET', 'POST'])
-@admin.route('/topiclist/<int:uid>', methods=['GET', 'POST'])
-@admin.route('/topiclist/<int:uid>/<int:index>', methods=['GET', 'POST'])
+@admin.route('/topiclist/<string:uid>', methods=['GET', 'POST'])
+@admin.route('/topiclist/<string:uid>/<int:index>', methods=['GET', 'POST'])
 def topic_list(uid=-2,index=1):
     if request.method == 'POST':
         return redirect(url_for('.topic_list'))
     else:
     	pagesize = 8
-    	count = Topic.getcount()
+    	count = Topic.getcount(uid)
     	tpcount = common.getpagecount(count,pagesize)
     	if index>tpcount:
     		index = tpcount
@@ -188,17 +221,18 @@ def topic_list(uid=-2,index=1):
     		index=1
         topiclist = Topic.getlist(uid=uid,index=index,count=pagesize)
         func = {'stamp2time': common.stamp2time}
+
         return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index)
 
-@admin.route('/topicteamlist', defaults={'uid': 0},methods=['GET', 'POST'])
-@admin.route('/topicteamlist/<int:uid>', methods=['GET', 'POST'])
-@admin.route('/topicteamlist/<int:uid>/<int:index>', methods=['GET', 'POST'])
-def topicteam_list(uid=0,index=1):
+@admin.route('/topicteamlist',methods=['GET', 'POST'])
+@admin.route('/topicteamlist/<string:uid>', methods=['GET', 'POST'])
+@admin.route('/topicteamlist/<string:uid>/<int:index>', methods=['GET', 'POST'])
+def topicteam_list(uid=-1,index=1):
     if request.method == 'POST':
         return redirect(url_for('.topic_list'))
     else:
         pagesize = 8
-        count = Topic.getcount()
+        count = Topic.getcount(uid)
         tpcount = common.getpagecount(count,pagesize)
         if index>tpcount:
             index = tpcount

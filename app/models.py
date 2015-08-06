@@ -181,7 +181,7 @@ class User(UserMixin, db.Document):  # 会员
     password_hash = db.StringField(
         default='', required=True, max_length=128, db_field='p')  # 密码
     confirmed = db.IntField(default=1, db_field='c')  # 是否允许访问api
-    role_id = db.IntField(default=0, db_field='r')  # 用户组id
+    role_id = db.IntField(default=0, db_field='r')  # 用户组id 1管理员 2专家用户 3普通用户
     role = None  # 用户组权限
     domainid = db.IntField(default=1, db_field='di')  # 领域分类id
     industryid = db.IntField(default=1, db_field='ii')  # 行业分类id
@@ -313,7 +313,7 @@ class User(UserMixin, db.Document):  # 会员
         #更新用户状态 -2 -> 1
         update = {}
         update['set__state'] = state
-        User.objects(_id=uid,state=-2).update_one(**update)
+        User.objects(_id=uid).update_one(**update)
 
     def editinfo(self):
     	#后台更新用户信息
@@ -358,10 +358,16 @@ class User(UserMixin, db.Document):  # 会员
 
             return 1
         else:
+
+            self._id = collection.get_next_id(self.__tablename__)
+            if len(self.username)==0:
+                    if self.role_id==2:
+                        self.username = 'zj_'+str(self._id)
+                    elif self.role_id==3:
+                        self.username = 'pt_'+str(self._id)
             istrue = User.isusername(username=self.username)
             if istrue == 0:
                 self.password = self.password_hash
-                self._id = collection.get_next_id(self.__tablename__)
                 self.save()
 
                 #更新whoosh
@@ -377,6 +383,10 @@ class User(UserMixin, db.Document):  # 会员
                 return self._id
             else:
                 return -1
+
+    @staticmethod
+    def list_search(roid,text, count=10):  # 后台搜索
+        return User.objects((Q(name__istartswith=text) | Q(job__istartswith=text))&Q(role_id=roid)).limit(count).exclude('password_hash')
 
     @staticmethod
     def search(text, count=10):  # 专家搜索
@@ -650,6 +660,7 @@ class Topic(db.Document):  # 话题
     @staticmethod
     def getlist(uid=0,index=1, count=10):
     	# 获取列表 0全部  -1官方  -2专家
+        uid = int(uid)
         pageindex =(index-1)*count
         if uid == 0:
             return Topic.objects.exclude('content').order_by("-_id").skip(pageindex).limit(count)
@@ -661,11 +672,26 @@ class Topic(db.Document):  # 话题
             return Topic.objects(user_id=uid).exclude('content').order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
+    def list_search(uid,text, count=10):  # 后台搜索
+        uid = int(uid)
+        query = Q(title__istartswith=text)
+        if uid == -1 :
+            query = query & Q(user_id=0)
+        elif uid==-2:
+            query = query & Q(user_id__gt=0)
+        return Topic.objects(query).limit(count).exclude('content')
+
+    @staticmethod
     def getcount(uid=0):
+        uid = int(uid)
     	if uid == 0:
-            return User.objects.count()
+            return Topic.objects.count()
+        elif uid == -1:
+            return Topic.objects(user_id=0).count()
+        elif uid == -2:
+            return Topic.objects(user_id__gt=0).count()
         else:
-            return User.objects(user_id=uid).count()
+            return Topic.objects(user_id=uid).count()
 
     @staticmethod
     def getinfo(tid=0):
@@ -1026,7 +1052,8 @@ class Appointment(db.Document):  # 预约
         else:
             return {}
 
-class Log(db.Document):  # 管理员日志
+class Log(db.Document):  
+    # 管理员日志
     __tablename__ = 'log'
     meta = {
         'collection': __tablename__,
@@ -1055,3 +1082,38 @@ class Log(db.Document):  # 管理员日志
             return Log.objects.count()
         else:
             return Log.objects(admin_id=aid).count()
+
+class Message(db.Document):  
+    # 消息
+    __tablename__ = 'message'
+    meta = {
+        'collection': __tablename__,
+    }
+    _id = db.IntField(primary_key=True)
+    user_id = db.IntField(default=0, db_field='u')  # 用户id
+    appointment_id = db.IntField(default=0, db_field='a')  # 预约订单id
+    date = db.IntField(default=common.getstamp(), db_field='d')  # 创建时间
+    type = db.IntField(default=0, db_field='ty')  # 消息类型
+    title = db.StringField(default='', db_field='t')  # 标题
+    content = db.StringField(default='', db_field='c')  # 内容
+
+    @staticmethod
+    def saveinfo(self):
+        self.save()
+
+    @staticmethod
+    def getlist(uid,index=1, count=10):
+        pageindex =(index-1)*count
+        return Message.objects(user_id=uid).order_by("-_id").skip(pageindex).limit(count)
+
+    def to_json(self):
+        json_message = {
+            '_id': self.id,
+            'title': self.title.encode('utf-8'),
+            'content': self.content.encode('utf-8'),
+            'user_id': self.user_id,
+            'appointment_id': self.appointment_id,
+            'date': self.date,
+            'type': self.type
+        }
+        return json_message
