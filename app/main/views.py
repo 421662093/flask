@@ -10,7 +10,7 @@ from flask.ext.sqlalchemy import get_debug_queries
 from . import main
 from .forms import PostForm
 from ..core import wxpayapi, common
-
+from ..sdk.yuntongxun import SendTemplateSMS as SMS
 '''
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm,\
     CommentForm
@@ -56,6 +56,8 @@ def index():
 
         print 'post'
     else:
+
+        SMS.sendTemplateSMS('13659488152',['1'],1)
         '''
         print deta.body
         order = wxpayapi.UnifiedOrder_pub()

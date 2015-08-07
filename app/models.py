@@ -315,6 +315,17 @@ class User(UserMixin, db.Document):  # 会员
         update['set__state'] = state
         User.objects(_id=uid).update_one(**update)
 
+    @staticmethod
+    def updatephone(newphone):
+        #更新手机号
+        #if g.current_user is not None:
+        #    if g.current_user._id > 0:
+        update = {}
+        update['set__username'] = newphone
+        User.objects(_id=23).update_one(**update)
+        return 1
+        #return 0
+
     def editinfo(self):
     	#后台更新用户信息
         if self._id > 0:
@@ -342,7 +353,7 @@ class User(UserMixin, db.Document):  # 会员
             update['set__workexp'] = self.workexp
             update['set__edu'] = self.edu
             update['set__stats__lastaction'] = common.getstamp()
-            update['set__state'] = -1
+            update['set__state'] = self.state
 
             User.objects(_id=self._id).update_one(**update)
 

@@ -63,9 +63,9 @@ class DevelopmentConfig(Config):
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-
+        
         import logging  # 日志系统
-
+        
         logging.basicConfig(level=logging.DEBUG,
                             format='%(filename)s[line:%(lineno)d] %(levelname)s [%(message)s] %(asctime)s',
                             datefmt='%Y-%m-%d %H:%M:%S',

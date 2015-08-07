@@ -3,13 +3,54 @@
 #用户API类
 
 from flask import make_response, request, current_app, url_for
+from flask import g
 from . import api
 from .decorators import permission_required
 from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection
 from ..core.common import jsonify
 from ..core import common
+from .. import rs
 import logging
 import json
+from ..sdk.yuntongxun import SendTemplateSMS as SMS
+
+@api.route('/user/getcode', methods = ['POST'])
+def get_code():
+    '''
+    验证手机号是否存在，并发送手机验证码
+
+    URL:/user/getcode
+    POST 参数:
+        username -- 帐号 (必填)
+    返回值
+        {'ret':1} 发送成功
+        -1 帐号为空
+        -2 帐号已存在
+        -3 验证码发送失败,联系运营商
+        -4 手机号格式错误
+        -5 系统异常 
+    '''
+    try:
+        data = request.get_json()
+        username = data['username']
+        print username
+        if len(username)==11:
+            if len(username)==0:
+                return jsonify(ret=-1) #帐号或密码为空
+            if User.isusername(username=username)>0:
+                return jsonify(ret=-2) #帐号已存在
+            code = common.getrandom(100000,999999)
+            rs.set('code_'+username,code)
+            smscode = SMS.sendTemplateSMS(username,[code],1)
+            #print str(type(smscode))+'___'+smscode
+            if smscode=='000000':
+                return jsonify(ret=1)#验证码已发送
+            else:
+                return jsonify(ret=-3)#验证码发送失败,联系运营商
+        return jsonify(ret=-4)#手机号格式错误
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
 
 @api.route('/user/reg', methods = ['POST'])
 def new_user():
@@ -17,37 +58,93 @@ def new_user():
     注册新用户
 
     URL:/user/reg
-    POST 参数: 
-        username -- 帐号 (必填) 
-        password -- 密码 (必填) 
+    POST 参数:
+        username -- 帐号 (必填)
+        password -- 密码 (必填)
+        code -- 手机验证码 (必填)
+    返回值
+        {'ret':1,'username':'帐号'} 发送成功
+        -1 帐号或密码为空
+        -2 帐号已存在
+        -3 验证码错误
+        -4 手机号格式错误
+        -5 系统异常
     '''
-    try: 
+    try:
         data = request.get_json()#{\"name\":\"大撒旦撒\"}
         #print data['username'][0]["c"]
         username = data['username']#request.form.get('username','')
         password = data['password']#request.form.get('password','')
-
+        code = data['code']
         #if request.data is not None:
             #username = request.data['username']
             #password = request.data.password
 
-        if len(username)==0 or len(password)==0:
-            return jsonify(ret=-1) #帐号或密码为空
-        if User.isusername(username=username)>0:
-            return jsonify(ret=-2) #帐号已存在
-
-        col1 = User()
-        col1.role_id = 3
-        col1.username = username
-        col1.password = password
-        col1.editinfo()
-
-        return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
-        #else:
-        #	return jsonify(ret=400)
+        if len(username)==11:
+            if len(username)==0 or len(password)==0:
+                return jsonify(ret=-1) #帐号或密码为空
+            if User.isusername(username=username)>0:
+                return jsonify(ret=-2) #帐号已存在
+            rv = rs.get('code_'+username)
+            if rv == code:
+                col1 = User()
+                col1.role_id = 3
+                col1.username = username
+                col1.password = password
+                col1.editinfo()
+                return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
+            else:
+                return jsonify(ret=-3) #验证码错误
+        return jsonify(ret=-4)#手机号格式错误
     except Exception,e:
-            logging.debug(e)
-            return "{'state':-1}"
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+@api.route('/user/changephone', methods = ['POST'])
+def change_phone():
+    '''
+    更改用户手机号（帐号）
+
+    URL:/user/changephone
+    POST 参数:
+        username -- 帐号 (必填)
+        code -- 手机验证码 (必填)
+    返回值
+        {'ret':1,'username':'帐号'} 发送成功
+        -1 帐号或密码为空
+        -2 帐号已存在
+        -3 验证码错误
+        -4 手机号格式错误
+        -5 系统异常
+        -6 帐号更新异常
+    '''
+    try:
+        data = request.get_json()#{\"name\":\"大撒旦撒\"}
+        #print data['username'][0]["c"]
+        username = data['username']#request.form.get('username','')
+        code = data['code']
+        #if request.data is not None:
+            #username = request.data['username']
+            #password = request.data.password
+
+        if len(username)==11:
+            if len(username)==0:
+                return jsonify(ret=-1) #帐号或密码为空
+            if User.isusername(username=username)>0:
+                return jsonify(ret=-2) #帐号已存在
+            rv = rs.get('code_'+username)
+            if rv == code:
+                ret = User.updatephone(username)
+                if ret==1:
+                    return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
+                else:
+                    return jsonify(ret=-6)
+            else:
+                return jsonify(ret=-3) #验证码错误
+        return jsonify(ret=-4)#手机号格式错误
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
 
 @api.route('/user/update', methods=['POST'])
 #@permission_required(Permission.DISCOVERY)
