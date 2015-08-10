@@ -10,19 +10,29 @@ auth = HTTPBasicAuth()
 
 
 @auth.verify_password
-def verify_password(email_or_token, password):
-    email_or_token = '1@qq.com'
-    password = '123456'
-    user = User.verify_auth_token(email_or_token)
-    if not user:
-        # try to authenticate with username/password
-        user = User.objects(email=email_or_token).first()
-        if not user or not user.verify_password(password):
-            return False
-        g.token_used = False
+def verify_password(username_or_token, password):
+    print username_or_token+'___'+password
+    #username_or_token = 'admin'
+    #password = '123456'
+
+    unlen = len(username_or_token)
+    if unlen>0:
+        user =None
+        if unlen==11 or unlen<100:
+            # try to authenticate with username/password
+            user = User.objects(username=username_or_token).first()
+            if not user or not user.verify_password(password):
+                return False
+            g.token_used = False
+        else:
+            user = User.verify_auth_token(username_or_token)
+            if not user:
+                return False
+            g.token_used = True
+        g.current_user = user
     else:
-        g.token_used = True
-    g.current_user = user
+        g.current_user = None
+        return False
 
     return True
     '''
@@ -47,26 +57,37 @@ def verify_password(email_or_token, password):
 
 @auth.error_handler
 def auth_error():
-    return unauthorized('Invalid credentials')
+    return jsonify({'error':'nologin'})
+    #return unauthorized('Invalid credentials')
 
-
+'''
 @api.before_request
 @auth.login_required
 def before_request():
-    if not g.current_user.confirmed:
+    #print g.current_user.is_administrator()
+    if not g.current_user.is_administrator() and not g.current_user.confirmed:
         return forbidden('Unconfirmed account')
-    '''
+    ''''''
     if not g.current_user.is_anonymous() and \
             not g.current_user.confirmed:
         return forbidden('Unconfirmed account')
-    '''
+    ''''''
+'''
 
-
-@api.route('/token')
+@api.route('/token', methods = ['GET','POST'])
 @auth.login_required
 def get_token():
-    if g.token_used:
-        return unauthorized('Invalid credentials')
+    '''
+    获取验证用户token
+
+    URL:/token
+    参数:
+        无
+    返回值
+        token #身份验证字符串
+    '''
+    if not g.current_user.is_administrator() or g.token_used:
+        return unauthorized('Invalid credentials') #帐号或密码错误,或身份过期
     return jsonify({'token': g.current_user.generate_auth_token(
         expiration=3600), 'expiration': 3600})
     '''

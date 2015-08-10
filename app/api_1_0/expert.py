@@ -60,8 +60,37 @@ def get_expert_info(uid):
     获取专家详细信息
 
     URL:/expert/info/<int:uid>
-    GET 参数: 
-        uid -- 专家ID (必填) 
+    GET 参数:
+        uid -- 专家ID (必填)
+    返回值
+    expert
+        info 专家信息
+            _id 专家ID
+            name 姓名
+            sex 性别
+            auth 认证
+                vip VIP认证
+            avaurl 头像地址
+            fileurl 介绍图片或视频地址
+            geo 坐标
+            grade 评级
+            intro 简介
+            job 职位
+            label 标签
+            meet_c 见面次数
+            edu 教育背景List
+                name 学校名称
+                start 开始时间
+                end 结束时间
+                major 专业
+                dip 学历
+            work 工作经历
+                start # 开始时间
+                end # 结束时间
+                name # 公司名称
+                job # 职位
+        comment
+        topic
     '''
     u_info = User.getinfo(uid)
     t_list = Topic.getlist(uid=uid, count=2)

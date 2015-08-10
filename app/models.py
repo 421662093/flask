@@ -118,7 +118,7 @@ class Role(db.Document):
 	'''
 
 class UserStats(db.EmbeddedDocument):  # 会员统计
-    meet = db.IntField(default=0, db_field='m')
+    meet = db.IntField(default=0, db_field='m') #见面次数
     comment_count = db.IntField(default=0, db_field='cc')  # 评论人数
     comment_total = db.IntField(default=0, db_field='ct')  # 评论总分
     lastaction = db.IntField(default=common.getstamp(), db_field='la')  # 最后更新时间
@@ -528,7 +528,11 @@ class User(UserMixin, db.Document):  # 会员
                 'fileurl': self.fileurl.encode('utf-8'),
                 'avaurl': common.getavatar(userid=self.id),
                 'work': [item.to_json() for item in self.workexp],
-                'edu': [item.to_json() for item in self.edu]
+                'edu': [item.to_json() for item in self.edu],
+                'label':self.label,
+                'role_id':self.role_id,
+                'domainid':self.domainid,
+                'industryid':self.industryid
             }
         elif type == 1:
             json_user = {
@@ -840,6 +844,8 @@ class Comment(db.Document):  # 评论
 
 class AnonymousUser(AnonymousUserMixin):
 
+    confirmed=True #允许访问公共api
+
     def can(self, permissions):
         return False
 
@@ -1013,7 +1019,7 @@ class Appointment(db.Document):  # 预约
             return Appointment.objects(user_id=appid).limit(count)
 
     @staticmethod
-    def getinfo(aid=0):
+    def getinfo(aid):
         return Appointment.objects(_id=aid).first()
 
     @staticmethod

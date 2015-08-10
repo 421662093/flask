@@ -4,6 +4,7 @@
 
 from flask import make_response, request, current_app, url_for
 from flask import g
+from .authentication import auth
 from . import api
 from .decorators import permission_required
 from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection
@@ -28,7 +29,7 @@ def get_code():
         -2 帐号已存在
         -3 验证码发送失败,联系运营商
         -4 手机号格式错误
-        -5 系统异常 
+        -5 系统异常
     '''
     try:
         data = request.get_json()
@@ -247,6 +248,7 @@ def update_user_edu():
 
 @api.route('/appointment/list')
 @api.route('/appointment/list/<int:_type>')  # _type=1我约 _type=2被约
+@auth.login_required
 #@permission_required(Permission.DISCOVERY)
 def get_appointment_list(_type=0):
     '''
@@ -258,12 +260,14 @@ def get_appointment_list(_type=0):
     GET 参数: 
         _type -- 预约类型 (1:我约 2:被约) 
     '''
+
     a_list = Appointment.getlist(_type=_type, appid=23)
     return jsonify(list=[item.to_json(_type) for item in a_list])
 
 
 @api.route('/appointment/info/<int:aid>')
 @api.route('/appointment/info/<int:aid>/<int:_type>')  # _type=1我约 _type=2被约
+@auth.login_required
 #@permission_required(Permission.DISCOVERY)
 def get_appointment_info(aid,_type=1):
     '''
@@ -276,7 +280,9 @@ def get_appointment_info(aid,_type=1):
         aid -- 预约ID (默认 0)
         _type -- 预约类型 (1:我约 2:被约) 
     '''
+
     a_info = Appointment.getinfo(aid=aid)
+    #print a_info
     return jsonify(app=a_info.to_json(_type, 0))
 
 @api.route('/user/thinktank', methods=['GET'])
