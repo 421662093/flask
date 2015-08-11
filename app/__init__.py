@@ -30,6 +30,7 @@ db = MongoEngine()
 rs= redis.StrictRedis(host='localhost', port=6379, db=0)
 q_image = tencentyun.ImageV2(conf.QCLOUD_APPID,conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
 
+
 searchwhoosh = search.WhooshExpert()
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'

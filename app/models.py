@@ -123,6 +123,7 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
     comment_total = db.IntField(default=0, db_field='ct')  # 评论总分
     lastaction = db.IntField(default=common.getstamp(), db_field='la')  # 最后更新时间
     rand = db.IntField(default=common.getrandom(), db_field='r')  # 随机数 用于随机获取专家列表
+    message_count = 0  # 消息个数
 
     def to_json(self):
         json_us = {
@@ -136,7 +137,7 @@ class WorkExp(db.EmbeddedDocument):  # 工作经历
     end = db.IntField(default=common.getstamp(), db_field='e')  # 结束时间
     name = db.StringField(default='',max_length=64, db_field='n')  # 公司名称
     job = db.StringField(default='',max_length=40, db_field='j')  # 职位
-    intro = db.StringField(default='',db_field='i')  # 简介 暂停使用
+    intro = db.StringField(db_field='i')  # 简介 暂停使用
 
     def to_json(self):
         json_we = {

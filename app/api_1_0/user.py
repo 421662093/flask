@@ -34,7 +34,6 @@ def get_code():
     try:
         data = request.get_json()
         username = data['username']
-        print username
         if len(username)==11:
             if len(username)==0:
                 return jsonify(ret=-1) #帐号或密码为空
@@ -102,6 +101,7 @@ def new_user():
         return jsonify(ret=-5)#系统异常
 
 @api.route('/user/changephone', methods = ['POST'])
+@auth.login_required
 def change_phone():
     '''
     更改用户手机号（帐号）
@@ -149,6 +149,7 @@ def change_phone():
 
 @api.route('/user/update', methods=['POST'])
 #@permission_required(Permission.DISCOVERY)
+@auth.login_required
 def update_user_info():
     '''
     更新个人信息
@@ -172,6 +173,7 @@ def update_user_info():
             return "{'state':-1}"
 @api.route('/user/updateworkexp', methods=['GET','POST'])
 #@permission_required(Permission.DISCOVERY)
+@auth.login_required
 def update_user_workexp():
     '''
     更新工作经历
@@ -189,7 +191,7 @@ def update_user_workexp():
         try: 
             data = request.get_json()
 
-            _id = data['_id']
+            _id = g.current_user._id #data['_id']
             _list = data['list']
             we = []
             user = User()
@@ -212,6 +214,7 @@ def update_user_workexp():
 
 @api.route('/user/updateedu', methods=['POST'])
 #@permission_required(Permission.DISCOVERY)
+@auth.login_required
 def update_user_edu():
     '''
     更新教育背景
@@ -232,7 +235,7 @@ def update_user_edu():
         _list = data['list']
         edu = []
         user = User()
-        user._id = data['_id']
+        user._id = g.current_user._id #data['_id']
         for item in _list:
             eduitem1 = Edu()
             eduitem1.start = item['start']
@@ -286,6 +289,7 @@ def get_appointment_info(aid,_type=1):
     return jsonify(app=a_info.to_json(_type, 0))
 
 @api.route('/user/thinktank', methods=['GET'])
+@auth.login_required
 def get_user_thinktank():
     '''
     获取用户智囊团列表
@@ -294,7 +298,7 @@ def get_user_thinktank():
     GET 参数: 
         无
     '''
-    u_info = User.getinfo(uid=23)
+    u_info = User.getinfo(uid=g.current_user._id)
     tt_list = User.getthinktanklist_uid(u_info.thinktank)
     if tt_list is not None:
         return jsonify(list=[item.to_json(5) for item in tt_list])
@@ -303,6 +307,7 @@ def get_user_thinktank():
 
 @api.route('/user/message', methods=['GET'])
 @api.route('/user/message/<int:pageindex>', methods=['GET'])
+@auth.login_required
 def get_user_message(pageindex=1):
     '''
     获取用户消息列表
@@ -312,8 +317,48 @@ def get_user_message(pageindex=1):
     GET 参数:
         pageindex -- 页码 (默认 1)
     '''
-    m_list = Message.getlist(uid=23,index=pageindex)
+    m_list = Message.getlist(uid=g.current_user._id,index=pageindex)
     if m_list is not None:
         return jsonify(list=[item.to_json() for item in m_list])
     else:
         return jsonify(list=[])
+
+@api.route('/user/info')
+@auth.login_required
+#@permission_required(Permission.DISCOVERY)
+def get_user_info():
+    '''
+    获取用户详细信息
+
+    URL:/user/info
+    GET 参数:
+        无
+    返回值
+        info 专家信息
+            _id 专家ID
+            name 姓名
+            sex 性别
+            auth 认证
+                vip VIP认证
+            avaurl 头像地址
+            fileurl 介绍图片或视频地址
+            geo 坐标
+            grade 评级
+            intro 简介
+            job 职位
+            label 标签
+            meet_c 见面次数
+            edu 教育背景List
+                name 学校名称
+                start 开始时间
+                end 结束时间
+                major 专业
+                dip 学历
+            work 工作经历
+                start # 开始时间
+                end # 结束时间
+                name # 公司名称
+                job # 职位
+    '''
+    u_info = User.getinfo(g.current_user._id)
+    return jsonify(info=u_info.to_json())

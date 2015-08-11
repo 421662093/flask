@@ -9,7 +9,7 @@ $(function(){
 		
 		maxfiles: 5,
     	maxfilesize: 2,
-		url: '/admin/upfile?type=introfile',
+		url: '/admin/upfile?type=introfile&uid='+uid,
 		
 		uploadFinished:function(i,file,response){
 			if(response.ret==1)

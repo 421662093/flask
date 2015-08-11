@@ -16,6 +16,38 @@ class Auth(object):
 
         self._secret_id,self._secret_key = secret_id,secret_key
 
+    def get_app_sign_v2(self, bucket, fileid, expired=0, userid='0'):
+        """ GET V2 SIGN USE FILEID 
+        copy and del operation must have fileid and set expired=0
+
+        Args:
+            bucket: user bucket
+            fileid: user defined fileid, not urlencoded
+            expired: expire time
+            userid: user id, pls ignore or set to '0'
+        """
+        if not self._secret_id or not self._secret_key:
+            return self.AUTH_SECRET_ID_KEY_ERROR
+
+        app_info = conf.get_app_info()
+        appid   = app_info['appid']
+
+        puserid = ''
+        if userid != '':
+            if len(userid) > 64:
+                return self.AUTH_URL_FORMAT_ERROR
+            puserid = userid
+
+        now = int(time.time())
+        rdm = random.randint(0, 999999999)
+        plain_text = 'a=' + appid + '&b=' + bucket +'&k=' + self._secret_id + '&e=' + str(expired) + '&t=' + str(now) + '&r=' + str(rdm) + '&u=' + puserid + '&f=' + fileid
+        bin = hmac.new(self._secret_key, plain_text, hashlib.sha1)
+        s = bin.hexdigest()
+        s = binascii.unhexlify(s)
+        s = s + plain_text.encode('ascii')
+        signature = base64.b64encode(s).rstrip()    #生成签名
+        return signature
+
     def get_info_from_url(self, url):
         app_info = conf.get_app_info()
         end_point = app_info['end_point']
@@ -117,7 +149,7 @@ class Auth(object):
                 else:
                     return {}
             else:
-                return {}                
+                return {}
 
     def app_sign_v2(self, url, expired=0):
         if not self._secret_id or not self._secret_key:
@@ -175,7 +207,6 @@ class Auth(object):
         s = s + plain_text.encode('ascii')
         signature = base64.b64encode(s).rstrip()    #生成签名
         return signature
-
 
     def app_sign(self, url, expired=0):
         if not self._secret_id or not self._secret_key:

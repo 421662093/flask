@@ -79,4 +79,4 @@ def deploy():
 
 if __name__ == '__main__':
     # profile()
-    app.run(host='192.168.199.239')  # host='192.168.2.36'
+    app.run(host='192.168.1.2')  # host='192.168.2.36 192.168.199.239'

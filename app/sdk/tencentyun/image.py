@@ -18,70 +18,79 @@ class Image(object):
         self._secret_id,self._secret_key = secret_id,secret_key
         conf.set_app_info(appid, secret_id, secret_key)
 
-
-    def upload(self, filepath, userid='0', magic_context='', params={}):
-        filepath = os.path.abspath(filepath);
-        if os.path.exists(filepath):
-            expired = int(time.time()) + self.EXPIRED_SECONDS
-            url = self.generate_res_url(userid)
-            auth = Auth(self._secret_id, self._secret_key)
-            sign = auth.app_sign(url, expired)
-            size = os.path.getsize(filepath)
-
-            data = {}
-            if magic_context:
-                data['MagicContext'] = magic_context
-
-            headers = {
-                'Authorization':'QCloud '+sign,
-                'User-Agent':conf.get_ua(),
-            }
-
-            files = {'FileContent': open(filepath, 'rb')}
-
-            if params.has_key('get'):
-                query_str = urllib.urlencode(params['get']);
-                url = url + '?' + query_str
-
-            r = {}
-            try:
-                r = requests.post(url, data=data, headers=headers, files=files)
-                ret = r.json()
-            except Exception as e:
-                if r:
-                    return {'httpcode':r.status_code, 'code':self.IMAGE_NETWORK_ERROR, 'message':str(e), 'data':{}}
-                else:
-                    return {'httpcode':0, 'code':self.IMAGE_NETWORK_ERROR, 'message':str(e), 'data':{}}
-            
-            if 'code' in ret:
-                if 0 == ret['code']:
-                    data = {
-                        'url':ret['data']['url'],
-                        'download_url':ret['data']['download_url'],
-                        'fileid':ret['data']['fileid'],
-                    }
-                    if ret['data'].has_key('is_fuzzy'):
-                        data['is_fuzzy'] = ret['data']['is_fuzzy']
-                    if ret['data'].has_key('is_food'):
-                        data['is_food'] = ret['data']['is_food']                   
-                    return {
-                        'httpcode':r.status_code, 
-                        'code':ret['code'], 
-                        'message':ret['message'], 
-                        'data':data
-                    }
-                else:
-                    return {
-                        'httpcode':r.status_code, 
-                        'code':ret['code'], 
-                        'message':ret['message'], 
-                        'data':{}
-                    }
-            else:
-                return {'httpcode':r.status_code, 'code':self.IMAGE_NETWORK_ERROR, 'message':str(r.raw), 'data':{}}
-
-        else:
+    def upload(self, filepath, userid = '0', magic_context = '', params = {}):
+        filepath = os.path.abspath(filepath)
+        if not os.path.exists(filepath):
             return {'httpcode':0, 'code':self.IMAGE_FILE_NOT_EXISTS, 'message':'file not exists', 'data':{}}
+
+        return self.upload_impl(filepath, 0, userid, magic_context, params)
+
+    def upload_binary(self, file_binary, userid = '0', magic_context = '', params = {}):
+        return self.upload_impl(file_binary, 1, userid, magic_context, params)
+
+
+    # filetype: 0 -- filename, 1 -- binary data
+    def upload_impl(self, fileobj, filetype, userid, magic_context, params):
+        expired = int(time.time()) + self.EXPIRED_SECONDS
+        url = self.generate_res_url(userid)
+        auth = Auth(self._secret_id, self._secret_key)
+        sign = auth.app_sign(url, expired)
+
+        data = {}
+        if magic_context:
+            data['MagicContext'] = magic_context
+
+        headers = {
+            'Authorization':'QCloud '+sign,
+            'User-Agent':conf.get_ua(),
+        }
+
+        if filetype == 0:
+            files = {'FileContent': open(fileobj, 'rb')}
+        elif filetype == 1:
+            files = { 'FileContent': fileobj }
+
+        if params.has_key('get'):
+            query_str = urllib.urlencode(params['get']);
+            url = url + '?' + query_str
+
+        r = {}
+        try:
+            r = requests.post(url, data=data, headers=headers, files=files)
+            ret = r.json()
+        except Exception as e:
+            if r:
+                return {'httpcode':r.status_code, 'code':self.IMAGE_NETWORK_ERROR, 'message':str(e), 'data':{}}
+            else:
+                return {'httpcode':0, 'code':self.IMAGE_NETWORK_ERROR, 'message':str(e), 'data':{}}
+        
+        if 'code' in ret:
+            if 0 == ret['code']:
+                data = {
+                    'url':ret['data']['url'],
+                    'download_url':ret['data']['download_url'],
+                    'fileid':ret['data']['fileid'],
+                }
+                if ret['data'].has_key('is_fuzzy'):
+                    data['is_fuzzy'] = ret['data']['is_fuzzy']
+                if ret['data'].has_key('is_food'):
+                    data['is_food'] = ret['data']['is_food']                   
+                return {
+                    'httpcode':r.status_code, 
+                    'code':ret['code'], 
+                    'message':ret['message'], 
+                    'data':data
+                }
+            else:
+                return {
+                    'httpcode':r.status_code, 
+                    'code':ret['code'], 
+                    'message':ret['message'], 
+                    'data':{}
+                }
+        else:
+            return {'httpcode':r.status_code, 'code':self.IMAGE_NETWORK_ERROR, 'message':str(r.raw), 'data':{}}
+
 
     def stat(self, fileid, userid='0'):
         if not fileid:

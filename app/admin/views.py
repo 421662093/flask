@@ -2,6 +2,8 @@
 #-*- coding: utf-8 -*-
 from flask import render_template, redirect, url_for, abort, flash, request,\
     current_app, make_response, flash
+from flask import g
+from .authentication import auth
 from werkzeug import secure_filename
 from flask.ext.login import login_required, current_user, logout_user
 from . import admin
@@ -12,36 +14,39 @@ from .. import searchwhoosh,q_image,rs
 from ..core import common
 
 @admin.route('/upfile', methods=['POST'])  # , methods=['GET', 'POST']
+@auth.login_required
 def upfile():
-	if request.method == 'POST':
-		import os
-		from config import config
-		conf = config['default']
+    if request.method == 'POST':
+        import os
+        from config import config
+        conf = config['default']
 
-		userid = 1
-		_type = request.args.get('type', '')
+        _type = request.args.get('type', '')
+        uid = request.args.get('uid', 0)
+        
+        if uid>0:
+            if _type=='introfile':
+                file = request.files['file']
+                savepath = common.getuserpath(uid) #存储路径
+                newpath = 'introfile.'+file.filename.rsplit('.', 1)[1] # 新文件名
+                if file and common.allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    if not os.path.exists(savepath):
+                        os.makedirs(savepath)
+                    file.save(os.path.join(savepath, newpath))
 
-		if _type=='introfile':
-			file = request.files['file']
-			savepath = common.getuserpath(userid) #存储路径
-			newpath = 'introfile.'+file.filename.rsplit('.', 1)[1] # 新文件名
-			if file and common.allowed_file(file.filename):
-				filename = secure_filename(file.filename)
-				if not os.path.exists(savepath):
-					os.makedirs(savepath)
-	 			file.save(os.path.join(savepath, newpath))
-
-	 			fileid = 'introfile_'+str(userid)
-	 			q_image.delete(conf.QCLOUD_BUCKET, fileid)
-	 			obj = q_image.upload(os.path.join(savepath, newpath), conf.QCLOUD_BUCKET, fileid);
-	 			imgwurl = ''
-				if obj['code'] == 0 :
-				    #fileid = obj['data']['fileid']
-					imgwurl = obj['data']['download_url']
-					return '{"ret":1,"url":"'+imgwurl+'"}'
-				else:
-					return '{"ret":0}'
-	return '{"ret":0}'
+                    fileid = 'introfile_'+str(uid)
+                    q_image.delete(conf.QCLOUD_BUCKET, fileid)
+                    print str(g.current_user._id)
+                    obj = q_image.upload(os.path.join(savepath, newpath), conf.QCLOUD_BUCKET, fileid);
+                    imgwurl = ''
+                    if obj['code'] == 0 :
+                        #fileid = obj['data']['fileid']
+                        imgwurl = obj['data']['download_url']
+                        return '{"ret":1,"url":"'+imgwurl+'"}'
+                    else:
+                        return '{"ret":0}'
+    return '{"ret":0}'
 
 @admin.route('/userlist/search/<string:text>', methods=['GET'])
 @admin.route('/userlist/search/<int:roid>/<string:text>', methods=['GET'])
@@ -61,6 +66,7 @@ def user_list_search(text='',roid=2):
 #@login_required
 #@admin_required
 #@permission_required(Permission.USER)
+@auth.login_required
 def user_list(roid=2,index=1):
 
     if request.method == 'POST':
@@ -133,7 +139,7 @@ def user_edit(roid=2,id=0):
                 tempWorkExp.start = common.time2stamp(request.form.get('westart_'+newitem,0),'%Y-%m-%d')
                 tempWorkExp.end = common.time2stamp(request.form.get('weend_'+newitem,0),'%Y-%m-%d')
                 tempWorkExp.job = request.form.get('wejob_'+newitem,'')
-                tempWorkExp.intro = request.form.get('weintro_'+newitem,'')
+                #tempWorkExp.intro = request.form.get('weintro_'+newitem,'')
             	welist.append(tempWorkExp)
         user.workexp = welist
         educount = int(request.form.get('educount',0))

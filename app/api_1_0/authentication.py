@@ -11,14 +11,14 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(username_or_token, password):
-    print username_or_token+'___'+password
-    #username_or_token = 'admin'
+    #print username_or_token+'___'+password
+    #username_or_token = 'eyJhbGciOiJIUzI1NiIsImV4cCI6MTQzOTI4MjY4MywiaWF0IjoxNDM5Mjc5MDgzfQ.eyJpZCI6NzF9.GPqrpHaqL1d42vZaewOa10XQKjyswXz0dDnz5gYlve0'
     #password = '123456'
 
     unlen = len(username_or_token)
     if unlen>0:
         user =None
-        if unlen==11 or unlen<100:
+        if unlen==11 or unlen<50:
             # try to authenticate with username/password
             user = User.objects(username=username_or_token).first()
             if not user or not user.verify_password(password):
@@ -86,7 +86,7 @@ def get_token():
     返回值
         token #身份验证字符串
     '''
-    if not g.current_user.is_administrator() or g.token_used:
+    if g.token_used:
         return unauthorized('Invalid credentials') #帐号或密码错误,或身份过期
     return jsonify({'token': g.current_user.generate_auth_token(
         expiration=3600), 'expiration': 3600})
