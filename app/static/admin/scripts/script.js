@@ -5,15 +5,17 @@ $(function(){
 	
 	dropbox.filedrop({
 		// The name of the $_FILES entry:
-		paramname:'file',
+		paramname:'FileContent',
 		
 		maxfiles: 5,
     	maxfilesize: 2,
-		url: '/admin/upfile?type=introfile&uid='+uid,
+    	url:'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/?sign='+encodeURIComponent(sign),
+		//url: '/admin/upfile?type=introfile&uid='+uid,
 		
 		uploadFinished:function(i,file,response){
-			if(response.ret==1)
-				$('#fileurl').val(response.url)
+			alert(response.code)
+			if(response.code==0)
+				$('#fileurl').val(response.data.download_url)
 			$.data(file).addClass('done');
 			// response is the JSON object that post_file.php returns
 		},

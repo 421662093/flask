@@ -24,7 +24,7 @@
 				<ul class="page-breadcrumb">
 					<li>
 						<i class="fa fa-home"></i>
-						<a href="index.html">首页</a>
+						<a href="index.html">首页{{msg}}</a>
 						<i class="fa fa-angle-right"></i>
 					</li>
 					<li>
@@ -63,8 +63,7 @@
 		
 		<div class="row">
 			<div class="col-md-12">
-			<form class="form-horizontal form-row-seperated" action='{{ url_for('.user_edit',roid=roid, id=isuser and user._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">
-					{{form.hidden_tag()}}
+			
 					<div class="portlet">
 						<div class="portlet-title">
 							<div class="caption">
@@ -81,6 +80,7 @@
 								<div class="tab-content no-space">
 									<div class="tab-pane active" id="tab_general">
 										<div class="form-body">
+										<form class="form-horizontal form-row-seperated" action='{{ url_for('.user_edit',roid=roid, id=isuser and user._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">{{form.hidden_tag()}}
 											<!--<div class="form-group">
 												<label class="col-md-2 control-label">用户组: <span class="required">
 												* </span>
@@ -178,15 +178,6 @@
 													<textarea id="intro" name="intro" style="height:74px" class="form-control">{% if isuser %}{{user.intro}}{%endif%}</textarea>
 												</div>
 											</div>
-											<div class="form-group">
-												<label class="col-md-2 control-label">介绍图片或视频: </label>
-												<div class="col-md-10">
-													<div id="dropbox">
-													<span class="message">拖拽文件到这里开始上传. </span>
-													</div>
-													<input type="text" class="form-control" id="fileurl" name="fileurl" {% if isuser %}value="{{user.fileurl}}" {%endif%}>
-												</div>
-											</div>
 
 											<!--<div class="form-group">
 												<label class="col-md-2 control-label">认证: </label>
@@ -229,13 +220,25 @@
 													<input type="hidden" name='educount' id='educount' value="{{func.len(user.edu)}}">
 												</div>
 											</div>
+											<input type="hidden" class="form-control" id="fileurl" name="fileurl" {% if isuser %}value="{{user.fileurl}}" {%endif%}>
+										</form>
+										{% if isuser %}
+											<div class="form-group">
+												<label class="col-md-2 control-label">介绍图片或视频: </label>
+												<div class="col-md-10">
+													<img id="fileurlimg" style="width:275px;" src="{{user.fileurl}}"/>
+													<form id="uploadForm">
+														<input type="file" name="FileContent"></input><a href='javascript:upimg();'>上传</a>
+													</form>
+												</div>
+											</div>
+										{%endif%}
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</form>
 			</div>
 		</div>
 
@@ -258,19 +261,28 @@
 
 <!-- Including the HTML5 Uploader plugin -->
 <script src="/static/admin/scripts/jquery.filedrop.js"></script>
-
+<script src="/static/admin/scripts/jquery.form.min.js"></script>
 <!-- The main script file -->
 <script src="/static/admin/scripts/script.js"></script>
 
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
-{% if isuser %}uid={{user._id}}{%else%}uid=0{%endif%}
+{% if isuser %}
+uid={{user._id}}
+sign="{{sign}}"
+{%else%}
+uid=0
+sign=''
+{%endif%}
 jQuery(document).ready(function() {    
+
    Metronic.init(); // init metronic core components
 	Layout.init(); // init current layout
 	//QuickSidebar.init(); // init quick sidebar
 	//Demo.init(); // init demo features
    //EcommerceProductsEdit.init();
+   if(uid>0)
+   		initUploadForm();
 });
 function newwe()
 {
@@ -305,6 +317,48 @@ function wedel(weid) {
 function edudel(eduid) {
 	if(confirm("是否删除工作经历？"))
 		$('#edudiv_'+eduid).remove()
+}
+
+function initUploadForm () {
+	// 请将以下获取签名的链接换成您部署好的服务端http url
+	// 建议通过业务登陆态检查来增强安全性，避免签名被非法获取
+	//$.getJSON(serverurl, function(data) {
+		var url = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/introfile_{{user._id}}/?sign=' + encodeURIComponent(sign);
+		var options = {
+            type: 'post',
+            url: url,
+            dataType: 'json',
+		    success:function(ret) {
+		    	if(ret.code==0)
+		    		var rand = Math.random()
+		    		$('#fileurlimg').attr('src',ret.data.download_url+'?random='+rand)
+					$('#fileurl').val(ret.data.download_url+'?random='+rand)
+		    },
+		    error:function (ret) {
+		    	//alert(ret.responseText);
+		    }
+		};
+
+		// pass options to ajaxForm
+		$('#uploadForm').ajaxForm(options);
+	//});
+}
+function upimg()
+{
+	var url_del = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/introfile_{{user._id}}/del?sign=' + encodeURIComponent(sign);
+	$.ajax({
+	    type: "POST",
+	    url: url_del,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	$('#uploadForm').submit()
+	    },
+    	error:function(ret) {
+    		$('#uploadForm').submit()
+    	}
+	});
+
 }
 </script>
 

@@ -8,7 +8,7 @@ from .decorators import permission_required
 from ..models import Permission, User, Topic, Comment
 from ..core.common import jsonify
 from ..core import common
-from .. import searchwhoosh
+#from .. import searchwhoosh
 # from ..models import discovery
 
 
@@ -188,14 +188,18 @@ def get_expertsearch_list():
     #content = request.form.get('content','')
     #text = text.translate('<')
     text = common.htmlescape(text)
-    ret = searchwhoosh.search(text,1)
-    eid = []
-    eidlen = len(ret['results'])
-    print eidlen
-    if eidlen>0:
-        for eitem in ret['results']:
-            eid.append(eitem['eid'])
-        elist=[item.to_json(5) for item in User.getlist_uid(uidlist=eid, count=10)]
+    #ret = searchwhoosh.search(text,1)
+    ret = User.Q_YUNSOU(text)
+    if ret is not None:
+        eid = []
+        eidlen = ret['data']['eresult_num']
+        if eidlen>0:
+            for eitem in ret['data']['result_list']:
+                eid.append(eitem['doc_id'])
+            print eid
+            elist=[item.to_json(5) for item in User.getlist_uid(uidlist=eid, count=10)]
+        else:
+            elist=[]
+        return jsonify(list=elist)
     else:
-        elist=[]
-    return jsonify(list=elist)
+        return jsonify(list=[])

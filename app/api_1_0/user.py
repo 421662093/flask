@@ -167,10 +167,10 @@ def update_user_info():
             user.name = request.form.get('name','')
             user.sex = request.form.get('sex',1)
             user.useredit()
-            return "{'state':1}"
+            return jsonify(ret=1) #更新成功
         except Exception,e:
             logging.debug(e)
-            return "{'state':-1}"
+            return jsonify(ret=-1)#系统异常
 @api.route('/user/updateworkexp', methods=['GET','POST'])
 #@permission_required(Permission.DISCOVERY)
 @auth.login_required
@@ -186,12 +186,20 @@ def update_user_workexp():
     		end -- 工作结束时间 (必填，时间戳)
     		name -- 公司名称 (必填)
     		job -- 职位名称 (必填)
+    返回值
+        {'ret':1} 成功
+        0 更新失败
+        -1 系统异常
     '''
     if request.method == 'POST':
-        try: 
-            data = request.get_json()
-
+        try:
+            print '0'
+            data = request.get_json(force=True)
+            #print data+'__________________________'
+            print '1'
             _id = g.current_user._id #data['_id']
+            print '2_'+str(_id)
+            #_id = 73
             _list = data['list']
             we = []
             user = User()
@@ -207,10 +215,10 @@ def update_user_workexp():
                     we.append(weitem)
             user.workexp = we
             state = user.updateworkexp()
-            return "{'state':"+str(state)+"}"
+            return jsonify(ret=state)
         except Exception,e:
             logging.debug(e)
-            return "{'state':-1}"
+            return jsonify(ret=-1) #系统异常
 
 @api.route('/user/updateedu', methods=['POST'])
 #@permission_required(Permission.DISCOVERY)
@@ -247,7 +255,7 @@ def update_user_edu():
                 edu.append(eduitem1)
         user.edu = edu
         state = user.updateedu()
-        return "{'state':"+str(state)+"}"
+        return jsonify(ret=state) 
 
 @api.route('/appointment/list')
 @api.route('/appointment/list/<int:_type>')  # _type=1我约 _type=2被约

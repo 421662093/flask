@@ -15,10 +15,14 @@ import bleach  # html 清除工具
 from app.exceptions import ValidationError
 from flask import current_app, request, url_for
 from flask.ext.login import UserMixin, AnonymousUserMixin
-from . import db,rs, login_manager,searchwhoosh
+from . import db,rs,conf,q_search, login_manager#,searchwhoosh
 from core import common
 import json
+import logging
 #import cpickle as pickle
+
+Q_SOUYUN_ACTION = 'DataManipulation' #添加操作 云搜
+Q_SOUYUN_SEARCH = 'DataSearch' #搜索操作 云搜
 
 class Permission:
     VIEW = 0x01 # 查看
@@ -358,6 +362,8 @@ class User(UserMixin, db.Document):  # 会员
 
             User.objects(_id=self._id).update_one(**update)
 
+            User.Create_Q_YUNSOU_DATA(self)
+            '''
             #更新whoosh
             updata_whoosh = {}
             updata_whoosh['_id']=self._id
@@ -365,7 +371,7 @@ class User(UserMixin, db.Document):  # 会员
             updata_whoosh['l']=self.label
             updata_whoosh['j']=self.job
             searchwhoosh.update(updata_whoosh)
-
+            '''
             Log.saveinfo(remark='编辑用户('+str(self._id)+')')
 
             return 1
@@ -382,6 +388,9 @@ class User(UserMixin, db.Document):  # 会员
                 self.password = self.password_hash
                 self.save()
 
+                User.Create_Q_YUNSOU_DATA(self)
+
+                '''
                 #更新whoosh
                 updata_whoosh = {}
                 updata_whoosh['_id']= self._id
@@ -389,7 +398,7 @@ class User(UserMixin, db.Document):  # 会员
                 updata_whoosh['j']= unicode(self.job)
                 updata_whoosh['l']=self.label
                 searchwhoosh.update(updata_whoosh)
-
+                '''
                 Log.saveinfo(remark='创建用户('+str(self._id)+')')
 
                 return self._id
@@ -404,6 +413,43 @@ class User(UserMixin, db.Document):  # 会员
     def search(text, count=10):  # 专家搜索
         return User.objects(Q(name__istartswith=text) | Q(job__istartswith=text)).limit(count).only('name','job')
 
+    @staticmethod
+    def Create_Q_YUNSOU_DATA(data):
+        #添加 腾讯云 云搜数据
+        try:
+            params = {
+                    "appId" : conf.QCLOUDAPI_YUNSOU_APPID,
+                    "op_type":"add",
+                    "contents.0.id" :data._id,
+                    "contents.0.name" : data.name,
+                    "contents.0.job" : data.job,
+                    "contents.0.label" : ";".join(data.label)
+                }
+            msg = q_search.call(Q_SOUYUN_ACTION, params)
+            ret = json.loads(msg)
+            if ret['retcode'] is not 0:
+                logging.debug(msg)
+        except Exception,e:
+            logging.debug(e)
+
+    @staticmethod
+    def Q_YUNSOU(text,pageindex=1,count=10):
+        #搜索 腾讯云 云搜数据
+        try:
+            params = {
+                "appId" : conf.QCLOUDAPI_YUNSOU_APPID,
+                "search_query" : text,
+                "page_id" : pageindex-1,
+                "num_per_page" : count,
+            }
+            msg = q_search.call(Q_SOUYUN_SEARCH, params)
+            ret = json.loads(msg)
+            if ret['code'] is 0:
+                return ret
+            else:
+                logging.debug(msg)
+        except Exception,e:
+            logging.debug(e)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)

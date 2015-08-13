@@ -10,42 +10,51 @@ from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm
 from ..models import collection,User,WorkExp,Edu,Role,Permission,Topic,InvTopic,InvTopicStats,Log,Inventory,Appointment
-from .. import searchwhoosh,q_image,rs
+from .. import q_image,rs,conf#searchwhoosh,
+from ..sdk import tencentyun
 from ..core import common
+import logging
+import time
 
 @admin.route('/upfile', methods=['POST'])  # , methods=['GET', 'POST']
 @auth.login_required
 def upfile():
     if request.method == 'POST':
         import os
-        from config import config
-        conf = config['default']
+        
 
         _type = request.args.get('type', '')
         uid = request.args.get('uid', 0)
         
         if uid>0:
             if _type=='introfile':
-                file = request.files['file']
-                savepath = common.getuserpath(uid) #存储路径
-                newpath = 'introfile.'+file.filename.rsplit('.', 1)[1] # 新文件名
-                if file and common.allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    if not os.path.exists(savepath):
-                        os.makedirs(savepath)
-                    file.save(os.path.join(savepath, newpath))
+                try:
+                    file = request.files['file']
+                    savepath = common.getuserpath(uid) #存储路径
+                    #newpath = 'introfile.'+file.filename.rsplit('.', 1)[1] # 新文件名
+                    newpath = 'introfile.jpg'
+                    print file+'__________'
+                    if file and common.allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        print filename
+                        if not os.path.exists(savepath):
+                            os.makedirs(savepath)
+                        file.save(os.path.join(savepath, newpath))
 
-                    fileid = 'introfile_'+str(uid)
-                    q_image.delete(conf.QCLOUD_BUCKET, fileid)
-                    print str(g.current_user._id)
-                    obj = q_image.upload(os.path.join(savepath, newpath), conf.QCLOUD_BUCKET, fileid);
-                    imgwurl = ''
-                    if obj['code'] == 0 :
-                        #fileid = obj['data']['fileid']
-                        imgwurl = obj['data']['download_url']
-                        return '{"ret":1,"url":"'+imgwurl+'"}'
-                    else:
-                        return '{"ret":0}'
+                        fileid = 'introfile_'+str(uid)
+                        q_image.delete(conf.QCLOUD_BUCKET, fileid)
+                        print str(g.current_user._id)
+                        obj = q_image.upload(os.path.join(savepath, newpath), conf.QCLOUD_BUCKET, fileid);
+                        imgwurl = ''
+                        if obj['code'] == 0 :
+                            #fileid = obj['data']['fileid']
+                            imgwurl = obj['data']['download_url']
+                            return '{"ret":1,"url":"'+imgwurl+'"}'
+                        else:
+                            return '{"ret":0}'
+                except Exception,e:
+                    logging.debug(e)
+                    return '{"ret":-1}'#系统异常
     return '{"ret":0}'
 
 @admin.route('/userlist/search/<string:text>', methods=['GET'])
@@ -96,16 +105,17 @@ def user_list(roid=2,index=1):
         # orig.get(body='Ross19').update({'$rename': {'body_html': 'body_w'}})
         return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,pagecount=usercount,index=index)
 
-
 @admin.route('/useredit', methods=['GET', 'POST'])
 @admin.route('/useredit/<int:id>', methods=['GET', 'POST'])
 @admin.route('/useredit/<int:id>/<int:roid>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
+@auth.login_required
 def user_edit(roid=2,id=0):
     form = EditUserForm()
 
     #print request.method + "++++++" + str(form.validate())
     if request.method == 'POST' and form.validate_on_submit():
+
         user = User()
         user._id = id
         user.role_id = roid #request.form.get('roleid',0)
@@ -159,17 +169,19 @@ def user_edit(roid=2,id=0):
         #flash('用户更新成功','error')
         return redirect(url_for('.user_list',roid=roid))
     else:
-    	from config import config
-    	conf = config['default']
         isuser = False
         user = None
         rolelist = Role.getlist()
+        sign=''
         if id > 0 :
+            q_auth = tencentyun.Auth(conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
+            expired = int(time.time()) + 999
+            sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='introfile_'+str(id),expired=expired)
             user = User.getinfo(id)
             if user:
                 isuser = True
         func = {'stamp2time': common.stamp2time,'len': len}
-        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY)
+        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign)
 
 @admin.route('/logout')
 def logout():
@@ -185,12 +197,12 @@ def plugin_list():
     if request.method == 'POST':
         rebuild = request.args.get('rebuild', 0, type=int)
         if rebuild==1:
-        	#重新生成whoosh
-            searchwhoosh.rebuild_index()
+            pass
+            #重新生成whoosh
+            #searchwhoosh.rebuild_index()
         elif rebuild==2:
-        	#清空redis缓存
-
-			rs.flushdb()
+            #清空redis缓存
+            rs.flushdb()
         return redirect(url_for('.plugin_list'))
     else:
 

@@ -10,7 +10,9 @@ import tencentyun
 from config import config
 from flask.ext.login import LoginManager
 from datetime import datetime
-from core import search
+#from core import search
+from sdk.QcloudApi.qcloudapi import QcloudApi
+
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -29,9 +31,16 @@ pagedown = PageDown()
 db = MongoEngine()
 rs= redis.StrictRedis(host='localhost', port=6379, db=0)
 q_image = tencentyun.ImageV2(conf.QCLOUD_APPID,conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
+q_module = 'yunsou'
+q_config = {
+        'Region': 'gz',
+        'secretId': conf.QCLOUDAPI_SECRET_ID,
+        'secretKey': conf.QCLOUDAPI_SECRET_KEY,
+        'method': 'get'
+    }
+q_search = QcloudApi(q_module, q_config)
 
-
-searchwhoosh = search.WhooshExpert()
+#searchwhoosh = search.WhooshExpert()
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'auth.login'

@@ -38,7 +38,7 @@ def QCLOUD_get_app_sign_v2(_type=0):
     用户:会员
     URL:/sys/img_sign/<int:_type>
     GET 参数:
-        _type -- 图片类型 1头像 2简介图片或视频
+    _type -- 图片类型 1头像 2简介图片或视频
     返回值
         sign
     '''
@@ -52,5 +52,5 @@ def QCLOUD_get_app_sign_v2(_type=0):
     elif _type==2:
         fileid = 'introfile_'
     expired = int(time.time()) + 999
-    sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid=fileid+str(43),expired=expired)#g.current_user._id
+    sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='',expired=expired)
     return jsonify(sign=sign)
