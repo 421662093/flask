@@ -10,7 +10,7 @@ from .decorators import permission_required
 from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection
 from ..core.common import jsonify
 from ..core import common
-from .. import rs
+from .. import mc
 import logging
 import json
 from ..sdk.yuntongxun import SendTemplateSMS as SMS
@@ -40,7 +40,7 @@ def get_code():
             if User.isusername(username=username)>0:
                 return jsonify(ret=-2) #帐号已存在
             code = common.getrandom(100000,999999)
-            rs.set('code_'+username,code)
+            mc.set('code_'+username,code)
             smscode = SMS.sendTemplateSMS(username,[code],1)
             #print str(type(smscode))+'___'+smscode
             if smscode=='000000':
@@ -85,7 +85,7 @@ def new_user():
                 return jsonify(ret=-1) #帐号或密码为空
             if User.isusername(username=username)>0:
                 return jsonify(ret=-2) #帐号已存在
-            rv = rs.get('code_'+username)
+            rv = mc.get('code_'+username)
             if rv == code:
                 col1 = User()
                 col1.role_id = 3
@@ -133,7 +133,7 @@ def change_phone():
                 return jsonify(ret=-1) #帐号或密码为空
             if User.isusername(username=username)>0:
                 return jsonify(ret=-2) #帐号已存在
-            rv = rs.get('code_'+username)
+            rv = mc.get('code_'+username)
             if rv == code:
                 ret = User.updatephone(username)
                 if ret==1:

@@ -48,6 +48,9 @@ class DevelopmentConfig(Config):
     QCLOUDAPI_SECRET_KEY = 'ElpeYhStMAPR63KlKan1t9ShbzAzjoYG'
     QCLOUDAPI_YUNSOU_APPID = '31040002' #云搜appid
 
+    #腾讯云缓存Memcached
+    QCLOUD_MEMCACHED_IP = '10.66.108.120:9101'
+
     #万象优图
     QCLOUD_APPID = '10001870' #项目ID
     QCLOUD_SECRET_ID = 'AKIDBFlEhtzhepEthyhzGvZ5jI3AGbL6oumH'

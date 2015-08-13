@@ -15,7 +15,7 @@ import bleach  # html 清除工具
 from app.exceptions import ValidationError
 from flask import current_app, request, url_for
 from flask.ext.login import UserMixin, AnonymousUserMixin
-from . import db,rs,conf,q_search, login_manager#,searchwhoosh
+from . import db,mc,conf,q_search, login_manager#,searchwhoosh
 from core import common
 import json
 import logging
@@ -40,86 +40,88 @@ class RolePermissions(db.EmbeddedDocument):  # 角色权限
         return json_rp
 
 class Role(db.Document):
-	__tablename__ = 'roles'
-	meta = {
+    __tablename__ = 'roles'
+    meta = {
         'collection': __tablename__,
     }
-	_id = db.IntField(primary_key=True)
-	name = db.StringField(max_length=64, required=True,db_field='n')
-	default = db.BooleanField(default=False, db_field='d')
-	permissions = db.EmbeddedDocumentField(
+    _id = db.IntField(primary_key=True)
+    name = db.StringField(max_length=64, required=True,db_field='n')
+    default = db.BooleanField(default=False, db_field='d')
+    permissions = db.EmbeddedDocumentField(
         RolePermissions, default=RolePermissions(), db_field='p')  # 统计
-	CACHEKEY = {
-		'list':'rolelist',
-		'item':'roleitem'
-	}
-	@staticmethod
-	def insert_roles():
-		roles = {
+    CACHEKEY = {
+        'list':'rolelist',
+        'item':'roleitem'
+    }
+    @staticmethod
+    def insert_roles():
+        roles = {
             'User': (Permission.VIEW | Permission.EDIT | Permission.DELETE | Permission.ADMINISTER, True),
             'Administrator': (0xff, False)
         }
-		print roles
-		for r in roles:
-			role = Role()
-			role.permissions = roles[r][0]
-			role.default = roles[r][1]
-			role._id = collection.get_next_id('role')
-			role.name = '12@qq.com'
-			role.save()
-	@staticmethod
-	def getlist():
-		rv = rs.get(Role.CACHEKEY['list'])
-		if rv is None:
-			rv = Role.objects().limit(30)
-			temp =  json.dumps([item.to_json() for item in rv])
-			rs.set(Role.CACHEKEY['list'],temp)
-		else:
-			rv = json.loads(rv)
+        print roles
+        for r in roles:
+            role = Role()
+            role.permissions = roles[r][0]
+            role.default = roles[r][1]
+            role._id = collection.get_next_id('role')
+            role.name = '12@qq.com'
+            role.save()
+    @staticmethod
+    def getlist():
+        rv = mc.get(Role.CACHEKEY['list'])
+       # rv = rs.get(Role.CACHEKEY['list'])
+        if rv is None:
+            rv = Role.objects().limit(30)
+            temp =  json.dumps([item.to_json() for item in rv])
+            mc.set(Role.CACHEKEY['list'],temp)
+            #rs.set(Role.CACHEKEY['list'],temp)
+        else:
+            rv = json.loads(rv)
 
-		return rv
+        return rv
 
-	def editinfo(self):
-		rs.delete(Role.CACHEKEY['list'])
-		if self._id > 0:
-			update = {}
+    def editinfo(self):
+        rs.delete(Role.CACHEKEY['list'])
+        if self._id > 0:
+            update = {}
             # update.append({'set__email': self.email})
 
-			if len(self.name) > 0:
-				update['set__name'] = self.name
-			update['set__default'] = self.default
-			update['set__permissions'] = self.permissions
-			Role.objects(_id=self._id).update_one(**update)
-			return 1
-		else:
-			self._id = collection.get_next_id(self.__tablename__)
-			self.save()
-			return self._id
+            if len(self.name) > 0:
+                update['set__name'] = self.name
+            update['set__default'] = self.default
+            update['set__permissions'] = self.permissions
+            Role.objects(_id=self._id).update_one(**update)
+            return 1
+        else:
+            self._id = collection.get_next_id(self.__tablename__)
+            self.save()
+            return self._id
 
-	@staticmethod
-	def getinfo(rid):
-        #获取指定id 角色信息
-		if rid>0:
-			rlist = Role.getlist()
-			for item in rlist:
-				if item['_id']==rid:
-					return item
-			return None
-		else:
-			return None
+    @staticmethod
+    def getinfo(rid):
+    #获取指定id 角色信息
+        if rid>0:
+            rlist = Role.getlist()
+            for item in rlist:
+                if item['_id']==rid:
+                    return item
+            return None
+        else:
+            return None
 
-	def to_json(self):
-		json_role = {
+    def to_json(self):
+        json_role = {
             '_id': self.id,
             'name': self.name.encode('utf-8'),
             'default': self.default,
             'permissions': self.permissions.to_json()
         }
-		return json_role
-	'''
-	def __repr__(self):
-		return '<Role %r>' % self.name # 角色权限
-	'''
+        return json_role
+    '''
+    def __repr__(self):
+        return '<Role %r>' % self.name # 角色权限
+    '''
 
 class UserStats(db.EmbeddedDocument):  # 会员统计
     meet = db.IntField(default=0, db_field='m') #见面次数

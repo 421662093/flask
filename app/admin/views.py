@@ -10,7 +10,7 @@ from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm
 from ..models import collection,User,WorkExp,Edu,Role,Permission,Topic,InvTopic,InvTopicStats,Log,Inventory,Appointment
-from .. import q_image,rs,conf#searchwhoosh,
+from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
 import logging
@@ -201,12 +201,13 @@ def plugin_list():
             #重新生成whoosh
             #searchwhoosh.rebuild_index()
         elif rebuild==2:
+            pass
             #清空redis缓存
-            rs.flushdb()
+            #rs.flushdb()
         return redirect(url_for('.plugin_list'))
     else:
 
-        return render_template('admin/plugin_list.html',size=rs.dbsize())
+        return render_template('admin/plugin_list.html',size=0)#rs.dbsize()
 
 @admin.route('/topiclist/search/<string:text>', methods=['GET'])
 def user_topiclist_search(text=''):
