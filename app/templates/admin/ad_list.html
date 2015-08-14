@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% block title %}话题管理{% endblock %}
+{% block title %}广告管理{% endblock %}
 {% block active %}class="active"{% endblock %}
 {% block css %}
 <!-- BEGIN PAGE LEVEL STYLES -->
@@ -13,40 +13,27 @@
 <link href="/static/admin/css/layout.css" rel="stylesheet" type="text/css"/>
 <link id="style_color" href="/static/admin/css/themes/darkblue.css" rel="stylesheet" type="text/css"/>
 <link href="/static/admin/css/custom.css" rel="stylesheet" type="text/css"/>
-<script src="/static/admin/scripts/page.js"></script>
 <!-- END THEME STYLES -->
 {% endblock %}
 
 {% block content %}
+			
 			<!-- BEGIN PAGE CONTENT-->
 			<div class="row">
 				<div class="col-md-12 col-sm-12">
 					<div class="portlet grey-cascade box">
 						<div class="portlet-title">
 							<div class="caption">
-								<i class="fa fa-cogs"></i>话题管理
+								<i class="fa fa-cogs"></i>广告管理
 							</div>
-							{% if uid>0 %}
 							<div class="actions">
-								<a href="{{ url_for('.topic_list') }}" class="btn btn-default btn-sm">
-								<i class="fa fa-refresh"></i> 返回列表 </a>
+								<a href="{{ url_for('.ad_list') }}" class="btn btn-default btn-sm">
+								<i class="fa fa-refresh"></i> 刷新 </a>
 							</div>
-							{% endif %}
 							<div class="actions">
-								<a href="{{ url_for('.topic_edit') }}" class="btn btn-default btn-sm">
+								<a href="{{ url_for('.ad_edit') }}" class="btn btn-default btn-sm">
 								<i class="fa fa-refresh"></i> 添加 </a>
 							</div>
-							{% if index==-1 %}
-							<div class="actions">
-								<a href="{{ url_for('.topic_list') }}" class="btn btn-default btn-sm">
-								<i class="fa fa-refresh"></i> 返回列表 </a>
-							</div>
-							{% endif %}
-							<div class="actions">
-								<input type="text" id="search" style="color:#000000" value="{{text}}" />
-								<a href="javascript:;" onclick="searchfun()" class="btn btn-default btn-sm">搜索 </a>
-							</div>
-							
 						</div>
 						<div class="portlet-body">
 							<div class="table-responsive">
@@ -56,43 +43,49 @@
 									<th>
 										 ID
 									</th>
-									<th>
+                                    <th>
+                                         分组
+                                    </th>
+									<th style="width:200px">
 										 标题
 									</th>
-									<th>
-										 简介
-									</th>
-									<th>
-										 时间
-									</th>
-                                    <th>
-                                         排序
+                                    <th style="width:300px">
+                                         文件地址
                                     </th>
+                                    <th>
+                                          跳转地址或跳转话题id
+                                    </th>
+									<th>
+										 排序
+									</th>
 									<th>
 										 操作
 									</th>
 								</tr>
 								</thead>
 								<tbody>
-								{% for item in topiclist %}
+								{% for item in adlist %}
 								<tr>
 									<td>
 									{{item.id}}
 									</td>
 									<td>
-									{{item.title}}
-									</td>
-									<td>
-									{{item.intro}}
-									</td>
-									<td>
-									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
+									{{item.group_id}}
 									</td>
                                     <td>
-                                    {{item.sort}}
+                                    {{item.title}}
+                                    </td>
+                                    <td>
+                                    {{item.fileurl}}
+                                    </td>
+                                    <td>
+                                    {{item.url}}
                                     </td>
 									<td>
-										<a href="/admin/topicedit/{{item.id}}" class="label label-sm label-success">
+									{{item.sort}}
+									</td>
+									<td>
+										<a href="adedit/{{item.id}}" class="label label-sm label-success">
 										编辑
 										</a>&nbsp
 										<a href="#" class="label label-sm label-success">
@@ -104,22 +97,6 @@
 								</tbody>
 								</table>
 							</div>
-							{% if index>-1 %}
-							<div class="row">
-							<div class="col-md-5 col-sm-12">
-							<div class="dataTables_info" id="sample_1_info" role="status" aria-live="polite">
-							当前第 {{index}} 页，共 {{pagecount}} 页
-							</div>
-							</div>
-							<div class="col-md-7 col-sm-12">
-							<div class="dataTables_paginate paging_bootstrap_full_number" id="sample_1_paginate">
-							<ul class="pagination" style="visibility: visible;">
-							<script>Pagebtn('/admin/topiclist/{{uid}}',{{pagecount}},{{index}})</script>
-							</ul>
-							</div>
-							</div>
-							</div>
-							{% endif %}
 						</div>
 					</div>
 				</div>
@@ -143,20 +120,12 @@
 <script src="/static/admin/pages/scripts/ecommerce-orders.js"></script>
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
-jQuery(document).ready(function() {    
-    Metronic.init(); // init metronic core components
-	Layout.init(); // init current layout
-	QuickSidebar.init(); // init quick sidebar
-	Demo.init(); // init demo features
-    EcommerceOrders.init();
-});
-
-function searchfun(){
-	var searchtext = $('#search').val()
-	if(searchtext.length>0)
-	{
-		location.href='{{ url_for('.topic_list') }}/search/'+searchtext
-	}
-}
+        jQuery(document).ready(function() {    
+            Metronic.init(); // init metronic core components
+			Layout.init(); // init current layout
+			QuickSidebar.init(); // init quick sidebar
+			Demo.init(); // init demo features
+            EcommerceOrders.init();
+        });
 </script>
 {% endblock %}

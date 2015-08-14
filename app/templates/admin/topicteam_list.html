@@ -64,6 +64,9 @@
 									<th>
 										 时间
 									</th>
+                                    <th>
+                                         排序
+                                    </th>
 									<th>
 										 操作
 									</th>
@@ -84,6 +87,9 @@
 									<td>
 									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
 									</td>
+                                    <td>
+                                    {{item.sort}}
+                                    </td>
 									<td>
 										<a href="/admin/topicteamedit/{{item.id}}" class="label label-sm label-success">
 										编辑

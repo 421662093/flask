@@ -103,6 +103,9 @@
 									<th>
 										 更新时间
 									</th>
+                                    <th>
+                                         创建时间
+                                    </th>
 									<th>
 										 状态
 									</th>
@@ -135,6 +138,9 @@
 									<td>
 									{{func.stamp2time(item.stats.lastaction,'%Y-%m-%d %H:%M')}}
 									</td>
+                                    <td>
+                                    {{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
+                                    </td>
 									<!--<td>
 										<span class="label label-sm label-success">
 										{{ item.state==1 and '正常' or '禁止' }}
@@ -144,19 +150,19 @@
 									{{func.getuserstate(item.state)}}
 									</td>
 									<td>
-										<a href="/admin/useredit/{{item.id}}/{{roid==2 and 2 or 3}}" class="label label-sm label-success">
+										<a href="/admin/useredit/{{item.id}}/{{roid==2 and 2 or 3}}/{{index}}" class="label label-sm label-success">
 										编辑
-										</a>
+										</a><br/>
 										{% if roid==2 %}
 										<a href="/admin/topicedit/{{item.id}}/1" class="label label-sm label-success">
 										添加话题
-										</a>
+										</a><br/>
 										<a href="/admin/topiclist/{{item.id}}" class="label label-sm label-success">
 										查看话题
-										</a>
+										</a><br/>
 										{% endif %}
 										{% if item.state==-2 %}
-										<form method="post" action="?type=state&uid={{item.id}}" id="user_{{item.id}}_form"><a href="javascript:$('#user_{{item.id}}_form').submit();" class="label label-sm label-success">审核通过</a></form>
+										<form method="post" action="?type=state&uid={{item.id}}" id="user_{{item.id}}_form"><a href="javascript:$('#user_{{item.id}}_form').submit();" class="label label-sm label-success">审核通过</a></form><br/>
 										{% endif %}
 										{% if item.state==1 %}
 										<form method="post" action="?type=unstate&uid={{item.id}}" id="user_{{item.id}}_form"><a href="javascript:$('#user_{{item.id}}_form').submit();" class="label label-sm label-success">下线</a></form>

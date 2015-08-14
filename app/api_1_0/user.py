@@ -7,7 +7,7 @@ from flask import g
 from .authentication import auth
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection
+from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay
 from ..core.common import jsonify
 from ..core import common
 from .. import mc
@@ -156,16 +156,19 @@ def update_user_info():
 
     URL:/user/update
     POST 参数: 
-        _id -- 用户ID (测试时使用，上线后删除)
     	name -- 姓名 (默认 0)
     	sex -- 性别 (默认1,1:男 0:女)
+        domainid -- 领域分类id
+        industryid -- 行业分类id
     '''
     if request.method == 'POST':
         try: 
             user = User()
-            user._id = request.form.get('_id',1)
+            user._id = g.current_user._id
             user.name = request.form.get('name','')
             user.sex = request.form.get('sex',1)
+            user.domainid = request.form.get('domainid',1)
+            user.industryid = request.form.get('industryid',1)
             user.useredit()
             return jsonify(ret=1) #更新成功
         except Exception,e:
@@ -370,3 +373,90 @@ def get_user_info():
     '''
     u_info = User.getinfo(g.current_user._id)
     return jsonify(info=u_info.to_json())
+
+
+@api.route('/user/addtopic', methods=['POST'])
+#@permission_required(Permission.DISCOVERY)
+@auth.login_required
+def add_user_topic():
+    '''
+    添加话题（专家）
+
+    URL:/user/addtopic
+    POST 参数:
+        title -- 标题
+        content -- 内容
+        call -- 通话价格
+        calltime -- 通话时间
+        meet -- 见面价格
+        meettime -- 见面时间
+    返回值 
+        {'ret':1} 成功
+        -1 系统异常
+
+    '''
+    if request.method == 'POST':
+
+        try:
+            data = request.get_json()
+
+            t_info = Topic()
+            t_info.user_id = g.current_user._id
+            t_info.title = data['title']
+            t_info.intro = data['content']
+            t_info.content = data['content']
+
+            tp = TopicPay()
+            tp.call = data['call']
+            tp.calltime = data['calltime']
+            tp.meet = data['meet']
+            tp.meettime = data['meettime']
+            t_info.pay = tp
+
+            t_info.editinfo()
+            return jsonify(ret=1)  #添加成功
+        except Exception,e:
+            logging.debug(e)
+            return jsonify(ret=-1) #系统异常
+
+@api.route('/user/updatepassword', methods=['POST'])
+#@permission_required(Permission.DISCOVERY)
+@auth.login_required
+def update_user_password():
+    '''
+    更改用户密码
+
+    URL:/user/updatepassword
+    POST 参数:
+        oldpaw -- 旧密码
+        newpaw -- 新密码
+    返回值 
+        {'ret':1} 成功
+        0 旧密码验证失败
+        -1 系统异常
+        -2 旧密码为空
+        -3 新密码为空
+
+
+    '''
+    if request.method == 'POST':
+
+        try:
+            data = request.get_json()
+            oldpaw = data['oldpaw']
+            newpaw = data['newpaw']
+
+            if len(oldpaw)<1:
+                return jsonify(ret=-2)  #旧密码为空
+            if len(newpaw)<1:
+                return jsonify(ret=-3)  #新密码为空
+            istrue = g.current_user.verify_password(oldpaw)
+            if istrue:
+                resettoken = g.current_user.generate_reset_token()
+                g.current_user.reset_password(resettoken,newpaw)        
+                return jsonify(ret=1)  #添加成功
+            else:
+                return jsonify(ret=0)  #旧密码验证失败
+        except Exception,e:
+            logging.debug(e)
+            return jsonify(ret=-1) #系统异常

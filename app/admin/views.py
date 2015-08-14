@@ -8,14 +8,15 @@ from werkzeug import secure_filename
 from flask.ext.login import login_required, current_user, logout_user
 from . import admin
 from .decorators import permission_required
-from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm
-from ..models import collection,User,WorkExp,Edu,Role,Permission,Topic,InvTopic,InvTopicStats,Log,Inventory,Appointment
+from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
+from ..models import collection,User,WorkExp,Edu,Role,Permission,Topic,InvTopic,InvTopicStats,Log,Inventory,Appointment,Ad
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
 import logging
 import time
 
+'''
 @admin.route('/upfile', methods=['POST'])  # , methods=['GET', 'POST']
 @auth.login_required
 def upfile():
@@ -56,9 +57,11 @@ def upfile():
                     logging.debug(e)
                     return '{"ret":-1}'#系统异常
     return '{"ret":0}'
+'''
 
 @admin.route('/userlist/search/<string:text>', methods=['GET'])
 @admin.route('/userlist/search/<int:roid>/<string:text>', methods=['GET'])
+@auth.login_required
 def user_list_search(text='',roid=2):
     if len(text)>0:
         userlist = User.list_search(roid,text)
@@ -108,9 +111,10 @@ def user_list(roid=2,index=1):
 @admin.route('/useredit', methods=['GET', 'POST'])
 @admin.route('/useredit/<int:id>', methods=['GET', 'POST'])
 @admin.route('/useredit/<int:id>/<int:roid>', methods=['GET', 'POST'])
+@admin.route('/useredit/<int:id>/<int:roid>/<int:pindex>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
-def user_edit(roid=2,id=0):
+def user_edit(roid=2,id=0,pindex=1):
     form = EditUserForm()
 
     #print request.method + "++++++" + str(form.validate())
@@ -167,7 +171,7 @@ def user_edit(roid=2,id=0):
         user.edu = edulist
         user.editinfo()
         #flash('用户更新成功','error')
-        return redirect(url_for('.user_list',roid=roid))
+        return redirect(url_for('.user_list',roid=roid,index=pindex))
     else:
         isuser = False
         user = None
@@ -181,9 +185,10 @@ def user_edit(roid=2,id=0):
             if user:
                 isuser = True
         func = {'stamp2time': common.stamp2time,'len': len}
-        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign)
+        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign,pindex=pindex)
 
 @admin.route('/logout')
+@auth.login_required
 def logout():
     logout_user()
     return jsonify(msg='用户已登出')
@@ -193,6 +198,7 @@ def logout():
 #@login_required
 #@admin_required
 #@permission_required(Permission.USER)
+@auth.login_required
 def plugin_list():
     if request.method == 'POST':
         rebuild = request.args.get('rebuild', 0, type=int)
@@ -210,6 +216,7 @@ def plugin_list():
         return render_template('admin/plugin_list.html',size=0)#rs.dbsize()
 
 @admin.route('/topiclist/search/<string:text>', methods=['GET'])
+@auth.login_required
 def user_topiclist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-2,text)
@@ -217,6 +224,7 @@ def user_topiclist_search(text=''):
         return render_template('admin/topic_list.html', topiclist=topiclist,func=func,uid=-2,text=text,index=-1)
 
 @admin.route('/topicteamlist/search/<string:text>', methods=['GET'])
+@auth.login_required
 def user_topicteamlist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-1,text)
@@ -227,6 +235,7 @@ def user_topicteamlist_search(text=''):
 @admin.route('/topiclist',methods=['GET', 'POST'])
 @admin.route('/topiclist/<string:uid>', methods=['GET', 'POST'])
 @admin.route('/topiclist/<string:uid>/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
 def topic_list(uid=-2,index=1):
     if request.method == 'POST':
         return redirect(url_for('.topic_list'))
@@ -246,6 +255,7 @@ def topic_list(uid=-2,index=1):
 @admin.route('/topicteamlist',methods=['GET', 'POST'])
 @admin.route('/topicteamlist/<string:uid>', methods=['GET', 'POST'])
 @admin.route('/topicteamlist/<string:uid>/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
 def topicteam_list(uid=-1,index=1):
     if request.method == 'POST':
         return redirect(url_for('.topic_list'))
@@ -265,6 +275,7 @@ def topicteam_list(uid=-1,index=1):
 @admin.route('/topicedit/<int:id>/<int:_type>', methods=['GET', 'POST'])
 @admin.route('/topicedit/<int:id>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
+@auth.login_required
 def topic_edit(id,_type=0):
     form = EditTopicForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -285,6 +296,7 @@ def topic_edit(id,_type=0):
         '''
         topic.stats.topic_count = form.topic_count.data
         topic.stats.topic_total = form.topic_total.data
+        topic.sort = request.form.get('sort',0)
         topic.editinfo()
 
         return redirect(url_for(_type==0 and '.topic_list' or '.user_list'))
@@ -303,6 +315,7 @@ def topic_edit(id,_type=0):
 @admin.route('/topicteamedit', defaults={'id': 0}, methods=['GET', 'POST'])
 @admin.route('/topicteamedit/<int:id>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
+@auth.login_required
 def topicteam_edit(id):
     form = EditTopicForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -321,6 +334,7 @@ def topicteam_edit(id):
         topic.config.background = form.background.data
         #topic.stats.topic_count = form.topic_count.data
         #topic.stats.topic_total = form.topic_total.data
+        topic.sort = request.form.get('sort',0)
         topic.editinfo()
         return redirect(url_for('.topicteam_list'))
     else:
@@ -337,6 +351,7 @@ def topicteam_edit(id):
 #@login_required
 #@admin_required
 #@permission_required(Permission.USER)
+@auth.login_required
 def inventory_list():
     if request.method == 'POST':
         return redirect(url_for('.inventory_list'))
@@ -349,6 +364,7 @@ def inventory_list():
 @admin.route('/inventoryedit', defaults={'iid': 0}, methods=['GET', 'POST'])
 @admin.route('/inventoryedit/<int:iid>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
+@auth.login_required
 def inventory_edit(iid):
     form = EditInventoryForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -408,6 +424,7 @@ def inventory_edit(iid):
 #@login_required
 #@admin_required
 #@permission_required(Permission.USER)
+@auth.login_required
 def appointment_list():
     if request.method == 'POST':
         return redirect(url_for('.appointment_list'))
@@ -417,6 +434,7 @@ def appointment_list():
         return render_template('admin/appointment_list.html',inventorylist=inventorylist, func=func)
 
 @admin.route('/rolelist', methods=['GET', 'POST'])
+@auth.login_required
 def role_list():
     if request.method == 'POST':
         return redirect(url_for('.role_list'))
@@ -427,6 +445,7 @@ def role_list():
 @admin.route('/roleedit', defaults={'rid': 0}, methods=['GET', 'POST'])
 @admin.route('/roleedit/<int:rid>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
+@auth.login_required
 def role_edit(rid):
     form = EditRoleForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -457,6 +476,7 @@ def role_edit(rid):
 @admin.route('/loglist', defaults={'index': 0},methods=['GET', 'POST'])
 @admin.route('/loglist/<int:aid>', methods=['GET', 'POST'])
 @admin.route('/loglist/<int:aid>/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
 def log_list(aid=0,index=1):
     if request.method == 'POST':
         return redirect(url_for('.log_list'))
@@ -472,3 +492,46 @@ def log_list(aid=0,index=1):
 
         func = {'stamp2time': common.stamp2time}
         return render_template('admin/log_list.html',loglist=loglist,getadmininfo=User.getadmininfo, func=func,aid=aid,pagecount=lcount,index=index)
+
+@admin.route('/adlist', methods=['GET', 'POST'])
+@auth.login_required
+def ad_list():
+    if request.method == 'POST':
+        return redirect(url_for('.ad_list'))
+    else:
+        adlist = Ad.getlist()
+        func = {'stamp2time': common.stamp2time}
+        return render_template('admin/ad_list.html',adlist=adlist, func=func)
+
+@admin.route('/adedit', methods=['GET', 'POST'])
+@admin.route('/adedit/<int:id>', methods=['GET', 'POST'])
+#@permission_required(Permission.LIST_USER)
+@auth.login_required
+def ad_edit(id=0):
+    form = EditAdForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        
+        ad = Ad()
+        ad._id = id
+        ad.title = form.title.data
+        ad.group_id = request.form.get('group_id',0)
+        ad.fileurl = request.form.get('fileurl','')
+        ad.url = request.form.get('url','')
+        ad.sort = request.form.get('sort',0)
+        ad.editinfo()
+
+        return redirect(url_for('.ad_list'))
+    else:
+        isad = False
+        ad = None
+        sign=''
+        if id > 0 :
+            ad = Ad.getinfo(id)
+            if ad:
+                isad = True
+
+            q_auth = tencentyun.Auth(conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
+            expired = int(time.time()) + 999
+            sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='ad_'+str(id),expired=expired)
+
+        return render_template('admin/ad_edit.html', ad=ad, isad=isad, form=form,sign=sign)

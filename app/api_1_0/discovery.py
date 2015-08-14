@@ -21,9 +21,9 @@ def get_discovery_list():
     GET 参数: 
         无
     '''
-    i_list = Ad.getlist(count=6)
-    tt_list = Topic.getlist(uid=0, count=2)
-    t_list = Topic.getlist(uid=11, count=2)
+    i_list = Ad.getlist_app(count=6)
+    tt_list = Topic.getlist_app(uid=0, count=2)
+    t_list = Topic.getlist_app(uid=11, count=2)
     return jsonify(discovery={
         'ad': [item.to_json() for item in i_list],
         'topic_team': [item.to_json(1) for item in tt_list],
@@ -64,7 +64,7 @@ def get_discovery_Inventory_Expert(iid,tid):
             if(item._id==tid):
                 ie=item.expert
     #i_info = Inventory.getexpertlist(iid=iid,tid=tid)
-    return jsonify(Expert=[item.to_json(4) for item in User.getlist_uid(uidlist=ie)])
+    return jsonify(Expert=[item.to_json(4) for item in User.getlist_uid_app(uidlist=ie)])
 
 @api.route('/discovery/topicteam/<int:tid>')
 #@permission_required(Permission.DISCOVERY)
@@ -91,6 +91,6 @@ def get_discovery_ExpertTeam(tid):
     '''
     t_info = Topic.getinfo_expert(tid)
     if len(t_info.expert) > 0:
-        return jsonify(Expert=[item.to_json(4) for item in User.getlist_uid(uidlist=t_info.expert)])
+        return jsonify(Expert=[item.to_json(4) for item in User.getlist_uid_app(uidlist=t_info.expert)])
     else:
         return jsonify(Expert=[])

@@ -25,7 +25,7 @@ def get_expert_map(x=0, y=0):
     '''
     pagesize = 10
     if x == 0:
-        u_list = User.getlist(count=pagesize)
+        u_list = User.getlist_app(count=pagesize)
     else:
         u_list = User.getlist_geo_map(x,y,count=pagesize)
 
@@ -47,7 +47,7 @@ def get_expert_list(x=0, y=0,ind=0):
     '''
     pagesize = 10
     if x == 0:
-        u_list = User.getlist(count=pagesize)
+        u_list = User.getlist_app(count=pagesize)
     else:
         u_list = User.getlist_geo_list(x,y,industryid=ind,count=pagesize)
 
@@ -197,7 +197,7 @@ def get_expertsearch_list():
             for eitem in ret['data']['result_list']:
                 eid.append(eitem['doc_id'])
             print eid
-            elist=[item.to_json(5) for item in User.getlist_uid(uidlist=eid, count=10)]
+            elist=[item.to_json(5) for item in User.getlist_uid_app(uidlist=eid, count=10)]
         else:
             elist=[]
         return jsonify(list=elist)

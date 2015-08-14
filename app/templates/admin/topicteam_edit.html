@@ -57,7 +57,14 @@
 								<div class="tab-content no-space">
 									<div class="tab-pane active" id="tab_general">
 										<div class="form-body">	
-
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">排序: <span class="required">
+                                                * </span>
+                                                </label>
+                                                <div class="col-md-10">
+                                                    <input type="text" class="form-control" id="sort" name="sort" {% if istopic %}value="{{topic.sort}}" {%endif%}>
+                                                </div>
+                                            </div>
 											<div class="form-group">
 												<label class="col-md-2 control-label">标题: <span class="required">
 												* </span>

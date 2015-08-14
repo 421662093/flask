@@ -208,9 +208,17 @@ class User(UserMixin, db.Document):  # 会员
         db.EmbeddedDocumentField(Edu), default=[], db_field='ed')  # 教育背景
     state = db.IntField(default=1, db_field='sta')# 状态 1 正常  -1新增  -2待审核 0暂停
     thinktank = db.ListField(default=[], db_field='t')  # 智囊团
+    sort = db.IntField(default=0, db_field='so')  # 排序
+
+    @staticmethod
+    def getlist_app(roid=2,index=1,count=10):
+        # 用于APP接口
+        pageindex =(index-1)*count
+        return User.objects(role_id=roid,state=1).order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
     def getlist(roid=0,index=1,count=10):
+        #用于后端
         #.exclude('password_hash') 不包含字段
         pageindex =(index-1)*count
         if roid == 0:
@@ -224,6 +232,13 @@ class User(UserMixin, db.Document):  # 会员
             return User.objects.count()
         else:
             return User.objects(role_id=roid).count()
+
+    @staticmethod
+    def getlist_uid_app(uidlist, feild=[], count=10):  
+        # 获取指定id列表的会员数据 用于后端
+        #.exclude('password_hash') 不包含字段
+        return User.objects(_id__in=uidlist,state=1).limit(
+            count).exclude('password_hash')
 
     @staticmethod
     def getlist_uid(uidlist, feild=[], count=10):  
@@ -248,14 +263,14 @@ class User(UserMixin, db.Document):  # 会员
         return User.objects(_id=uid,role_id=1).only('name').first()
 
     @staticmethod
-    def getlist_geo_map(x, y,count=10, max=1000):
+    def getlist_geo_map(x, y,count=10, max=1000,roid=2):
     	#根据坐标获取数据列表 max最大距离(米)
-        return User.objects(geo__near=[x, y],geo__max_distance=max)
+        return User.objects(geo__near=[x, y],geo__max_distance=max,role_id=roid,state=1)
 
     @staticmethod
     def getlist_geo_list(x, y,industryid=0,count=10, max=1000):
     	#根据坐标获取数据列表 max最大距离(米)
-    	query = Q(geo__near=[x, y]) & Q(geo__max_distance=max)
+    	query = Q(geo__near=[x, y]) & Q(geo__max_distance=max) & Q(state=1)
     	if industryid>0:
     		query = query & Q(industryid=industryid)
         list_count = User.objects(query).count()
@@ -283,16 +298,18 @@ class User(UserMixin, db.Document):  # 会员
 			return -1
 
     def useredit(self):
-    	if self._id > 0:
-    		update = {}
-    		if self.role_id==1:
-
-	            if len(self.name) > 0:
-	                update['set__name'] = self.name
-	            update['set__sex'] = self.sex
-	            update['set__stats__lastaction'] = common.getstamp()
-	            User.objects(_id=self._id).update_one(**update)
-	        else:
+        # 更新个人信息(用户)
+        if self._id > 0:
+            update = {}
+            if self.role_id==1:
+                if len(self.name) > 0:
+                    update['set__name'] = self.name
+                update['set__sex'] = self.sex
+                update['set__domainid'] = self.domainid
+                update['set__industryid'] = self.industryid
+                update['set__stats__lastaction'] = common.getstamp()
+                User.objects(_id=self._id).update_one(**update)
+            else:
 	        	pass
 
     def updateworkexp(self):
@@ -364,7 +381,8 @@ class User(UserMixin, db.Document):  # 会员
 
             User.objects(_id=self._id).update_one(**update)
 
-            User.Create_Q_YUNSOU_DATA(self)
+            if role_id==2:
+                User.Create_Q_YUNSOU_DATA(self)
             '''
             #更新whoosh
             updata_whoosh = {}
@@ -374,7 +392,8 @@ class User(UserMixin, db.Document):  # 会员
             updata_whoosh['j']=self.job
             searchwhoosh.update(updata_whoosh)
             '''
-            Log.saveinfo(remark='编辑用户('+str(self._id)+')')
+            logmsg = '编辑'+(self.role_id==2 and '用户'or '专家')+'-'+str(self._id)+'-'+self.name +'-' + self.job
+            Log.saveinfo(remark=logmsg)
 
             return 1
         else:
@@ -390,7 +409,8 @@ class User(UserMixin, db.Document):  # 会员
                 self.password = self.password_hash
                 self.save()
 
-                User.Create_Q_YUNSOU_DATA(self)
+                if role_id==2:
+                    User.Create_Q_YUNSOU_DATA(self)
 
                 '''
                 #更新whoosh
@@ -401,7 +421,8 @@ class User(UserMixin, db.Document):  # 会员
                 updata_whoosh['l']=self.label
                 searchwhoosh.update(updata_whoosh)
                 '''
-                Log.saveinfo(remark='创建用户('+str(self._id)+')')
+                logmsg = '创建'+(self.role_id==2 and '用户'or '专家')+'-'+str(self._id)+'-'+self.name +'-' + self.job
+                Log.saveinfo(remark=logmsg)
 
                 return self._id
             else:
@@ -409,11 +430,13 @@ class User(UserMixin, db.Document):  # 会员
 
     @staticmethod
     def list_search(roid,text, count=10):  # 后台搜索
-        return User.objects((Q(name__istartswith=text) | Q(job__istartswith=text))&Q(role_id=roid)).limit(count).exclude('password_hash')
+        return User.objects((Q(name__icontains=text) | Q(job__icontains=text))&Q(role_id=roid)).limit(count).exclude('password_hash')
+        #return User.objects((Q(name__istartswith=text) | Q(job__istartswith=text))&Q(role_id=roid)).limit(count).exclude('password_hash')
 
     @staticmethod
-    def search(text, count=10):  # 专家搜索
-        return User.objects(Q(name__istartswith=text) | Q(job__istartswith=text)).limit(count).only('name','job')
+    def search(text, count=10):  
+        # 专家搜索
+        return User.objects( Q(state=1) & Q(role_id=2) & (Q(name__istartswith=text) | Q(job__istartswith=text))).limit(count).only('name','job')
 
     @staticmethod
     def Create_Q_YUNSOU_DATA(data):
@@ -495,7 +518,6 @@ class User(UserMixin, db.Document):  # 会员
     def generate_reset_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'reset': self.id})
-    '''
 
     def reset_password(self, token, new_password):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -506,9 +528,13 @@ class User(UserMixin, db.Document):  # 会员
         if data.get('reset') != self.id:
             return False
         self.password = new_password
-        db.session.add(self)
+
+        update = {}
+        update['set__password_hash'] = self.password_hash
+        update['set__stats__lastaction'] = common.getstamp()
+        User.objects(_id=self._id).update_one(**update)
+
         return True
-    '''
 
     def generate_email_change_token(self, new_email, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
@@ -720,6 +746,22 @@ class Topic(db.Document):  # 话题
         TopicConfig, default=TopicConfig(), db_field='tc')  # 话题配置信息
     stats = db.EmbeddedDocumentField(
         TopicStats, default=TopicStats(), db_field='ts')  # 话题统计信息
+    sort = db.IntField(default=0, db_field='s')  # 排序
+
+    @staticmethod
+    def getlist_app(uid=0,index=1, count=10):
+        # 获取列表 0全部  -1官方  -2专家
+        uid = int(uid)
+        pageindex =(index-1)*count
+        sort = '-sort'
+        if uid == 0:
+            return Topic.objects.exclude('content').order_by(sort).skip(pageindex).limit(count)
+        elif uid == -1:
+            return Topic.objects(user_id=0).exclude('content').order_by(sort).skip(pageindex).limit(count)
+        elif uid == -2:
+            return Topic.objects(user_id__gt=0).exclude('content').order_by(sort).skip(pageindex).limit(count)
+        else:
+            return Topic.objects(user_id=uid).exclude('content').order_by(sort).skip(pageindex).limit(count)
 
     @staticmethod
     def getlist(uid=0,index=1, count=10):
@@ -787,14 +829,17 @@ class Topic(db.Document):  # 话题
 
             update['set__stats__topic_count'] = self.stats.topic_count
             update['set__stats__topic_total'] = self.stats.topic_total
+            update['set__sort'] = self.sort
             Topic.objects(_id=self._id).update_one(**update)
 
-            Log.saveinfo(remark='编辑话题('+str(self._id)+')')
+            logmsg = '编辑话题-'+str(self._id)+'-'+self.title
+            Log.saveinfo(remark=logmsg)
             return 1
         else:
             self._id = collection.get_next_id(self.__tablename__)
             self.save()
-            Log.saveinfo(remark='创建话题('+str(self._id)+')')
+            logmsg = '创建话题-'+str(self._id)+'-'+self.title
+            Log.saveinfo(remark=logmsg)
             return self._id
 
     def to_json(self, type=0):  # 0默认 1发现首页专家团  2发现首页专家话题
@@ -970,7 +1015,7 @@ class Inventory(db.Document):  # 清单
 
     @staticmethod
     def getlist(count=10):
-        return Inventory.objects.exclude('topic').limit(count)
+        return Inventory.objects.exclude('topic').order_by("-_id").limit(count)
 
     @staticmethod
     def getinfo(iid=0):
@@ -990,12 +1035,15 @@ class Inventory(db.Document):  # 清单
             update['set__topic'] = self.topic
             update['set__sort'] = self.sort
             Inventory.objects(_id=self._id).update_one(**update)
-            Log.saveinfo(remark='编辑清单('+str(self._id)+')')
+
+            logmsg = '编辑清单-'+str(self._id)+'-'+self.title
+            Log.saveinfo(remark=logmsg)
             return 1
         else:
             self._id = collection.get_next_id(self.__tablename__)
             self.save()
-            Log.saveinfo(remark='创建清单('+str(self._id)+')')
+            logmsg = '创建清单-'+str(self._id)+'-'+self.title
+            Log.saveinfo(remark=logmsg)
             return self._id
 
     def to_json(self):
@@ -1023,9 +1071,48 @@ class Ad(db.Document):  # 广告
     sort = db.IntField(default=0, db_field='s')  # 排序
 
     @staticmethod
-    def getlist(gid=0, count=10):
-        # .exclude('password_hash') 不包含字段
-        return Ad.objects(group_id=gid).limit(count)
+    def getlist_app(gid=0,index=1, count=10):
+        pageindex =(index-1)*count
+        sort='-sort'
+        if gid is 0:
+            return Ad.objects.order_by(sort).skip(pageindex).limit(count)
+        else:
+            return Ad.objects(group_id=gid).order_by(sort).skip(pageindex).limit(count)
+
+    @staticmethod
+    def getlist(gid=0,index=1, count=10):
+        pageindex =(index-1)*count
+
+        if gid is 0:
+            return Ad.objects.order_by("-_id").skip(pageindex).limit(count)
+        else:
+            return Ad.objects(group_id=gid).order_by("-_id").skip(pageindex).limit(count)
+
+    @staticmethod
+    def getinfo(aid):
+        return Ad.objects.get(_id=aid)
+
+    def editinfo(self):
+        if self._id > 0:
+            update = {}
+            if len(self.title) > 0:
+                update['set__title'] = self.title
+
+            update['set__group_id'] = self.group_id
+            update['set__fileurl'] = self.fileurl
+            update['set__url'] = self.url
+            update['set__sort'] = self.sort
+            Ad.objects(_id=self._id).update_one(**update)
+
+            logmsg = '编辑广告-'+str(self._id)+'-'+self.title
+            Log.saveinfo(remark=logmsg)
+            return 1
+        else:
+            self._id = collection.get_next_id(self.__tablename__)
+            self.save()
+            logmsg = '创建广告-'+str(self._id)+'-'+self.title
+            Log.saveinfo(remark=logmsg)
+            return self._id
 
     def to_json(self):
         json_ad = {

@@ -80,7 +80,7 @@
 								<div class="tab-content no-space">
 									<div class="tab-pane active" id="tab_general">
 										<div class="form-body">
-										<form class="form-horizontal form-row-seperated" action='{{ url_for('.user_edit',roid=roid, id=isuser and user._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">{{form.hidden_tag()}}
+										<form class="form-horizontal form-row-seperated" action='{{ url_for('.user_edit',roid=roid,pindex=pindex, id=isuser and user._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">{{form.hidden_tag()}}
 											<!--<div class="form-group">
 												<label class="col-md-2 control-label">用户组: <span class="required">
 												* </span>
@@ -198,7 +198,6 @@
 													结束时间 <input type="text" id="weend_{{loop.index}}" name="weend_{{loop.index}}" {% if isuser %}value="{{func.stamp2time(item.end,'%Y-%m-%d')}}" {%endif%}><a href="javascript:wedel({{loop.index}});">删除</a><br/>
 													公司名称 <input type="text" id="wename_{{loop.index}}" name="wename_{{loop.index}}" {% if isuser %}value="{{item.name}}" {%endif%}>
 													职 &nbsp 位 <input type="text" id="wejob_{{loop.index}}" name="wejob_{{loop.index}}" {% if isuser %}value="{{item.job}}" {%endif%}>
-													简 &nbsp 介 <input type="text" id="weintro_{{loop.index}}" name="weintro_{{loop.index}}" {% if isuser %}value="{{item.intro}}" {%endif%}>
 													</div><br/>
 													{% endfor %}
 													<input type="hidden" name='wecount' id='wecount' value="{{func.len(user.workexp)}}">
@@ -213,7 +212,7 @@
 													开始时间 <input type="text" id="edustart_{{loop.index}}" name="edustart_{{loop.index}}" {% if isuser %}value="{{func.stamp2time(item.start,'%Y-%m-%d')}}" {%endif%}>
 													结束时间 <input type="text" id="eduend_{{loop.index}}" name="eduend_{{loop.index}}" {% if isuser %}value="{{func.stamp2time(item.end,'%Y-%m-%d')}}" {%endif%}><a href="javascript:edudel({{loop.index}});">删除</a><br/>
 													学校名称 <input type="text" id="eduname_{{loop.index}}" name="eduname_{{loop.index}}" {% if isuser %}value="{{item.name}}" {%endif%}>
-													文 &nbsp 凭 <input type="text" id="edudip_{{loop.index}}" name="edudip_{{loop.index}}" {% if isuser %}value="{{item.dip}}" {%endif%}>
+													学 &nbsp 历 <input type="text" id="edudip_{{loop.index}}" name="edudip_{{loop.index}}" {% if isuser %}value="{{item.dip}}" {%endif%}>
 													专 &nbsp 业 <input type="text" id="edumajor_{{loop.index}}" name="edumajor_{{loop.index}}" {% if isuser %}value="{{item.major}}" {%endif%}>
 													</div><br/>
 													{% endfor %}
@@ -293,7 +292,6 @@ function newwe()
 	'结束时间 <input type="text" id="weend_'+newcount+'" name="weend_'+newcount+'" value=""><a href="javascript:wedel('+newcount+');">删除</a><br/>',
 	'公司名称 <input type="text" id="wename_'+newcount+'" name="wename_'+newcount+'" value=""> ',
 	'职 &nbsp 位 <input type="text" id="wejob_'+newcount+'" name="wejob_'+newcount+'" value=""> ',
-	'简 &nbsp 介 <input type="text" id="weintro_'+newcount+'" name="weintro_'+newcount+'" value="">',
 	'</div><br/>'].join(''))
 
 }
@@ -305,7 +303,7 @@ function newedu()
 	'开始时间 <input type="text" id="edustart_'+newcount+'" name="edustart_'+newcount+'" value=""> ',
 	'结束时间 <input type="text" id="eduend_'+newcount+'" name="eduend_'+newcount+'" value=""><a href="javascript:edudel('+newcount+');">删除</a><br/>',
 	'公司名称 <input type="text" id="eduname_'+newcount+'" name="eduname_'+newcount+'" value=""> ',
-	'文 &nbsp 凭 <input type="text" id="edudip_'+newcount+'" name="edudip_'+newcount+'" value=""> ',
+	'学 &nbsp 历 <input type="text" id="edudip_'+newcount+'" name="edudip_'+newcount+'" value=""> ',
 	'专 &nbsp 业 <input type="text" id="edumajor_'+newcount+'" name="edumajor_'+newcount+'" value="">',
 	'</div><br/>'].join(''))
 

@@ -47,3 +47,7 @@ class EditRoleForm(Form):
                               (0, False)],
         coerce=int,
         validators=[validators.optional()])
+
+class EditAdForm(Form):
+
+    title = StringField('title', validators=[Length(0, 64)])
