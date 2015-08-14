@@ -10,7 +10,7 @@ if(total>1)
     var str=Pre;
     if(total<=5)
     {
-      for(var i=1;i<=total;i++)str=str+"<li><a href='"+http+'/'+i+"'>"+i+"</a></li>";
+      for(var i=1;i<=total;i++)str=str+"<li"+(index==i?' class="active"':'')+"><a href='"+http+'/'+i+"'>"+i+"</a></li>";
     }
     else
     {
