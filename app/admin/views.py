@@ -68,8 +68,8 @@ def user_list_search(text='',roid=2):
         userlist = User.list_search(roid,text)
         for item in userlist:
             item.role = Role.getinfo(item.role_id)
-        func = {'getdomain': common.getdomain,'getindustry': common.getindustry,'stamp2time': common.stamp2time,'getuserstate':common.getuserstate}
-        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,text=text,index=-1)
+        func = {'getdomain': common.getdomain,'getindustry': common.getindustry,'stamp2time': common.stamp2time,'getuserstate':common.getuserstate,'can': common.can}
+        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,text=text,index=-1,uinfo=g.current_user)
 
 
 @admin.route('/userlist', methods=['GET', 'POST'])  # , methods=['GET', 'POST']
@@ -103,9 +103,9 @@ def user_list(roid=2,index=1):
         userlist = User.getlist(roid=roid,index=index,count=pagesize)
         for item in userlist:
         	item.role = Role.getinfo(item.role_id)
-        func = {'getdomain': common.getdomain,'getindustry': common.getindustry,'stamp2time': common.stamp2time,'getuserstate':common.getuserstate}
+        func = {'getdomain': common.getdomain,'getindustry': common.getindustry,'stamp2time': common.stamp2time,'getuserstate':common.getuserstate,'can': common.can}
         # orig.get(body='Ross19').update({'$rename': {'body_html': 'body_w'}})
-        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,pagecount=usercount,index=index)
+        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,pagecount=usercount,index=index,uinfo=g.current_user)
 
 @admin.route('/useredit', methods=['GET', 'POST'])
 @admin.route('/useredit/<int:id>', methods=['GET', 'POST'])
@@ -184,8 +184,8 @@ def user_edit(roid=2,id=0,pindex=1):
             user = User.getinfo(id)
             if user:
                 isuser = True
-        func = {'stamp2time': common.stamp2time,'len': len}
-        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign,pindex=pindex)
+        func = {'stamp2time': common.stamp2time,'len': len,'can': common.can}
+        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign,pindex=pindex,uinfo=g.current_user)
 
 @admin.route('/logout')
 @auth.login_required
@@ -212,8 +212,8 @@ def plugin_list():
             #rs.flushdb()
         return redirect(url_for('.plugin_list'))
     else:
-
-        return render_template('admin/plugin_list.html',size=0)#rs.dbsize()
+        func = {'can': common.can}
+        return render_template('admin/plugin_list.html',size=0,func=func,uinfo=g.current_user)#rs.dbsize()
 
 @admin.route('/topiclist/search/<string:text>', methods=['GET'])
 @auth.login_required
@@ -222,7 +222,7 @@ def user_topiclist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-2,text)
         func = {'stamp2time': common.stamp2time}
-        return render_template('admin/topic_list.html', topiclist=topiclist,func=func,uid=-2,text=text,index=-1)
+        return render_template('admin/topic_list.html', topiclist=topiclist,func=func,uid=-2,text=text,index=-1,uinfo=g.current_user)
 
 @admin.route('/topicteamlist/search/<string:text>', methods=['GET'])
 @auth.login_required
@@ -230,8 +230,8 @@ def user_topiclist_search(text=''):
 def user_topicteamlist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-1,text)
-        func = {'stamp2time': common.stamp2time}
-        return render_template('admin/topicteam_list.html', topiclist=topiclist,func=func,uid=-1,text=text,index=-1)
+        func = {'stamp2time': common.stamp2time,'can': common.can}
+        return render_template('admin/topicteam_list.html', topiclist=topiclist,func=func,uid=-1,text=text,index=-1,uinfo=g.current_user)
 
 
 @admin.route('/topiclist',methods=['GET', 'POST'])
@@ -251,9 +251,9 @@ def topic_list(uid=-2,index=1):
     	if index<1:
     		index=1
         topiclist = Topic.getlist(uid=uid,index=index,count=pagesize)
-        func = {'stamp2time': common.stamp2time}
+        func = {'stamp2time': common.stamp2time,'can': common.can}
 
-        return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index)
+        return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user)
 
 @admin.route('/topicteamlist',methods=['GET', 'POST'])
 @admin.route('/topicteamlist/<string:uid>', methods=['GET', 'POST'])
@@ -272,8 +272,8 @@ def topicteam_list(uid=-1,index=1):
         if index<1:
             index=1
         topiclist = Topic.getlist(uid=-1,index=index,count=pagesize)
-        func = {'stamp2time': common.stamp2time}
-        return render_template('admin/topicteam_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index)
+        func = {'stamp2time': common.stamp2time,'can': common.can}
+        return render_template('admin/topicteam_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user)
 
 @admin.route('/topicedit', defaults={'id': 0}, methods=['GET', 'POST'])
 @admin.route('/topicedit/<int:id>/<int:_type>', methods=['GET', 'POST'])
@@ -315,7 +315,8 @@ def topic_edit(id,_type=0):
             topic = Topic.getinfo(id)
             if topic:
                 istopic = True
-        return render_template('admin/topic_edit.html', topic=topic,_type=_type, istopic=istopic,uid=uid, form=form)
+        func = {'can': common.can}
+        return render_template('admin/topic_edit.html', topic=topic,_type=_type, istopic=istopic,uid=uid, form=form,func=func,uinfo=g.current_user)
 
 @admin.route('/topicteamedit', defaults={'id': 0}, methods=['GET', 'POST'])
 @admin.route('/topicteamedit/<int:id>', methods=['GET', 'POST'])
@@ -350,7 +351,8 @@ def topicteam_edit(id):
             topic = Topic.getinfo(id)
             if topic:
                 istopic = True
-        return render_template('admin/topicteam_edit.html', topic=topic, istopic=istopic, form=form)
+        func = {'can': common.can}
+        return render_template('admin/topicteam_edit.html', topic=topic, istopic=istopic, form=form,func=func,uinfo=g.current_user)
 
 @admin.route('/inventorylist', methods=['GET', 'POST'])
 @auth.login_required
@@ -360,8 +362,8 @@ def inventory_list():
         return redirect(url_for('.inventory_list'))
     else:
         inventorylist = Inventory.getlist()
-        func = {'stamp2time': common.stamp2time}
-        return render_template('admin/inventory_list.html',inventorylist=inventorylist, func=func)
+        func = {'stamp2time': common.stamp2time,'can': common.can}
+        return render_template('admin/inventory_list.html',inventorylist=inventorylist, func=func,uinfo=g.current_user)
 
 
 @admin.route('/inventoryedit', defaults={'iid': 0}, methods=['GET', 'POST'])
@@ -419,7 +421,8 @@ def inventory_edit(iid):
             inv = Inventory.getinfo(iid)
             if inv:
                 isinv = True
-        return render_template('admin/inventory_edit.html', inventory=inv, isinventory=isinv, form=form)
+        func = {'can': common.can}
+        return render_template('admin/inventory_edit.html', inventory=inv, isinventory=isinv, form=form,func=func,uinfo=g.current_user)
 
 
 
@@ -431,8 +434,8 @@ def appointment_list():
         return redirect(url_for('.appointment_list'))
     else:
         inventorylist = Appointment.getlist()
-        func = {'stamp2time': common.stamp2time}
-        return render_template('admin/appointment_list.html',inventorylist=inventorylist, func=func)
+        func = {'stamp2time': common.stamp2time,'can': common.can}
+        return render_template('admin/appointment_list.html',inventorylist=inventorylist, func=func,uinfo=g.current_user)
 
 @admin.route('/rolelist', methods=['GET', 'POST'])
 @auth.login_required
@@ -442,7 +445,8 @@ def role_list():
         return redirect(url_for('.role_list'))
     else:
         rolelist = Role.getlist()
-        return render_template('admin/role_list.html',rolelist=rolelist)
+        func = {'can': common.can}
+        return render_template('admin/role_list.html',func=func,rolelist=rolelist,uinfo=g.current_user)
 
 @admin.route('/roleedit', defaults={'rid': 0}, methods=['GET', 'POST'])
 @admin.route('/roleedit/<int:rid>', methods=['GET', 'POST'])
@@ -510,7 +514,7 @@ def role_edit(rid):
             if role:
                 isrole = True
         func = {'can': common.can}
-        return render_template('admin/role_edit.html', role=role, isrole=isrole, form=form,Permission=Permission,func=func)
+        return render_template('admin/role_edit.html', role=role, isrole=isrole, form=form,Permission=Permission,func=func,uinfo=g.current_user)
 
 @admin.route('/loglist', defaults={'index': 0},methods=['GET', 'POST'])
 @admin.route('/loglist/<int:aid>', methods=['GET', 'POST'])
@@ -530,8 +534,8 @@ def log_list(aid=0,index=1):
             index=1
         loglist = Log.getlist(aid=0,index=index,count=pagesize)
 
-        func = {'stamp2time': common.stamp2time}
-        return render_template('admin/log_list.html',loglist=loglist,getadmininfo=User.getadmininfo, func=func,aid=aid,pagecount=lcount,index=index)
+        func = {'stamp2time': common.stamp2time,'can': common.can}
+        return render_template('admin/log_list.html',loglist=loglist,getadmininfo=User.getadmininfo, func=func,aid=aid,pagecount=lcount,index=index,uinfo=g.current_user)
 
 @admin.route('/adlist', methods=['GET', 'POST'])
 @auth.login_required
@@ -541,8 +545,8 @@ def ad_list():
         return redirect(url_for('.ad_list'))
     else:
         adlist = Ad.getlist()
-        func = {'stamp2time': common.stamp2time}
-        return render_template('admin/ad_list.html',adlist=adlist, func=func)
+        func = {'stamp2time': common.stamp2time,'can': common.can}
+        return render_template('admin/ad_list.html',adlist=adlist, func=func,uinfo=g.current_user)
 
 @admin.route('/adedit', methods=['GET', 'POST'])
 @admin.route('/adedit/<int:id>', methods=['GET', 'POST'])
@@ -575,5 +579,5 @@ def ad_edit(id=0):
             q_auth = tencentyun.Auth(conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
             expired = int(time.time()) + 999
             sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='ad_'+str(id),expired=expired)
-
-        return render_template('admin/ad_edit.html', ad=ad, isad=isad, form=form,sign=sign)
+        func = {'can': common.can}
+        return render_template('admin/ad_edit.html', ad=ad, isad=isad, form=form,sign=sign,func=func,uinfo=g.current_user)

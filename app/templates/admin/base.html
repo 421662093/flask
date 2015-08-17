@@ -59,6 +59,7 @@
 					<span class="arrow "></span>
 					</a>
 					<ul class="sub-menu">
+                        {% if func.can(uinfo.role.permissions.user,Permission.VIEW) %}
 						<li>
 							<a href="{{ url_for('.user_list') }}">
 							<i class="icon-bar-chart"></i>
@@ -69,6 +70,8 @@
 							<i class="icon-bar-chart"></i>
 							用户管理</a>
 						</li>
+                        {%endif%}
+                        {% if func.can(uinfo.role.permissions.topic,Permission.VIEW) %}
 						<li>
 							<a href="{{ url_for('.topic_list') }}">
 							<i class="icon-graph"></i>
@@ -79,38 +82,47 @@
 							<i class="icon-graph"></i>
 							话题团管理</a>
 						</li>
+                        {%endif%}
+                        {% if func.can(uinfo.role.permissions.inventory,Permission.VIEW) %}
 						<li>
 							<a href="{{ url_for('.inventory_list') }}">
 							<i class="icon-graph"></i>
 							清单管理</a>
 						</li>
+                        {%endif%}
+                        {% if func.can(uinfo.role.permissions.appointment,Permission.VIEW) %}
 						<li>
 							<a href="{{ url_for('.appointment_list') }}">
 							<i class="icon-graph"></i>
 							预约管理</a>
 						</li>
+                        {%endif%}
+                        {% if func.can(uinfo.role.permissions.ad,Permission.VIEW) %}
                         <li>
                             <a href="{{ url_for('.ad_list') }}">
                             <i class="icon-graph"></i>
                             广告管理</a>
                         </li>
-						
+						{%endif%}
+                        {% if func.can(uinfo.role.permissions.role,Permission.VIEW) %}
 						<li>
 							<a href="{{ url_for('.role_list') }}">
 							<i class="icon-bulb"></i>
 							角色管理</a>
 						</li>
+                        {%endif%}
+                        {% if func.can(uinfo.role.permissions.log,Permission.VIEW) %}
                         <li>
                             <a href="{{ url_for('.log_list') }}">
                             <i class="icon-graph"></i>
                             日志管理</a>
                         </li>
+                        {%endif%}
 						<li>
 							<a href="{{ url_for('.plugin_list') }}">
 							<i class="icon-bulb"></i>
 							插件管理</a>
 						</li>
-						
 					</ul>
 				</li>
 
