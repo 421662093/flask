@@ -14,7 +14,7 @@ def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token)
     if not user:
         # try to authenticate with username/password
-        user = User.objects(username=username_or_token,role_id=1).first()
+        user = User.getinfo_admin(username_or_token)
         if not user or not user.verify_password(password):
             return False
         g.token_used = False

@@ -75,13 +75,61 @@
 												</div>
 											</div>
 											<div class="form-group">
-												<label class="col-md-2 control-label">权限: </label>
+												<label class="col-md-2 control-label">用户: </label>
 												<div class="col-md-10">
-												用户 <label><input name="user" {% if isrole and func.can(role.permissions.user,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+												 <label><input name="user" {% if isrole and func.can(role.permissions.user,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
 													<label><input name="user" {% if isrole and func.can(role.permissions.user,Permission.EDIT) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.EDIT}}" />编辑 </label>
 													<label><input name="user" {% if isrole and func.can(role.permissions.user,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
 												</div>
 											</div>
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">话题: </label>
+                                                <div class="col-md-10">
+                                                 <label><input name="topic" {% if isrole and func.can(role.permissions.topic,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+                                                    <label><input name="topic" {% if isrole and func.can(role.permissions.topic,Permission.EDIT) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.EDIT}}" />编辑 </label>
+                                                    <label><input name="topic" {% if isrole and func.can(role.permissions.topic,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">清单: </label>
+                                                <div class="col-md-10">
+                                                 <label><input name="inventory" {% if isrole and func.can(role.permissions.inventory,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+                                                    <label><input name="inventory" {% if isrole and func.can(role.permissions.inventory,Permission.EDIT) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.EDIT}}" />编辑 </label>
+                                                    <label><input name="inventory" {% if isrole and func.can(role.permissions.inventory,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">预约: </label>
+                                                <div class="col-md-10">
+                                                 <label><input name="appointment" {% if isrole and func.can(role.permissions.appointment,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+                                                    <label><input name="appointment" {% if isrole and func.can(role.permissions.appointment,Permission.EDIT) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.EDIT}}" />编辑 </label>
+                                                    <label><input name="appointment" {% if isrole and func.can(role.permissions.appointment,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">广告: </label>
+                                                <div class="col-md-10">
+                                                 <label><input name="ad" {% if isrole and func.can(role.permissions.ad,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+                                                    <label><input name="ad" {% if isrole and func.can(role.permissions.ad,Permission.EDIT) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.EDIT}}" />编辑 </label>
+                                                    <label><input name="ad" {% if isrole and func.can(role.permissions.ad,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">角色: </label>
+                                                <div class="col-md-10">
+                                                 <label><input name="role" {% if isrole and func.can(role.permissions.role,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+                                                    <label><input name="role" {% if isrole and func.can(role.permissions.role,Permission.EDIT) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.EDIT}}" />编辑 </label>
+                                                    <label><input name="role" {% if isrole and func.can(role.permissions.role,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">日志: </label>
+                                                <div class="col-md-10">
+                                                 <label><input name="log" {% if isrole and func.can(role.permissions.log,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+                                                    <label><input name="log" {% if isrole and func.can(role.permissions.log,Permission.EDIT) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.EDIT}}" />编辑 </label>
+                                                    <label><input name="log" {% if isrole and func.can(role.permissions.log,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
+                                                </div>
+                                            </div>
 										</div>
 									</div>
 								</div>

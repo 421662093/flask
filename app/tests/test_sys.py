@@ -3,7 +3,7 @@
 from ..core import wxpayapi, common
 from ..models import Permission, Role, User, UserStats, collection,\
     Topic, Comment, Ad
-from .. import searchwhoosh
+#from .. import searchwhoosh
 
 def iniuserformat():  # 修复字段结构
     for item in User.getlist():

@@ -62,6 +62,7 @@ def upfile():
 @admin.route('/userlist/search/<string:text>', methods=['GET'])
 @admin.route('/userlist/search/<int:roid>/<string:text>', methods=['GET'])
 @auth.login_required
+@permission_required('user',Permission.VIEW)
 def user_list_search(text='',roid=2):
     if len(text)>0:
         userlist = User.list_search(roid,text)
@@ -74,11 +75,9 @@ def user_list_search(text='',roid=2):
 @admin.route('/userlist', methods=['GET', 'POST'])  # , methods=['GET', 'POST']
 @admin.route('/userlist/<int:roid>', methods=['GET', 'POST'])
 @admin.route('/userlist/<int:roid>/<int:index>', methods=['GET', 'POST'])
-#@permission_required(Permission.LIST_USER)
-#@login_required
 #@admin_required
-#@permission_required(Permission.USER)
 @auth.login_required
+@permission_required('user',Permission.VIEW)
 def user_list(roid=2,index=1):
 
     if request.method == 'POST':
@@ -114,6 +113,7 @@ def user_list(roid=2,index=1):
 @admin.route('/useredit/<int:id>/<int:roid>/<int:pindex>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
+@permission_required('user',Permission.EDIT)
 def user_edit(roid=2,id=0,pindex=1):
     form = EditUserForm()
 
@@ -217,6 +217,7 @@ def plugin_list():
 
 @admin.route('/topiclist/search/<string:text>', methods=['GET'])
 @auth.login_required
+@permission_required('topic',Permission.VIEW)
 def user_topiclist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-2,text)
@@ -225,6 +226,7 @@ def user_topiclist_search(text=''):
 
 @admin.route('/topicteamlist/search/<string:text>', methods=['GET'])
 @auth.login_required
+@permission_required('topic',Permission.VIEW)
 def user_topicteamlist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-1,text)
@@ -236,6 +238,7 @@ def user_topicteamlist_search(text=''):
 @admin.route('/topiclist/<string:uid>', methods=['GET', 'POST'])
 @admin.route('/topiclist/<string:uid>/<int:index>', methods=['GET', 'POST'])
 @auth.login_required
+@permission_required('topic',Permission.VIEW)
 def topic_list(uid=-2,index=1):
     if request.method == 'POST':
         return redirect(url_for('.topic_list'))
@@ -256,6 +259,7 @@ def topic_list(uid=-2,index=1):
 @admin.route('/topicteamlist/<string:uid>', methods=['GET', 'POST'])
 @admin.route('/topicteamlist/<string:uid>/<int:index>', methods=['GET', 'POST'])
 @auth.login_required
+@permission_required('topic',Permission.VIEW)
 def topicteam_list(uid=-1,index=1):
     if request.method == 'POST':
         return redirect(url_for('.topic_list'))
@@ -276,6 +280,7 @@ def topicteam_list(uid=-1,index=1):
 @admin.route('/topicedit/<int:id>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
+@permission_required('topic',Permission.EDIT)
 def topic_edit(id,_type=0):
     form = EditTopicForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -316,6 +321,7 @@ def topic_edit(id,_type=0):
 @admin.route('/topicteamedit/<int:id>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
+@permission_required('topic',Permission.EDIT)
 def topicteam_edit(id):
     form = EditTopicForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -347,11 +353,8 @@ def topicteam_edit(id):
         return render_template('admin/topicteam_edit.html', topic=topic, istopic=istopic, form=form)
 
 @admin.route('/inventorylist', methods=['GET', 'POST'])
-#@permission_required(Permission.LIST_USER)
-#@login_required
-#@admin_required
-#@permission_required(Permission.USER)
 @auth.login_required
+@permission_required('inventory',Permission.VIEW)
 def inventory_list():
     if request.method == 'POST':
         return redirect(url_for('.inventory_list'))
@@ -365,6 +368,7 @@ def inventory_list():
 @admin.route('/inventoryedit/<int:iid>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
+@permission_required('inventory',Permission.EDIT)
 def inventory_edit(iid):
     form = EditInventoryForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -420,11 +424,8 @@ def inventory_edit(iid):
 
 
 @admin.route('/appointmentlist', methods=['GET', 'POST'])
-#@permission_required(Permission.LIST_USER)
-#@login_required
-#@admin_required
-#@permission_required(Permission.USER)
 @auth.login_required
+@permission_required('appointment',Permission.VIEW)
 def appointment_list():
     if request.method == 'POST':
         return redirect(url_for('.appointment_list'))
@@ -435,6 +436,7 @@ def appointment_list():
 
 @admin.route('/rolelist', methods=['GET', 'POST'])
 @auth.login_required
+@permission_required('role',Permission.VIEW)
 def role_list():
     if request.method == 'POST':
         return redirect(url_for('.role_list'))
@@ -446,6 +448,7 @@ def role_list():
 @admin.route('/roleedit/<int:rid>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
+@permission_required('role',Permission.EDIT)
 def role_edit(rid):
     form = EditRoleForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -459,6 +462,42 @@ def role_edit(rid):
         for item in tempperarr:
             temp_per=temp_per|int(item)
         r_edit.permissions.user = temp_per
+
+        tempperarr = request.form.getlist('topic')
+        temp_per = 0
+        for item in tempperarr:
+            temp_per=temp_per|int(item)
+        r_edit.permissions.topic = temp_per
+
+        tempperarr = request.form.getlist('inventory')
+        temp_per = 0
+        for item in tempperarr:
+            temp_per=temp_per|int(item)
+        r_edit.permissions.inventory = temp_per
+
+        tempperarr = request.form.getlist('appointment')
+        temp_per = 0
+        for item in tempperarr:
+            temp_per=temp_per|int(item)
+        r_edit.permissions.appointment = temp_per
+
+        tempperarr = request.form.getlist('ad')
+        temp_per = 0
+        for item in tempperarr:
+            temp_per=temp_per|int(item)
+        r_edit.permissions.ad = temp_per
+
+        tempperarr = request.form.getlist('role')
+        temp_per = 0
+        for item in tempperarr:
+            temp_per=temp_per|int(item)
+        r_edit.permissions.role = temp_per
+
+        tempperarr = request.form.getlist('log')
+        temp_per = 0
+        for item in tempperarr:
+            temp_per=temp_per|int(item)
+        r_edit.permissions.log = temp_per
         r_edit.editinfo()
         return redirect(url_for('.role_list'))
     else:
@@ -477,6 +516,7 @@ def role_edit(rid):
 @admin.route('/loglist/<int:aid>', methods=['GET', 'POST'])
 @admin.route('/loglist/<int:aid>/<int:index>', methods=['GET', 'POST'])
 @auth.login_required
+@permission_required('user',Permission.VIEW)
 def log_list(aid=0,index=1):
     if request.method == 'POST':
         return redirect(url_for('.log_list'))
@@ -495,6 +535,7 @@ def log_list(aid=0,index=1):
 
 @admin.route('/adlist', methods=['GET', 'POST'])
 @auth.login_required
+@permission_required('ad',Permission.VIEW)
 def ad_list():
     if request.method == 'POST':
         return redirect(url_for('.ad_list'))
@@ -507,6 +548,7 @@ def ad_list():
 @admin.route('/adedit/<int:id>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
+@permission_required('ad',Permission.EDIT)
 def ad_edit(id=0):
     form = EditAdForm()
     if request.method == 'POST' and form.validate_on_submit():

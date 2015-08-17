@@ -18,7 +18,7 @@ from .. import db
 from ..models import Permission, Role, User, Post, Comment
 from ..decorators import admin_required, permission_required
 '''
-from ..models import Permission, Role, User, UserStats, collection, Topic, Comment, Appointment
+from ..models import RolePermissions, Role, User, UserStats, collection, Topic, Comment, Appointment
 
 # from ..models import Post
 '''
@@ -57,7 +57,7 @@ def index():
         print 'post'
     else:
 
-        SMS.sendTemplateSMS('13659488152',['1'],1)
+        #SMS.sendTemplateSMS('13659488152',['1'],1)
         '''
         print deta.body
         order = wxpayapi.UnifiedOrder_pub()
@@ -73,6 +73,7 @@ def index():
         '''
 
         from ..tests import test_expert, test_user, test_discovery, test_sys
+
         #print common.getappointmentid(Appointment.createid())
         #test_user.addappointment()
         #test_user.iniuserformat()
@@ -91,7 +92,7 @@ def index():
         # print User.getlist_uid(uidlist=[39, 40]).to_json()
         #User.ensure_index('name')
         #User.ensure_index('job')
-        print str((0x01 | 0x02 | 0x04 | 0x08 | 0x10) & 0x10)
+        print str((0x01 | 0x02 | 0x04 | 0x08 | 0x80) & 0x01)
         print str(0x01 | 0x11 | 0x12 | 0x08 | 0x10 | 0x20 | 0x40 | 0x80| 0x100 | 0x200)
         '''
         print str(len(Appointment.getlist()))

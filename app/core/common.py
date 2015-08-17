@@ -121,6 +121,8 @@ def getpagecount(count, pagesize):  # 获取页码数
 
 def can(permissions,permissionsmin):
     #判断主权限是否包含min权限
+    if len(str(permissions))==0:
+        permissions = 0
     return (permissions & permissionsmin) == permissionsmin
 
 def getdomain(did):

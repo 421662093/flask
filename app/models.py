@@ -31,11 +31,23 @@ class Permission:
     ADMINISTER = 0x80
 
 class RolePermissions(db.EmbeddedDocument):  # 角色权限
-    user = db.IntField(default=0, db_field='u')
+    user = db.IntField(default=0, db_field='u') #用户
+    topic = db.IntField(default=0, db_field='t') #话题
+    inventory = db.IntField(default=0, db_field='i') #清单
+    appointment = db.IntField(default=0, db_field='a') #预约
+    ad = db.IntField(default=0, db_field='ad') #广告
+    role = db.IntField(default=0, db_field='r') #角色
+    log = db.IntField(default=0, db_field='l') #日志
 
     def to_json(self):
         json_rp = {
-            'user': self.user
+            'user': self.user,
+            'topic': self.topic,
+            'inventory': self.inventory,
+            'appointment': self.appointment,
+            'ad': self.ad,
+            'role': self.role,
+            'log': self.log
         }
         return json_rp
 
@@ -59,7 +71,6 @@ class Role(db.Document):
             'User': (Permission.VIEW | Permission.EDIT | Permission.DELETE | Permission.ADMINISTER, True),
             'Administrator': (0xff, False)
         }
-        print roles
         for r in roles:
             role = Role()
             role.permissions = roles[r][0]
@@ -69,20 +80,24 @@ class Role(db.Document):
             role.save()
     @staticmethod
     def getlist():
-        rv = mc.get(Role.CACHEKEY['list'])
-       # rv = rs.get(Role.CACHEKEY['list'])
-        if rv is None:
-            rv = Role.objects().limit(30)
-            temp =  json.dumps([item.to_json() for item in rv])
-            mc.set(Role.CACHEKEY['list'],temp)
-            #rs.set(Role.CACHEKEY['list'],temp)
-        else:
-            rv = json.loads(rv)
+        try:
+            rv = mc.get(Role.CACHEKEY['list'])
+           # rv = rs.get(Role.CACHEKEY['list'])
+            if rv is None:
+                rv = Role.objects().limit(30)
+                #temp =  json.dumps([item.to_json() for item in rv])
+                mc.set(Role.CACHEKEY['list'],rv)
+                #rs.set(Role.CACHEKEY['list'],temp)
+            else:
+                rv = json.loads(rv)
 
-        return rv
+            return rv
+        except Exception,e:
+            logging.debug(e)
+            return Role.objects().limit(30)
 
     def editinfo(self):
-        rs.delete(Role.CACHEKEY['list'])
+        mc.delete(Role.CACHEKEY['list'])
         if self._id > 0:
             update = {}
             # update.append({'set__email': self.email})
@@ -100,7 +115,8 @@ class Role(db.Document):
 
     @staticmethod
     def getinfo(rid):
-    #获取指定id 角色信息
+        #获取指定id 角色信息
+        #return Role.objects(_id=rid).first()
         if rid>0:
             rlist = Role.getlist()
             for item in rlist:
@@ -109,7 +125,6 @@ class Role(db.Document):
             return None
         else:
             return None
-
     def to_json(self):
         json_role = {
             '_id': self.id,
@@ -253,6 +268,18 @@ class User(UserMixin, db.Document):  # 会员
         return User.objects(_id__in=uidlist).exclude('password_hash')
 
     @staticmethod
+    def getinfo_admin(username):  
+        # 获取指定id 管理员(web后台)
+
+        query = Q(username=username) & (Q(role_id=1) | Q(role_id__gte=4))
+
+        u_info = User.objects(query).first()
+
+        if u_info is not None:
+            u_info.role = Role.getinfo(u_info.role_id)
+        return u_info
+
+    @staticmethod
     def getinfo(uid, feild=[]):  # 获取指定id列表的会员数据
         #.exclude('password_hash') 不包含字段
         return User.objects(_id=uid).exclude('password_hash').first()
@@ -277,11 +304,11 @@ class User(UserMixin, db.Document):  # 会员
         if list_count>=count:
             rand = common.getrandom()
             relist = []
-            u_list = User.objects(query & Q(stats__rand__gte=rand))#)|Q(_id__gte=rand)
+            u_list = User.objects(query & Q(stats__rand__gte=rand))#大于等于  )|Q(_id__gte=rand)
             for item in u_list:
 		        relist.append(item)
             if len(u_list)<count:
-                ul_list = User.objects(query & Q(stats__rand__lte=rand))#|Q(_id__lte=rand)
+                ul_list = User.objects(query & Q(stats__rand__lte=rand))#小于等于 |Q(_id__lte=rand)
                 for item in ul_list:
 		        	relist.append(item)
 
@@ -555,7 +582,7 @@ class User(UserMixin, db.Document):  # 会员
         if self.query.filter_by(email=new_email).first() is not None:
             return False
         self.email = new_email
-        self.avatar_hash = hashlib.md5( 
+        self.avatar_hash = hashlib.md5(
             self.email.encode('utf-8')).hexdigest()
         # db.session.add(self)
         return True
@@ -565,8 +592,8 @@ class User(UserMixin, db.Document):  # 会员
             (self.role.permissions & permissions) == permissions
     '''
 
-    def can(self, permissions):
-        return self.role is not None and (self.role.permissions & permissions) == permissions
+    def can(self,name, permissions):
+        return self.role is not None and (getattr(self.role.permissions,name) & permissions) == permissions
 
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)

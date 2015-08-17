@@ -3,11 +3,11 @@ from flask import g
 from .errors import forbidden
 
 
-def permission_required(permission):
+def permission_required(name,permission):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if not g.current_user.can(permission):
+            if not g.current_user.can(name,permission):
                 return forbidden('Insufficient permissions')
             return f(*args, **kwargs)
         return decorated_function
