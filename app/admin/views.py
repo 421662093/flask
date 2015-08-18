@@ -138,6 +138,7 @@ def user_edit(roid=2,id=0,pindex=1):
         user.geo = [float(i.strip()) for i in request.form.get('geo','0,0').split(',')]
         user.intro = request.form.get('intro','')
         user.fileurl = request.form.get('fileurl','')
+        user.avaurl = request.form.get('avaurl','')
         user.state = -2
         lab = request.form.get('label','')
         if len(lab.strip())>0:
@@ -181,11 +182,12 @@ def user_edit(roid=2,id=0,pindex=1):
             q_auth = tencentyun.Auth(conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
             expired = int(time.time()) + 999
             sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='introfile_'+str(id),expired=expired)
+            avasign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='avatar_'+str(id),expired=expired)
             user = User.getinfo(id)
             if user:
                 isuser = True
         func = {'stamp2time': common.stamp2time,'len': len,'can': common.can}
-        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign,pindex=pindex,uinfo=g.current_user)
+        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign,avasign=avasign,pindex=pindex,uinfo=g.current_user)
 
 @admin.route('/logout')
 @auth.login_required
@@ -221,7 +223,7 @@ def plugin_list():
 def user_topiclist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-2,text)
-        func = {'stamp2time': common.stamp2time}
+        func = {'stamp2time': common.stamp2time,'can': common.can}
         return render_template('admin/topic_list.html', topiclist=topiclist,func=func,uid=-2,text=text,index=-1,uinfo=g.current_user)
 
 @admin.route('/topicteamlist/search/<string:text>', methods=['GET'])
@@ -538,15 +540,25 @@ def log_list(aid=0,index=1):
         return render_template('admin/log_list.html',loglist=loglist,getadmininfo=User.getadmininfo, func=func,aid=aid,pagecount=lcount,index=index,uinfo=g.current_user)
 
 @admin.route('/adlist', methods=['GET', 'POST'])
+@admin.route('/adlist/<int:gid>', methods=['GET', 'POST'])
+@admin.route('/adlist/<int:gid>/<int:index>', methods=['GET', 'POST'])
 @auth.login_required
 @permission_required('ad',Permission.VIEW)
-def ad_list():
+def ad_list(gid=0,index=1):
     if request.method == 'POST':
         return redirect(url_for('.ad_list'))
     else:
-        adlist = Ad.getlist()
+        pagesize = 8
+        count = Ad.getcount(gid=gid)
+        adcount = common.getpagecount(count,pagesize)
+        if index>adcount:
+            index = adcount
+        if index<1:
+            index=1
+
+        adlist = Ad.getlist(gid=gid,index=index,count=pagesize)
         func = {'stamp2time': common.stamp2time,'can': common.can}
-        return render_template('admin/ad_list.html',adlist=adlist, func=func,uinfo=g.current_user)
+        return render_template('admin/ad_list.html',adlist=adlist, func=func,gid=gid,pagecount=adcount,index=index,uinfo=g.current_user)
 
 @admin.route('/adedit', methods=['GET', 'POST'])
 @admin.route('/adedit/<int:id>', methods=['GET', 'POST'])

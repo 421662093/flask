@@ -8,9 +8,8 @@ import HTMLParser
 import random
 from config import config
 import datetime
+from .. import conf
 
-
-conf = config['default']
 
 # 自定义jsonify 解决flask.jsonify无法返回中文
 def jsonify(status=200, indent=4, sort_keys=True, **kwargs):
@@ -49,7 +48,7 @@ def getavatar(isa=1, userid=0, _type=1):  # 获取用户头像地址
             return "http://ava.fanka.me/noavatar_big.gif"
 
 
-def getavatar(userid=0, _type=1):  
+def getavatar(userid=0, _type=1):
 	# 获取用户头像地址
     return 'http://182.254.221.13:8080/static/img/expert1%20@2x.png'
     houzhui = ".jpg"
@@ -180,3 +179,9 @@ def getappointmentid(uid):
     trand = getrandom(val,val*10-1);
     return '15'+str(today.day)+str(trand)+str(uid)+ str(getrandom(10,99))
 	#string tid = trand.ToString() + info.SID + trand2.ToString()+Tools.GetRandom(6);
+
+def getavaurl(url):
+    # 无头像 返回默认头像
+    if len(url)==0:
+        return conf.DEFAULT_AVATAR
+    return url

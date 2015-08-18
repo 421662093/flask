@@ -220,6 +220,7 @@
 												</div>
 											</div>
 											<input type="hidden" class="form-control" id="fileurl" name="fileurl" {% if isuser %}value="{{user.fileurl}}" {%endif%}>
+											<input type="hidden" class="form-control" id="avaurl" name="avaurl" {% if isuser %}value="{{user.avaurl}}" {%endif%}>
 										</form>
 										{% if isuser %}
 											<div class="form-group">
@@ -228,6 +229,15 @@
 													<img id="fileurlimg" style="width:275px;" src="{{user.fileurl}}"/>
 													<form id="uploadForm">
 														<input type="file" name="FileContent"></input><a href='javascript:upimg();'>上传</a>
+													</form>
+												</div>
+											</div>
+											<div class="form-group">
+												<label class="col-md-2 control-label">头像: </label>
+												<div class="col-md-10">
+													<img id="avaurlimg" style="+width:275px;" src="{{user.avaurl}}"/>
+													<form id="uploadavaForm">
+														<input type="file" name="FileContent"></input><a href='javascript:upavaimg();'>上传</a>
 													</form>
 												</div>
 											</div>
@@ -269,6 +279,7 @@
 {% if isuser %}
 uid={{user._id}}
 sign="{{sign}}"
+avasign="{{avasign}}"
 {%else%}
 uid=0
 sign=''
@@ -282,6 +293,7 @@ jQuery(document).ready(function() {
    //EcommerceProductsEdit.init();
    if(uid>0)
    		initUploadForm();
+   		initUploadavaForm()
 });
 function newwe()
 {
@@ -341,6 +353,30 @@ function initUploadForm () {
 		$('#uploadForm').ajaxForm(options);
 	//});
 }
+function initUploadavaForm () {
+	// 请将以下获取签名的链接换成您部署好的服务端http url
+	// 建议通过业务登陆态检查来增强安全性，避免签名被非法获取
+	//$.getJSON(serverurl, function(data) {
+		var url = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/avatar_{{user._id}}/?sign=' + encodeURIComponent(avasign);
+		var options = {
+            type: 'post',
+            url: url,
+            dataType: 'json',
+		    success:function(ret) {
+		    	if(ret.code==0)
+		    		var rand = Math.random()
+		    		$('#avaurlimg').attr('src',ret.data.download_url+'?random='+rand)
+					$('#avaurl').val(ret.data.download_url+'?random='+rand)
+		    },
+		    error:function (ret) {
+		    	//alert(ret.responseText);
+		    }
+		};
+
+		// pass options to ajaxForm
+		$('#uploadavaForm').ajaxForm(options);
+	//});
+}
 function upimg()
 {
 	var url_del = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/introfile_{{user._id}}/del?sign=' + encodeURIComponent(sign);
@@ -356,7 +392,22 @@ function upimg()
     		$('#uploadForm').submit()
     	}
 	});
-
+}
+function upavaimg()
+{
+	var url_del = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/avatar_{{user._id}}/del?sign=' + encodeURIComponent(avasign);
+	$.ajax({
+	    type: "POST",
+	    url: url_del,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	$('#uploadavaForm').submit()
+	    },
+    	error:function(ret) {
+    		$('#uploadavaForm').submit()
+    	}
+	});
 }
 </script>
 

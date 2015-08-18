@@ -80,20 +80,19 @@ class Role(db.Document):
             role.save()
     @staticmethod
     def getlist():
-        try:
             rv = mc.get(Role.CACHEKEY['list'])
-           # rv = rs.get(Role.CACHEKEY['list'])
+            # rv = rs.get(Role.CACHEKEY['list'])
             if rv is None:
                 rv = Role.objects().limit(30)
-                #temp =  json.dumps([item.to_json() for item in rv])
-                mc.set(Role.CACHEKEY['list'],rv)
+                temp =  json.dumps([item.to_json() for item in rv])
+                try:
+                    mc.set(Role.CACHEKEY['list'],temp)
+                except Exception,e:
+                    logging.debug(e)
+                    return rv
                 #rs.set(Role.CACHEKEY['list'],temp)
             else:
                 rv = json.loads(rv)
-
-            return rv
-        except Exception,e:
-            logging.debug(e)
             return Role.objects().limit(30)
 
     def editinfo(self):
@@ -216,6 +215,7 @@ class User(UserMixin, db.Document):  # 会员
     date = db.IntField(default=common.getstamp(), db_field='d')  # 创建时间
     intro = db.StringField(default='', db_field='i')  # 简介
     fileurl = db.StringField(default='', db_field='f')  # 介绍图片或视频地址
+    avaurl = db.StringField(default='', db_field='a')  # 头像地址
     label = db.ListField(default=[], db_field='l')  # 标签
     workexp = db.ListField(
         db.EmbeddedDocumentField(WorkExp), default=[], db_field='we')  # 工作经历
@@ -249,14 +249,14 @@ class User(UserMixin, db.Document):  # 会员
             return User.objects(role_id=roid).count()
 
     @staticmethod
-    def getlist_uid_app(uidlist, feild=[], count=10):  
+    def getlist_uid_app(uidlist, feild=[], count=10):
         # 获取指定id列表的会员数据 用于后端
         #.exclude('password_hash') 不包含字段
         return User.objects(_id__in=uidlist,state=1).limit(
             count).exclude('password_hash')
 
     @staticmethod
-    def getlist_uid(uidlist, feild=[], count=10):  
+    def getlist_uid(uidlist, feild=[], count=10):
         # 获取指定id列表的会员数据
         #.exclude('password_hash') 不包含字段
         return User.objects(_id__in=uidlist).limit(
@@ -268,7 +268,7 @@ class User(UserMixin, db.Document):  # 会员
         return User.objects(_id__in=uidlist).exclude('password_hash')
 
     @staticmethod
-    def getinfo_admin(username):  
+    def getinfo_admin(username):
         # 获取指定id 管理员(web后台)
 
         query = Q(username=username) & (Q(role_id=1) | Q(role_id__gte=4))
@@ -282,12 +282,14 @@ class User(UserMixin, db.Document):  # 会员
     @staticmethod
     def getinfo(uid, feild=[]):  # 获取指定id列表的会员数据
         #.exclude('password_hash') 不包含字段
-        return User.objects(_id=uid).exclude('password_hash').first()
-
+        u_info = User.objects(_id=uid).exclude('password_hash').first()
+        u_info.avaurl =  common.getavaurl(u_info.avaurl)
+        return u_info
     @staticmethod
     def getadmininfo(uid):  # 获取指定id 管理员信息
         #.exclude('password_hash') 不包含字段
-        return User.objects(_id=uid,role_id=1).only('name').first()
+        query = Q(_id=uid) & (Q(role_id=1) | Q(role_id__gte=4))
+        return User.objects(query).only('name').first()
 
     @staticmethod
     def getlist_geo_map(x, y,count=10, max=1000,roid=2):
@@ -400,6 +402,7 @@ class User(UserMixin, db.Document):  # 会员
             update['set__geo'] = self.geo
             update['set__intro'] = self.intro
             update['set__fileurl'] = self.fileurl
+            update['set__avaurl'] = self.avaurl
             update['set__label'] = self.label
             update['set__workexp'] = self.workexp
             update['set__edu'] = self.edu
@@ -408,7 +411,7 @@ class User(UserMixin, db.Document):  # 会员
 
             User.objects(_id=self._id).update_one(**update)
 
-            if role_id==2:
+            if self.role_id==2:
                 User.Create_Q_YUNSOU_DATA(self)
             '''
             #更新whoosh
@@ -436,7 +439,7 @@ class User(UserMixin, db.Document):  # 会员
                 self.password = self.password_hash
                 self.save()
 
-                if role_id==2:
+                if self.role_id==2:
                     User.Create_Q_YUNSOU_DATA(self)
 
                 '''
@@ -498,8 +501,8 @@ class User(UserMixin, db.Document):  # 会员
             ret = json.loads(msg)
             if ret['code'] is 0:
                 return ret
-            else:
-                logging.debug(msg)
+            #else:
+            #    logging.debug(msg)
         except Exception,e:
             logging.debug(e)
 
@@ -628,7 +631,7 @@ class User(UserMixin, db.Document):  # 会员
                 'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
                 'intro': self.intro.encode('utf-8'),
                 'fileurl': self.fileurl.encode('utf-8'),
-                'avaurl': common.getavatar(userid=self.id),
+                'avaurl': common.getavaurl(self.avaurl),#common.getavatar(userid=self.id)
                 'work': [item.to_json() for item in self.workexp],
                 'edu': [item.to_json() for item in self.edu],
                 'label':self.label,
@@ -640,7 +643,7 @@ class User(UserMixin, db.Document):  # 会员
             json_user = {
                 '_id': self.id,
                 'name': self.name.encode('utf-8'),
-                'avaurl': common.getavatar(userid=self.id)
+                'avaurl': common.getavaurl(self.avaurl)
             }
         elif type == 2:
             json_user = {
@@ -648,21 +651,21 @@ class User(UserMixin, db.Document):  # 会员
                 'name': self.name.encode('utf-8'),
                 'intro': self.intro.encode('utf-8'),
                 'job': self.job.encode('utf-8'),
-                'avaurl': common.getavatar(userid=self.id)
+                'avaurl': common.getavaurl(self.avaurl)
             }
         elif type == 3:
             json_user = {
                 '_id': self.id,
                 'name': self.name.encode('utf-8'),
                 'job': self.job.encode('utf-8'),
-                'avaurl': common.getavatar(userid=self.id)
+                'avaurl': common.getavaurl(self.avaurl)
             }
         elif type == 4:
             json_user = {
                 '_id': self.id,
                 'name': self.name.encode('utf-8'),
                 'job': self.job.encode('utf-8'),
-                'avaurl': common.getavatar(userid=self.id),
+                'avaurl': common.getavaurl(self.avaurl),
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'auth': {'vip': 1},
                 'stats': self.stats.to_json(),
@@ -673,7 +676,7 @@ class User(UserMixin, db.Document):  # 会员
                 '_id': self.id,
                 'name': self.name.encode('utf-8'),
                 'job': self.job.encode('utf-8'),
-                'avaurl': common.getavatar(userid=self.id),
+                'avaurl': common.getavaurl(self.avaurl),
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'auth': {'vip': 1}
             }
@@ -684,7 +687,7 @@ class User(UserMixin, db.Document):  # 会员
                 'name': self.name.encode('utf-8'),
                 'job': self.job.encode('utf-8'),
                 'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
-                'avaurl': common.getavatar(userid=self.id),
+                'avaurl': common.getavaurl(self.avaurl),
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'auth': {'vip': 1}
             }
@@ -958,7 +961,7 @@ class Comment(db.Document):  # 评论
             'content': self.content.encode('utf-8'),
             'date': self.date,
             'grade': self.grade,
-            'avaurl': common.getavatar(userid=self.user_id)
+            'avaurl': common.getavaurl(self.avaurl)
         }
         return json_topic
 
@@ -1110,10 +1113,17 @@ class Ad(db.Document):  # 广告
     def getlist(gid=0,index=1, count=10):
         pageindex =(index-1)*count
 
-        if gid is 0:
+        if gid == 0:
             return Ad.objects.order_by("-_id").skip(pageindex).limit(count)
         else:
             return Ad.objects(group_id=gid).order_by("-_id").skip(pageindex).limit(count)
+
+    @staticmethod
+    def getcount(gid=0):
+        if gid == 0:
+            return Ad.objects.count()
+        else:
+            return Ad.objects(group_id=gid).count()
 
     @staticmethod
     def getinfo(aid):
@@ -1245,7 +1255,7 @@ class Log(db.Document):
 
     @staticmethod
     def saveinfo(remark='',aid=0):
-        Log(remark=remark,admin_id=aid==0 and g.current_user._id or aid,_id=collection.get_next_id(Log.__tablename__)).save()
+        Log(remark=remark,admin_id=aid==0 and g.current_user._id or aid,_id=collection.get_next_id(Log.__tablename__),date=common.getstamp()).save()
 
     @staticmethod
     def getlist(aid=0,index=1, count=10):

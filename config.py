@@ -43,6 +43,8 @@ class DevelopmentConfig(Config):
         'host': 'mongodb://localhost:27017/'
     }
 
+    DEFAULT_AVATAR='http://182.254.221.13:8080/static/default.png' #默认头像
+
     #腾讯云API
     QCLOUDAPI_SECRET_ID = 'AKIDd2vXFqBjcWRfWlCe7TsYNKyn76FALI85'
     QCLOUDAPI_SECRET_KEY = 'ElpeYhStMAPR63KlKan1t9ShbzAzjoYG'
