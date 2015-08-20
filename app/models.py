@@ -144,6 +144,10 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
     lastaction = db.IntField(default=common.getstamp(), db_field='la')  # 最后更新时间
     rand = db.IntField(default=common.getrandom(), db_field='r')  # 随机数 用于随机获取专家列表
     message_count = 0  # 消息个数
+    baidu = db.IntField(default=0, db_field='b')  # 百度关注数
+    weixin = db.IntField(default=0, db_field='w')  # 微信关注数
+    zhihu = db.IntField(default=0, db_field='z')  # 知乎关注数
+    xinlang = db.IntField(default=0, db_field='x')  # 新浪关注数
 
     def to_json(self):
         json_us = {
@@ -187,7 +191,6 @@ class Edu(db.EmbeddedDocument):  # 教育背景
         }
         return json_edu
 
-
 class User(UserMixin, db.Document):  # 会员
     __tablename__ = 'users'
     meta = {
@@ -214,6 +217,7 @@ class User(UserMixin, db.Document):  # 会员
         UserStats, default=UserStats(), db_field='st')  # 统计
     date = db.IntField(default=common.getstamp(), db_field='d')  # 创建时间
     intro = db.StringField(default='', db_field='i')  # 简介
+    bgurl = db.StringField(default='', db_field='b')  # 顶部背景图片
     fileurl = db.StringField(default='', db_field='f')  # 介绍图片或视频地址
     avaurl = db.StringField(default='', db_field='a')  # 头像地址
     label = db.ListField(default=[], db_field='l')  # 标签
@@ -222,8 +226,9 @@ class User(UserMixin, db.Document):  # 会员
     edu = db.ListField(
         db.EmbeddedDocumentField(Edu), default=[], db_field='ed')  # 教育背景
     state = db.IntField(default=1, db_field='sta')# 状态 1 正常  -1新增  -2待审核 0暂停
-    thinktank = db.ListField(default=[], db_field='t')  # 智囊团
     sort = db.IntField(default=0, db_field='so')  # 排序
+    thinktank = db.ListField(default=[], db_field='t')  # 智囊团
+    wish = db.ListField(default=[], db_field='w')  # 心愿单
 
     @staticmethod
     def getlist_app(roid=2,index=1,count=10):
@@ -268,10 +273,27 @@ class User(UserMixin, db.Document):  # 会员
         return User.objects(_id__in=uidlist).exclude('password_hash')
 
     @staticmethod
+    def getwishlist_uid(uidlist):
+        # 获取心愿单列表
+        return User.objects(_id__in=uidlist).exclude('password_hash')
+
+    @staticmethod
     def getinfo_admin(username):
         # 获取指定id 管理员(web后台)
 
         query = Q(username=username) & (Q(role_id=1) | Q(role_id__gte=4))
+
+        u_info = User.objects(query).first()
+
+        if u_info is not None:
+            u_info.role = Role.getinfo(u_info.role_id)
+        return u_info
+
+    @staticmethod
+    def getinfo_app(username):
+        # 获取指定id 管理员(web后台)
+
+        query = Q(username=username) & (Q(role_id=2) | Q(role_id=3))
 
         u_info = User.objects(query).first()
 
@@ -379,6 +401,18 @@ class User(UserMixin, db.Document):  # 会员
         return 1
         #return 0
 
+    @staticmethod
+    def updatewish(uid,neweid,_type=1):
+        #添加心愿单关注 1关注 0取消关注
+        update = {}
+        if _type==1:
+            update['add_to_set__wish'] = neweid
+        else:
+            update['pull__wish'] = neweid
+        User.objects(_id=uid).update_one(**update)
+        return 1
+        #return 0
+
     def editinfo(self):
     	#后台更新用户信息
         if self._id > 0:
@@ -401,6 +435,7 @@ class User(UserMixin, db.Document):  # 会员
             update['set__job'] = self.job
             update['set__geo'] = self.geo
             update['set__intro'] = self.intro
+            update['set__bgurl'] = self.bgurl
             update['set__fileurl'] = self.fileurl
             update['set__avaurl'] = self.avaurl
             update['set__label'] = self.label
@@ -464,7 +499,7 @@ class User(UserMixin, db.Document):  # 会员
         #return User.objects((Q(name__istartswith=text) | Q(job__istartswith=text))&Q(role_id=roid)).limit(count).exclude('password_hash')
 
     @staticmethod
-    def search(text, count=10):  
+    def search(text, count=10):
         # 专家搜索
         return User.objects( Q(state=1) & Q(role_id=2) & (Q(name__istartswith=text) | Q(job__istartswith=text))).limit(count).only('name','job')
 
@@ -618,7 +653,32 @@ class User(UserMixin, db.Document):  # 会员
             url=url, hash=hash, size=size, default=default, rating=rating)
 
     def to_json(self, type=0):  # type 0默认 1简短 2... 3...
-        if type == 0:
+        if type == -1:
+            #专家详情
+            json_user = {
+                '_id': self.id,
+                'name': self.name.encode('utf-8'),
+                'sex': self.sex,
+                'job': self.job.encode('utf-8'),
+                'auth': {'vip': 1},  # self.auth.vip
+                'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
+                'meet_c': self.stats.meet,
+                'follow':{'baidu':self.stats.baidu,'weixin':self.stats.weixin,'zhihu':self.stats.zhihu,'xinlang':self.stats.xinlang},
+                # [39.9442, 116.324]
+                'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
+                'intro': self.intro.encode('utf-8'),
+                'bgurl': self.bgurl.encode('utf-8'),
+                'fileurl': self.fileurl.encode('utf-8'),
+                'avaurl': common.getavaurl(self.avaurl),#common.getavatar(userid=self.id)
+                'work': [item.to_json() for item in self.workexp],
+                'edu': [item.to_json() for item in self.edu],
+                'label':self.label,
+                'role_id':self.role_id,
+                'domainid':self.domainid,
+                'industryid':self.industryid
+            }
+        elif type == 0:
+            #普通用户
             json_user = {
                 '_id': self.id,
                 'name': self.name.encode('utf-8'),
@@ -777,6 +837,7 @@ class Topic(db.Document):  # 话题
     stats = db.EmbeddedDocumentField(
         TopicStats, default=TopicStats(), db_field='ts')  # 话题统计信息
     sort = db.IntField(default=0, db_field='s')  # 排序
+    state = db.IntField(default=0, db_field='st')# 状态 1 正常 0待审核 -1已删除
 
     @staticmethod
     def getlist_app(uid=0,index=1, count=10):
@@ -785,27 +846,35 @@ class Topic(db.Document):  # 话题
         pageindex =(index-1)*count
         sort = '-sort'
         if uid == 0:
-            return Topic.objects.exclude('content').order_by(sort).skip(pageindex).limit(count)
+            return Topic.objects(state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
         elif uid == -1:
-            return Topic.objects(user_id=0).exclude('content').order_by(sort).skip(pageindex).limit(count)
+            return Topic.objects(user_id=0,state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
         elif uid == -2:
-            return Topic.objects(user_id__gt=0).exclude('content').order_by(sort).skip(pageindex).limit(count)
+            return Topic.objects(user_id__gt=0,state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
         else:
-            return Topic.objects(user_id=uid).exclude('content').order_by(sort).skip(pageindex).limit(count)
+            return Topic.objects(user_id=uid,state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
 
     @staticmethod
-    def getlist(uid=0,index=1, count=10):
+    def getlist(uid=0,index=1, count=10,state=1):
     	# 获取列表 0全部  -1官方  -2专家
         uid = int(uid)
         pageindex =(index-1)*count
-        if uid == 0:
-            return Topic.objects.exclude('content').order_by("-_id").skip(pageindex).limit(count)
-        elif uid == -1:
-            return Topic.objects(user_id=0).exclude('content').order_by("-_id").skip(pageindex).limit(count)
-        elif uid == -2:
-            return Topic.objects(user_id__gt=0).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+        query=None
+        if state==1:
+            query = Q(state__gte=0)
         else:
-            return Topic.objects(user_id=uid).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+            query = Q(state=-1)
+        if uid == 0:
+            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+        elif uid == -1:
+            query=query&Q(user_id=0)
+            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+        elif uid == -2:
+            query=query&Q(user_id__gt=0)
+            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+        else:
+            query=query&Q(user_id=uid)
+            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
     def list_search(uid,text, count=10):  # 后台搜索
@@ -815,19 +884,27 @@ class Topic(db.Document):  # 话题
             query = query & Q(user_id=0)
         elif uid==-2:
             query = query & Q(user_id__gt=0)
+        query = query & Q(state__gte=0)
         return Topic.objects(query).limit(count).exclude('content')
 
     @staticmethod
-    def getcount(uid=0):
+    def getcount(uid=0,state=1):
         uid = int(uid)
-    	if uid == 0:
-            return Topic.objects.count()
-        elif uid == -1:
-            return Topic.objects(user_id=0).count()
-        elif uid == -2:
-            return Topic.objects(user_id__gt=0).count()
+        if state==1:
+            query = Q(state__gte=0)
         else:
-            return Topic.objects(user_id=uid).count()
+            query = Q(state=-1)
+    	if uid == 0:
+            return Topic.objects(query).count()
+        elif uid == -1:
+            query = query & Q(user_id=0)
+            return Topic.objects(query).count()
+        elif uid == -2:
+            query = query & Q(user_id__gt=0)
+            return Topic.objects(query).count()
+        else:
+            query = query & Q(user_id=uid)
+            return Topic.objects(query).count()
 
     @staticmethod
     def getinfo(tid=0):
@@ -837,6 +914,13 @@ class Topic(db.Document):  # 话题
     def getinfo_expert(tid):  # 获取话题的专家id列表(expert字段)
         #.exclude('password_hash') 不包含字段
         return Topic.objects.only('expert').get(_id=tid)
+
+    @staticmethod
+    def delinfo(tid):
+        #删除话题 设置话题状态
+        update = {}
+        update['set__state'] = -1
+        Topic.objects(_id=tid).update_one(**update)
 
     def editinfo(self):
         if self._id > 0:
@@ -1178,18 +1262,29 @@ class Appointment(db.Document):  # 预约
     price = db.IntField(default=0, db_field='p')  # 支付价格
     attachment = db.ListField(default=[], db_field='att')  # 附件
     remark = db.StringField(default='', db_field='r')  # 备注
-    state = db.IntField(default=0, db_field='s')  # 预约状态
-    paystate = db.IntField(default=0, db_field='ps')  # 支付状态
+    state = db.IntField(default=0, db_field='s')  # 预约状态  0预约失败 1申请中 2待付款 3进行中 4已完成
+    paystate = db.IntField(default=0, db_field='ps')  # 支付状态 0未支付 1已支付
 
     @staticmethod
     # _type=1我约 _type=2被约  /  appid 约/被约 专家id
-    def getlist(_type=0, appid=0, count=10):
+    def getcount(_type=0, appid=0):
         if _type == 0:
-            return Appointment.objects().limit(count)
+            return Appointment.objects().count()
         elif _type == 2:
-            return Appointment.objects(appid=appid).limit(count)
+            return Appointment.objects(appid=appid).count()
         elif _type == 1:
-            return Appointment.objects(user_id=appid).limit(count)
+            return Appointment.objects(user_id=appid).count()
+
+    @staticmethod
+    # _type=1我约 _type=2被约  /  appid 约/被约 专家id
+    def getlist(_type=0, appid=0, index=1, count=10):
+        pageindex =(index-1)*count
+        if _type == 0:
+            return Appointment.objects().order_by("-_id").skip(pageindex).limit(count)
+        elif _type == 2:
+            return Appointment.objects(appid=appid).order_by("-_id").skip(pageindex).limit(count)
+        elif _type == 1:
+            return Appointment.objects(user_id=appid).order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
     def getinfo(aid):
@@ -1198,7 +1293,19 @@ class Appointment(db.Document):  # 预约
     @staticmethod
     def createid():
         # 生成自增id
-        return collection.get_next_id(Appointment.__tablename__)
+        aid = collection.get_next_id(Appointment.__tablename__)
+        return int(common.getappointmentid(aid))
+
+    def editinfo(self):
+        #创建订单信息
+        self._id = Appointment.createid()
+        try:
+            self.save()
+        except Exception, e:
+            logging.debug(e)
+            self._id = Appointment.createid()
+            self.save()
+        return self._id
 
     def to_json(self, _type=1, type=1):  # type返回相应字段 1列表 0详情
         uinfo = User.getinfo(_type == 2 and self.appid or self.user_id)

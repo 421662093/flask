@@ -86,8 +86,8 @@ def get_discovery_ExpertTeam(tid):
     获取专家团专家列表
 
     URL:/discovery/topicteam/expert/<int:tid>
-    GET 参数: 
-        tid -- 话题ID (必填) 
+    GET 参数:
+        tid -- 话题ID (必填)
     '''
     t_info = Topic.getinfo_expert(tid)
     if len(t_info.expert) > 0:

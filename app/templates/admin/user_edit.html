@@ -219,16 +219,26 @@
 													<input type="hidden" name='educount' id='educount' value="{{func.len(user.edu)}}">
 												</div>
 											</div>
+											<input type="hidden" class="form-control" id="bgurl" name="bgurl" {% if isuser %}value="{{user.bgurl}}" {%endif%}>
 											<input type="hidden" class="form-control" id="fileurl" name="fileurl" {% if isuser %}value="{{user.fileurl}}" {%endif%}>
 											<input type="hidden" class="form-control" id="avaurl" name="avaurl" {% if isuser %}value="{{user.avaurl}}" {%endif%}>
 										</form>
 										{% if isuser %}
 											<div class="form-group">
-												<label class="col-md-2 control-label">介绍图片或视频: </label>
+												<label class="col-md-2 control-label">顶部背景: </label>
+												<div class="col-md-10">
+													<img id="bgurlimg" style="width:275px;" src="{{user.bgurl}}"/>
+													<form id="uploadbgForm">
+														<input type="file" name="FileContent"></input><a href='javascript:upbgimg();'>上传</a> 1125宽*684高(像素) JPG
+													</form>
+												</div>
+											</div>
+											<div class="form-group">
+												<label class="col-md-2 control-label">介绍图片或视频:</label>
 												<div class="col-md-10">
 													<img id="fileurlimg" style="width:275px;" src="{{user.fileurl}}"/>
 													<form id="uploadForm">
-														<input type="file" name="FileContent"></input><a href='javascript:upimg();'>上传</a>
+														<input type="file" name="FileContent"></input><a href='javascript:upimg();'>上传</a> 1030宽*658高(像素) JPG
 													</form>
 												</div>
 											</div>
@@ -237,7 +247,7 @@
 												<div class="col-md-10">
 													<img id="avaurlimg" style="+width:275px;" src="{{user.avaurl}}"/>
 													<form id="uploadavaForm">
-														<input type="file" name="FileContent"></input><a href='javascript:upavaimg();'>上传</a>
+														<input type="file" name="FileContent"></input><a href='javascript:upavaimg();'>上传</a> 240宽*240高(像素) JPG
 													</form>
 												</div>
 											</div>
@@ -278,6 +288,7 @@
 <script>
 {% if isuser %}
 uid={{user._id}}
+bgsign = "{{bgsign}}"
 sign="{{sign}}"
 avasign="{{avasign}}"
 {%else%}
@@ -292,6 +303,7 @@ jQuery(document).ready(function() {
 	//Demo.init(); // init demo features
    //EcommerceProductsEdit.init();
    if(uid>0)
+   		initUploadbgForm();
    		initUploadForm();
    		initUploadavaForm()
 });
@@ -329,6 +341,30 @@ function edudel(eduid) {
 		$('#edudiv_'+eduid).remove()
 }
 
+function initUploadbgForm () {
+	// 请将以下获取签名的链接换成您部署好的服务端http url
+	// 建议通过业务登陆态检查来增强安全性，避免签名被非法获取
+	//$.getJSON(serverurl, function(data) {
+		var url = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/background_{{user._id}}/?sign=' + encodeURIComponent(bgsign);
+		var options = {
+            type: 'post',
+            url: url,
+            dataType: 'json',
+		    success:function(ret) {
+		    	if(ret.code==0)
+		    		var rand = Math.random()
+		    		$('#bgurlimg').attr('src',ret.data.download_url+'?random='+rand)
+					$('#bgurl').val(ret.data.download_url+'?random='+rand)
+		    },
+		    error:function (ret) {
+		    	//alert(ret.responseText);
+		    }
+		};
+
+		// pass options to ajaxForm
+		$('#uploadbgForm').ajaxForm(options);
+	//});
+}
 function initUploadForm () {
 	// 请将以下获取签名的链接换成您部署好的服务端http url
 	// 建议通过业务登陆态检查来增强安全性，避免签名被非法获取
@@ -376,6 +412,22 @@ function initUploadavaForm () {
 		// pass options to ajaxForm
 		$('#uploadavaForm').ajaxForm(options);
 	//});
+}
+function upbgimg()
+{
+	var url_del = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/background_{{user._id}}/del?sign=' + encodeURIComponent(bgsign);
+	$.ajax({
+	    type: "POST",
+	    url: url_del,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	$('#uploadbgForm').submit()
+	    },
+    	error:function(ret) {
+    		$('#uploadbgForm').submit()
+    	}
+	});
 }
 function upimg()
 {

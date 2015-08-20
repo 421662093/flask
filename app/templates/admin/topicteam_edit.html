@@ -39,8 +39,7 @@
 
 		<div class="row">
 			<div class="col-md-12">
-			<form class="form-horizontal form-row-seperated" action='{{ url_for('.topicteam_edit', id=istopic and topic._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">
-					{{form.hidden_tag()}}
+			
 					<div class="portlet">
 						<div class="portlet-title">
 							<div class="caption">
@@ -57,6 +56,7 @@
 								<div class="tab-content no-space">
 									<div class="tab-pane active" id="tab_general">
 										<div class="form-body">	
+											<form class="form-horizontal form-row-seperated" action='{{ url_for('.topicteam_edit',pindex=pindex, id=istopic and topic._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">{{form.hidden_tag()}}
                                             <div class="form-group">
                                                 <label class="col-md-2 control-label">排序: <span class="required">
                                                 * </span>
@@ -97,14 +97,19 @@
 													<input type="text" class="form-control" id="expert" name="expert" {% if istopic %}value="{{topic.expert|join(',')}}" {%endif%}>
 												</div>
 											</div>
+											<input type="hidden" class="form-control" id="background" name="background" {% if istopic %}value="{{topic.config.background}}" {%endif%}>
+											</form>
+											{% if istopic %}
 											<div class="form-group">
-												<label class="col-md-2 control-label">话题配置: <span class="required">
-												* </span>
-												</label>
+												<label class="col-md-2 control-label">顶部背景: </label>
 												<div class="col-md-10">
-													背景图片<input type="text" class="form-control" id="background" name="background" {% if istopic %}value="{{topic.config.background}}" {%endif%}>
+													<img id="bgurlimg" style="width:275px;" src="{{topic.config.background}}"/>
+													<form id="uploadbgForm">
+														<input type="file" name="FileContent"></input><a href='javascript:upbgimg();'>上传</a> 1125宽*684高(像素) JPG
+													</form>
 												</div>
 											</div>
+											{%endif%}
 
 										</div>
 									</div>
@@ -112,7 +117,7 @@
 							</div>
 						</div>
 					</div>
-				</form>
+				
 			</div>
 		</div>
 
@@ -133,15 +138,67 @@
 
 <script src="/static/global/scripts/datatable.js"></script>
 
+<script src="/static/admin/scripts/jquery.filedrop.js"></script>
+<script src="/static/admin/scripts/jquery.form.min.js"></script>
+
 <!-- END PAGE LEVEL SCRIPTS -->
 <script>
-        jQuery(document).ready(function() {    
-           Metronic.init(); // init metronic core components
-			Layout.init(); // init current layout
-			//QuickSidebar.init(); // init quick sidebar
-			//Demo.init(); // init demo features
-           //EcommerceProductsEdit.init();
-        });
-    </script>
+{% if istopic %}
+bgsign = "{{bgsign}}"
+urlname = "background_topic_{{topic._id}}"
+{%else%}
+uid=0
+bgsign=''
+{%endif%}
+jQuery(document).ready(function() {    
+   Metronic.init(); // init metronic core components
+	Layout.init(); // init current layout
+	//QuickSidebar.init(); // init quick sidebar
+	//Demo.init(); // init demo features
+   //EcommerceProductsEdit.init();
+   initUploadbgForm()
+});
+
+function initUploadbgForm () {
+	// 请将以下获取签名的链接换成您部署好的服务端http url
+	// 建议通过业务登陆态检查来增强安全性，避免签名被非法获取
+	//$.getJSON(serverurl, function(data) {
+		var url = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/'+urlname+'/?sign=' + encodeURIComponent(bgsign);
+		var options = {
+            type: 'post',
+            url: url,
+            dataType: 'json',
+		    success:function(ret) {
+		    	if(ret.code==0)
+		    		var rand = Math.random()
+		    		$('#bgurlimg').attr('src',ret.data.download_url+'?random='+rand)
+					$('#background').val(ret.data.download_url+'?random='+rand)
+		    },
+		    error:function (ret) {
+		    	//alert(ret.responseText);
+		    }
+		};
+
+		// pass options to ajaxForm
+		$('#uploadbgForm').ajaxForm(options);
+	//});
+}
+function upbgimg()
+{
+	var url_del = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/'+urlname+'/del?sign=' + encodeURIComponent(bgsign);
+	$.ajax({
+	    type: "POST",
+	    url: url_del,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	$('#uploadbgForm').submit()
+	    },
+    	error:function(ret) {
+    		$('#uploadbgForm').submit()
+    	}
+	});
+}
+</script>
 <!-- END JAVASCRIPTS -->
 {% endblock %}

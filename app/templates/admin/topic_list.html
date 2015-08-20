@@ -46,7 +46,6 @@
 								<input type="text" id="search" style="color:#000000" value="{{text}}" />
 								<a href="javascript:;" onclick="searchfun()" class="btn btn-default btn-sm">搜索 </a>
 							</div>
-							
 						</div>
 						<div class="portlet-body">
 							<div class="table-responsive">
@@ -92,9 +91,7 @@
                                     {{item.sort}}
                                     </td>
 									<td>
-										<a href="/admin/topicedit/{{item.id}}" class="label label-sm label-success">
-										编辑
-										</a>&nbsp
+									<a href="/admin/topicedit/{{item.id}}/{{uid}}/{{index}}" class="label label-sm label-success">编辑</a>
 										<a href="#" class="label label-sm label-success">
 										删除
 										</a>

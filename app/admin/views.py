@@ -9,7 +9,7 @@ from flask.ext.login import login_required, current_user, logout_user
 from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
-from ..models import collection,User,WorkExp,Edu,Role,Permission,Topic,InvTopic,InvTopicStats,Log,Inventory,Appointment,Ad
+from ..models import collection,User,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,Inventory,Appointment,Ad
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
@@ -22,11 +22,9 @@ import time
 def upfile():
     if request.method == 'POST':
         import os
-        
 
         _type = request.args.get('type', '')
         uid = request.args.get('uid', 0)
-        
         if uid>0:
             if _type=='introfile':
                 try:
@@ -137,6 +135,7 @@ def user_edit(roid=2,id=0,pindex=1):
         user.job = request.form.get('job','')
         user.geo = [float(i.strip()) for i in request.form.get('geo','0,0').split(',')]
         user.intro = request.form.get('intro','')
+        user.bgurl = request.form.get('bgurl','')
         user.fileurl = request.form.get('fileurl','')
         user.avaurl = request.form.get('avaurl','')
         user.state = -2
@@ -181,13 +180,14 @@ def user_edit(roid=2,id=0,pindex=1):
         if id > 0 :
             q_auth = tencentyun.Auth(conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
             expired = int(time.time()) + 999
+            bgsign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='background_'+str(id),expired=expired)
             sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='introfile_'+str(id),expired=expired)
             avasign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='avatar_'+str(id),expired=expired)
             user = User.getinfo(id)
             if user:
                 isuser = True
         func = {'stamp2time': common.stamp2time,'len': len,'can': common.can}
-        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,sign=sign,avasign=avasign,pindex=pindex,uinfo=g.current_user)
+        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,bgsign=bgsign,sign=sign,avasign=avasign,pindex=pindex,uinfo=g.current_user)
 
 @admin.route('/logout')
 @auth.login_required
@@ -257,6 +257,14 @@ def topic_list(uid=-2,index=1):
 
         return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user)
 
+@admin.route('/topicdel/<int:tid>', methods=['POST'])
+@auth.login_required
+@permission_required('topic',Permission.DELETE)
+def topic_del(tid):
+    if request.method == 'POST':
+        tid
+        return redirect(url_for('.topic_list'))
+
 @admin.route('/topicteamlist',methods=['GET', 'POST'])
 @admin.route('/topicteamlist/<string:uid>', methods=['GET', 'POST'])
 @admin.route('/topicteamlist/<string:uid>/<int:index>', methods=['GET', 'POST'])
@@ -278,35 +286,40 @@ def topicteam_list(uid=-1,index=1):
         return render_template('admin/topicteam_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user)
 
 @admin.route('/topicedit', defaults={'id': 0}, methods=['GET', 'POST'])
-@admin.route('/topicedit/<int:id>/<int:_type>', methods=['GET', 'POST'])
 @admin.route('/topicedit/<int:id>', methods=['GET', 'POST'])
+@admin.route('/topicedit/<int:id>/<int:_type>', methods=['GET', 'POST'])
+@admin.route('/topicedit/<int:id>/<string:uid>/<int:pindex>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
 @permission_required('topic',Permission.EDIT)
-def topic_edit(id,_type=0):
+def topic_edit(id,_type=0,uid=-2,pindex=1):
     form = EditTopicForm()
     if request.method == 'POST' and form.validate_on_submit():
-
         topic = Topic()
         topic._id = id
         topic.user_id = form.eid.data
         topic.title = form.title.data
-        topic.intro = form.intro.data
-        topic.content = form.content.data
-        topic.pay.call = form.call.data
-        topic.pay.meet = form.meet.data
+        topic.intro = request.form.get('intro','')
+        topic.content = request.form.get('content','')
+        topic.pay.call = request.form.get('call',0)
+        topic.pay.meet = request.form.get('meet',0)
+        topic.pay.calltime = request.form.get('calltime',0)
+        topic.pay.meettime = request.form.get('meettime',0)
         '''
         tempexp = form.expert.data
         if len(tempexp)>0:
             topic.expert = [int(i.strip()) for i in tempexp.split(',')]
         topic.config.background = form.background.data
         '''
-        topic.stats.topic_count = form.topic_count.data
-        topic.stats.topic_total = form.topic_total.data
+        topic.stats.topic_count = request.form.get('topic_count',0)
+        topic.stats.topic_total = request.form.get('topic_total',0)
         topic.sort = request.form.get('sort',0)
+        topic.config = TopicConfig()
         topic.editinfo()
-
-        return redirect(url_for(_type==0 and '.topic_list' or '.user_list'))
+        if _type==0:
+            return redirect(url_for('.topic_list',uid=uid,index=pindex))
+        else:
+            return redirect(url_for('.user_list'))
     else:
         istopic = False
         topic = None
@@ -318,14 +331,15 @@ def topic_edit(id,_type=0):
             if topic:
                 istopic = True
         func = {'can': common.can}
-        return render_template('admin/topic_edit.html', topic=topic,_type=_type, istopic=istopic,uid=uid, form=form,func=func,uinfo=g.current_user)
+        return render_template('admin/topic_edit.html', topic=topic,_type=_type, istopic=istopic,uid=uid,pindex=pindex, form=form,func=func,uinfo=g.current_user)
 
 @admin.route('/topicteamedit', defaults={'id': 0}, methods=['GET', 'POST'])
 @admin.route('/topicteamedit/<int:id>', methods=['GET', 'POST'])
+@admin.route('/topicteamedit/<int:id>/<int:pindex>', methods=['GET', 'POST'])
 #@permission_required(Permission.LIST_USER)
 @auth.login_required
 @permission_required('topic',Permission.EDIT)
-def topicteam_edit(id):
+def topicteam_edit(id,uid=-1,pindex=1):
     form = EditTopicForm()
     if request.method == 'POST' and form.validate_on_submit():
 
@@ -333,19 +347,19 @@ def topicteam_edit(id):
         topic._id = id
         topic.user_id = 0
         topic.title = form.title.data
-        topic.intro = form.intro.data
-        topic.content = form.content.data
+        topic.intro = request.form.get('intro','')
+        topic.content = request.form.get('content','')
         #topic.pay.call = form.call.data
         #topic.pay.meet = form.meet.data
-        tempexp = form.expert.data
+        tempexp = request.form.get('expert','')
         if len(tempexp)>0:
             topic.expert = [int(i.strip()) for i in tempexp.split(',')]
-        topic.config.background = form.background.data
+        topic.config.background = request.form.get('background','')
         #topic.stats.topic_count = form.topic_count.data
         #topic.stats.topic_total = form.topic_total.data
         topic.sort = request.form.get('sort',0)
         topic.editinfo()
-        return redirect(url_for('.topicteam_list'))
+        return redirect(url_for('.topicteam_list',uid=uid,index=pindex))
     else:
         istopic = False
         topic = None
@@ -354,7 +368,10 @@ def topicteam_edit(id):
             if topic:
                 istopic = True
         func = {'can': common.can}
-        return render_template('admin/topicteam_edit.html', topic=topic, istopic=istopic, form=form,func=func,uinfo=g.current_user)
+        q_auth = tencentyun.Auth(conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
+        expired = int(time.time()) + 999
+        bgsign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='background_topic_'+str(id),expired=expired)
+        return render_template('admin/topicteam_edit.html', topic=topic,pindex=pindex, istopic=istopic, form=form,func=func,bgsign=bgsign,uinfo=g.current_user)
 
 @admin.route('/inventorylist', methods=['GET', 'POST'])
 @auth.login_required
@@ -429,15 +446,24 @@ def inventory_edit(iid):
 
 
 @admin.route('/appointmentlist', methods=['GET', 'POST'])
+@admin.route('/appointmentlist/<int:index>', methods=['GET', 'POST'])
 @auth.login_required
 @permission_required('appointment',Permission.VIEW)
-def appointment_list():
+def appointment_list(index=1):
     if request.method == 'POST':
         return redirect(url_for('.appointment_list'))
     else:
-        inventorylist = Appointment.getlist()
+
+        pagesize = 10
+        count = Appointment.getcount()
+        acount = common.getpagecount(count,pagesize)
+        if index>acount:
+            index = acount
+        if index<1:
+            index=1
+        inventorylist = Appointment.getlist(index=index,count=pagesize)
         func = {'stamp2time': common.stamp2time,'can': common.can}
-        return render_template('admin/appointment_list.html',inventorylist=inventorylist, func=func,uinfo=g.current_user)
+        return render_template('admin/appointment_list.html',inventorylist=inventorylist, func=func,pagecount=acount,index=index,uinfo=g.current_user)
 
 @admin.route('/rolelist', methods=['GET', 'POST'])
 @auth.login_required

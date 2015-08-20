@@ -1,1 +1,21 @@
-config.py[line:93] DEBUG [flask start] 2015-08-18 17:59:50
+config.py[line:93] DEBUG [flask start] 2015-08-20 16:42:31
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:42:36] "GET /admin/topicteamlist/-1/2 HTTP/1.1" 200 -] 2015-08-20 16:42:36
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:42:55] "GET /admin/topicteamedit/56/2 HTTP/1.1" 200 -] 2015-08-20 16:42:55
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:42:56] "GET /admin/topicteamedit/56/7 HTTP/1.1" 200 -] 2015-08-20 16:42:56
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:42:57] "POST /admin/topicteamedit/56/2 HTTP/1.1" 302 -] 2015-08-20 16:42:57
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:42:57] "GET /admin/topicteamlist/-1/2 HTTP/1.1" 200 -] 2015-08-20 16:42:57
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:43:03] "GET /admin/topicteamlist HTTP/1.1" 200 -] 2015-08-20 16:43:03
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:43:10] "GET /admin/topicteamlist/-1/2 HTTP/1.1" 200 -] 2015-08-20 16:43:10
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:43:10] "GET /admin/topicteamlist/-1/2 HTTP/1.1" 200 -] 2015-08-20 16:43:10
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:43:13] "GET /admin/topicteamlist/-1/1 HTTP/1.1" 200 -] 2015-08-20 16:43:13
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:43:19] "GET /admin/topicteamlist/-1/2 HTTP/1.1" 200 -] 2015-08-20 16:43:19
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:43:22] "GET /admin/topicteamlist/-1/1 HTTP/1.1" 200 -] 2015-08-20 16:43:22
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:52:03] "GET /admin/topiclist HTTP/1.1" 200 -] 2015-08-20 16:52:03
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:52:25] "GET /admin/topiclist/-2/2 HTTP/1.1" 200 -] 2015-08-20 16:52:25
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:52:28] "GET /admin/topicedit/66/-2 HTTP/1.1" 404 -] 2015-08-20 16:52:28
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:52:33] "GET /admin/topiclist HTTP/1.1" 200 -] 2015-08-20 16:52:33
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:53:15] "GET /admin/topiclist/-2/2 HTTP/1.1" 200 -] 2015-08-20 16:53:15
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:55:43] "GET /admin/topiclist HTTP/1.1" 200 -] 2015-08-20 16:55:43
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:55:46] "GET /admin/topiclist/-2/2 HTTP/1.1" 200 -] 2015-08-20 16:55:46
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:55:50] "GET /admin/topiclist/-2/3 HTTP/1.1" 200 -] 2015-08-20 16:55:50
+_internal.py[line:87] INFO [192.168.1.2 - - [20/Aug/2015 16:56:52] "GET /admin/userlist HTTP/1.1" 200 -] 2015-08-20 16:56:52

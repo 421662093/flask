@@ -185,3 +185,11 @@ def getavaurl(url):
     if len(url)==0:
         return conf.DEFAULT_AVATAR
     return url
+
+def strtoint(val,default):
+    # 字符串转数字
+    try:
+        num = int(val)
+        return num
+    except Exception, e:
+        return default

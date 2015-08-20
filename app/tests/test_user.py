@@ -47,7 +47,7 @@ def updateuser(uid=0):
 
 
 def iniuserformat():  # 修复字段结构
-    User.objects().update(unset__workexp__S__intro=1)
+    #User.objects().update(unset__workexp__S__intro=1)
     #User.objects.update(set__thinktank=[21,22,23,24])
     '''
     update = {}
@@ -113,8 +113,7 @@ def adduser():
 
 def addappointment():
     app = Appointment()
-    tempid = Appointment.createid()
-    app._id = int(common.getappointmentid(tempid))
+    app._id = Appointment.createid()
     app.user_id = 53
     app.appid = 35
     app.topic_title = '加速会【GUSHI】创业公司新媒体运营联盟'

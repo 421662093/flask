@@ -40,9 +40,7 @@ def inicommons():
 
 def initopicformat():  # 修复字段结构
     update = {}
-    update['set__pay'] = TopicPay()
-    update['set__stats'] = TopicStats()
-    update['set__config'] = TopicConfig()
+    update['set__state'] = 1
     Topic.objects().update(**update)
     #Topic.objects().update({'set__expert': [12, 13, 15, 16, 17]})
     # Topic.objects().update({'unset__g'})

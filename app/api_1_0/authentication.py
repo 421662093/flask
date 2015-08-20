@@ -20,7 +20,7 @@ def verify_password(username_or_token, password):
         user =None
         if unlen==11 or unlen<50:
             # try to authenticate with username/password
-            user = User.objects(username=username_or_token).first()
+            user = User.getinfo_app(username_or_token)
             if not user or not user.verify_password(password):
                 return False
             g.token_used = False

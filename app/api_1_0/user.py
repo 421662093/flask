@@ -374,7 +374,6 @@ def get_user_info():
     u_info = User.getinfo(g.current_user._id)
     return jsonify(info=u_info.to_json())
 
-
 @api.route('/user/addtopic', methods=['POST'])
 #@permission_required(Permission.DISCOVERY)
 @auth.login_required
@@ -430,14 +429,12 @@ def update_user_password():
     POST 参数:
         oldpaw -- 旧密码
         newpaw -- 新密码
-    返回值 
+    返回值
         {'ret':1} 成功
         0 旧密码验证失败
         -1 系统异常
         -2 旧密码为空
         -3 新密码为空
-
-
     '''
     if request.method == 'POST':
 
@@ -453,10 +450,75 @@ def update_user_password():
             istrue = g.current_user.verify_password(oldpaw)
             if istrue:
                 resettoken = g.current_user.generate_reset_token()
-                g.current_user.reset_password(resettoken,newpaw)        
+                g.current_user.reset_password(resettoken,newpaw)
                 return jsonify(ret=1)  #添加成功
             else:
                 return jsonify(ret=0)  #旧密码验证失败
         except Exception,e:
             logging.debug(e)
             return jsonify(ret=-1) #系统异常
+
+
+@api.route('/user/wish', methods=['GET'])
+@api.route('/user/wish/<int:pageindex>', methods=['GET'])
+@auth.login_required
+def get_user_wish(pageindex=1):
+    '''
+    获取用户心愿单列表
+
+    URL:/user/wish
+        /user/wish/<int:pageindex>  
+    GET 参数:
+        pageindex -- 页码 (默认 1)
+    返回值
+        list
+            _id 用户ID
+            name 姓名
+            job 职位
+            avaurl 头像
+            grade 评分
+            auth 认证
+                vip
+            sex 性别
+
+    '''
+    #u_info = User.getinfo(uid=94)
+    pagesize = 8
+    w_list = g.current_user.wish #g.current_user._id
+    tcount = len(w_list)
+    tpcount = common.getpagecount(tcount,pagesize)
+    if pageindex>tpcount:
+        pageindex = tpcount
+    if pageindex<1:
+        pageindex=1
+    start =(pageindex-1)*pagesize
+    if tcount>0:
+        return jsonify(list=[item.to_json(4) for item in User.getwishlist_uid(uidlist=w_list[start:start+pagesize-1])])
+    else:
+        return jsonify(list=[])
+
+
+@api.route('/user/updatewish', methods = ['POST'])
+@auth.login_required
+def update_wish():
+    '''
+    关注专家
+    URL:/user/updatewish
+    POST 参数:
+        eid -- 专家ID (必填)
+        type -- 方式 1添加 0取消
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        eid = common.strtoint(data['eid'],0)
+
+        _type = data['type']
+        if eid>0:
+            User.updatewish(g.current_user._id,eid,_type)
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常

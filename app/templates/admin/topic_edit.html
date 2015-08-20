@@ -39,7 +39,11 @@
 
 		<div class="row">
 			<div class="col-md-12">
-			<form class="form-horizontal form-row-seperated" action='{{ url_for('.topic_edit', id=istopic and topic._id or 0,_type=_type, _external=True) }}' method="post" name="firstname" id="firstname">
+			{% if _type==0%}
+			<form class="form-horizontal form-row-seperated" action='{{ url_for('.topic_edit',pindex=pindex,uid=uid, id=istopic and topic._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">
+			{%else%}
+			<form class="form-horizontal form-row-seperated" action='{{ url_for('.topic_edit',id=istopic and topic._id or 0,_type=_type, _external=True) }}' method="post" name="firstname" id="firstname">
+			{%endif%}
 					{{form.hidden_tag()}}
 					<div class="portlet">
 						<div class="portlet-title">
@@ -106,7 +110,7 @@
 													通话时间 <input type="text" class="form-control" id="calltime" name="calltime" value="{% if istopic %}{{topic.pay.calltime}}{%else%}0{%endif%}">
 													通话价格 <input type="text" class="form-control" id="call" name="call" value="{% if istopic %}{{topic.pay.call}}{%else%}0{%endif%}">
 													见面时间 <input type="text"  class="form-control" id="meettime" name="meettime" value="{% if istopic %}{{topic.pay.meettime}}{%else%}0{%endif%}">
-													见面价格 <input type="text" class="form-control" id="call" name="call" value="{% if istopic %}{{topic.pay.call}}{%else%}0{%endif%}">
+													见面价格 <input type="text" class="form-control" id="meet" name="meet" value="{% if istopic %}{{topic.pay.meet}}{%else%}0{%endif%}">
 												</div>
 											</div>
 											<div class="form-group">

@@ -70,6 +70,7 @@ def get_expert_info(uid):
             sex 性别
             auth 认证
                 vip VIP认证
+            bgurl 顶部背景图片
             avaurl 头像地址
             fileurl 介绍图片或视频地址
             geo 坐标
@@ -78,6 +79,11 @@ def get_expert_info(uid):
             job 职位
             label 标签
             meet_c 见面次数
+            follow 第三方关注数
+                baidu 百度
+                weixin 微信
+                zhihu 知乎
+                xinlang 新浪
             edu 教育背景List
                 name 学校名称
                 start 开始时间
@@ -96,7 +102,7 @@ def get_expert_info(uid):
     t_list = Topic.getlist(uid=uid, count=2)
     c_list = Comment.getlist(uid=uid, page=1, count=2)
     return jsonify(expert={
-        'info': u_info.to_json(),
+        'info': u_info.to_json(-1),
         'topic': [item.to_json() for item in t_list],
         'comment': [item.to_json() for item in c_list]
     })
@@ -148,8 +154,8 @@ def get_expertsearch_first_list():
     快速检索专家列表
 
     URL:/expert/firstsearch
-    GET 参数: 
-        text -- 检索关键词 (必填) 
+    GET 参数:
+        text -- 检索关键词 (必填)
     '''
     #智能提示，检索
     #query  =  {'$or':[{'col1':{'$regex':srch_text}},{'col2':{'$regex':srch_text}},{'col3':{'$regex':srch_text}}]}
@@ -196,7 +202,6 @@ def get_expertsearch_list():
         if eidlen>0:
             for eitem in ret['data']['result_list']:
                 eid.append(eitem['doc_id'])
-            print eid
             elist=[item.to_json(5) for item in User.getlist_uid_app(uidlist=eid, count=10)]
         else:
             elist=[]

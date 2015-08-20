@@ -25,12 +25,12 @@ class EditTopicForm(Form):
 
     eid = IntegerField('eid')
     title = StringField('title', validators=[Length(0, 64)])
-    intro = StringField('intro', validators=[Length(0, 256)])
-    content = StringField('content')
+    #sintro = StringField('intro', validators=[Length(0, 256)])
+    #content = StringField('content')
     call = IntegerField('call')
     meet = IntegerField('meet')
-    expert = StringField('expert')
-    background = StringField('background', validators=[Length(0, 256)])
+    #expert = StringField('expert')
+    #background = StringField('background', validators=[Length(0, 256)])
     topic_count = IntegerField('topic_count')
     topic_total = IntegerField('topic_total')
 
