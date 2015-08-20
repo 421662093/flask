@@ -374,15 +374,25 @@ def topicteam_edit(id,uid=-1,pindex=1):
         return render_template('admin/topicteam_edit.html', topic=topic,pindex=pindex, istopic=istopic, form=form,func=func,bgsign=bgsign,uinfo=g.current_user)
 
 @admin.route('/inventorylist', methods=['GET', 'POST'])
+@admin.route('/inventorylist/<int:index>', methods=['GET', 'POST'])
 @auth.login_required
 @permission_required('inventory',Permission.VIEW)
-def inventory_list():
+def inventory_list(index=1):
     if request.method == 'POST':
         return redirect(url_for('.inventory_list'))
     else:
-        inventorylist = Inventory.getlist()
+
+        pagesize = 8
+        count = Inventory.getcount()
+        ipcount = common.getpagecount(count,pagesize)
+        if index>ipcount:
+            index = ipcount
+        if index<1:
+            index=1
+
+        inventorylist = Inventory.getlist(index=index,count=pagesize)
         func = {'stamp2time': common.stamp2time,'can': common.can}
-        return render_template('admin/inventory_list.html',inventorylist=inventorylist, func=func,uinfo=g.current_user)
+        return render_template('admin/inventory_list.html',inventorylist=inventorylist,pagecount=ipcount,index=index, func=func,uinfo=g.current_user)
 
 
 @admin.route('/inventoryedit', defaults={'iid': 0}, methods=['GET', 'POST'])

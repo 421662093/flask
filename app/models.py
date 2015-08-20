@@ -922,6 +922,30 @@ class Topic(db.Document):  # 话题
         update['set__state'] = -1
         Topic.objects(_id=tid).update_one(**update)
 
+    def saveinfo_app(self):
+        if self._id > 0:
+            update = {}
+            # update.append({'set__email': self.email})
+
+            update['set__user_id'] = self.user_id
+            if len(self.title) > 0:
+                update['set__title'] = self.title
+            #if len(self.intro) > 0:
+            #    update['set__intro'] = self.intro
+            update['set__content'] = self.content
+            update['set__pay__call'] = self.pay.call
+            update['set__pay__meet'] = self.pay.meet
+            update['set__pay__calltime'] = self.pay.calltime
+            update['set__pay__meettime'] = self.pay.meettime
+
+            #update['set__sort'] = self.sort
+            Topic.objects(_id=self._id,user_id=self.user_id).update_one(**update)
+            return 1
+        else:
+            self._id = collection.get_next_id(self.__tablename__)
+            self.save()
+            return self._id
+
     def editinfo(self):
         if self._id > 0:
             update = {}
@@ -1128,8 +1152,13 @@ class Inventory(db.Document):  # 清单
     sort = db.IntField(default=0, db_field='s')  # 排序
 
     @staticmethod
-    def getlist(count=10):
-        return Inventory.objects.exclude('topic').order_by("-_id").limit(count)
+    def getcount():
+        return Inventory.objects.count()
+
+    @staticmethod
+    def getlist(index=1,count=10):
+        pageindex =(index-1)*count
+        return Inventory.objects.exclude('topic').order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
     def getinfo(iid=0):
@@ -1414,3 +1443,47 @@ class Message(db.Document):
             'type': self.type
         }
         return json_message
+
+class ExpertInv(db.EmbeddedDocument):
+    #专家清单
+    __tablename__ = 'expertinv'
+    meta = {
+        'collection': __tablename__,
+    }
+    _id = db.IntField(primary_key=True)  # id
+    title = db.StringField(default='', max_length=64,  db_field='t')  # 标题
+    content = db.StringField(default='', db_field='c')  # 内容
+    user_id = db.IntField(db_field='ui')  # 专家ID
+    price = db.IntField(default=0, db_field='p')  # 支付价格
+    unit = db.IntField(default='', db_field='u')  # 单位
+    sort = db.IntField(default=0, db_field='s')  # 排序
+
+    @staticmethod
+    def saveinfo(self):
+        if self._id > 0:
+            update = {}
+            if len(self.title) > 0:
+                update['set__title'] = self.title
+            update['set__content'] = self.content
+            update['set__price'] = self.price
+            update['set__unit'] = self.unit
+            #update['set__sort'] = self.sort
+            ExpertInv.objects(_id=self._id,user_id=self.user_id).update_one(**update)
+        else:
+            self.save()
+
+    @staticmethod
+    def getlist(uid,index=1, count=10):
+        pageindex =(index-1)*count
+        return ExpertInv.objects(user_id=uid).order_by("-sort").skip(pageindex).limit(count)
+
+    def to_json(self):
+        json_invt = {
+            '_id': self._id,
+            'title': self.title.encode('utf-8'),
+            'content': self.content.encode('utf-8'),
+            'price': self.price,
+            'unit': self.unit.encode('utf-8'),
+            'sort': self.sort
+        }
+        return json_invt

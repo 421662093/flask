@@ -208,3 +208,56 @@ def get_expertsearch_list():
         return jsonify(list=elist)
     else:
         return jsonify(list=[])
+
+@api.route('/expert/inv')
+@api.route('/expert/inv/<int:index>')
+#@permission_required(Permission.DISCOVERY)
+def get_expertinv_list(index=1):
+    '''
+    专家清单
+    URL:/expert/inv
+        /expert/inv/<int:index>
+    GET 参数:
+        index -- 页码(默认1)
+    返回值
+        _id 清单id
+        title 标题
+        content 内容
+        price 价格
+        unit 单位
+        sort 排序
+    '''
+    i_list = ExpertInv.getlist(uid=g.current_user._id, index=index)
+    return jsonify(list=[item.to_json() for item in i_list])
+
+@api.route('/expert/updateinv')
+def update_expert_inv():
+    '''
+    更新专家清单
+    URL:/expert/updateinv
+    POST 参数:
+        eid 清单id  id大于0为编辑 否则新添加
+        title 标题
+        content 内容
+        price 价格
+        unit 单位
+        #sort 排序
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    if request.method == 'POST':
+        try:
+            einv = ExpertInv()
+            data = request.get_json(force=True)
+            einv._id = common.strtoint(data['eid'],0)
+            einv.user_id = g.current_user._id
+            einv.title = data['title']
+            einv.content = data['content']
+            einv.price = data['price']
+            einv.unit = data['unit']
+            einv.saveinfo()
+            return jsonify(ret=1)
+        except Exception,e:
+            logging.debug(e)
+            return jsonify(ret=-5) #系统异常

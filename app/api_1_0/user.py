@@ -374,15 +374,16 @@ def get_user_info():
     u_info = User.getinfo(g.current_user._id)
     return jsonify(info=u_info.to_json())
 
-@api.route('/user/addtopic', methods=['POST'])
+@api.route('/user/updatetopic', methods=['POST'])
 #@permission_required(Permission.DISCOVERY)
 @auth.login_required
-def add_user_topic():
+def update_user_topic():
     '''
     添加话题（专家）
 
-    URL:/user/addtopic
+    URL:/user/updatetopic
     POST 参数:
+        tid -- 话题id  id大于0为编辑 否则新添加
         title -- 标题
         content -- 内容
         call -- 通话价格
@@ -400,9 +401,10 @@ def add_user_topic():
             data = request.get_json()
 
             t_info = Topic()
+            t_info._id =common.strtoint(data['tid'],0)
             t_info.user_id = g.current_user._id
             t_info.title = data['title']
-            t_info.intro = data['content']
+            #t_info.intro = data['intro']
             t_info.content = data['content']
 
             tp = TopicPay()
@@ -412,7 +414,7 @@ def add_user_topic():
             tp.meettime = data['meettime']
             t_info.pay = tp
 
-            t_info.editinfo()
+            t_info.saveinfo_app()
             return jsonify(ret=1)  #添加成功
         except Exception,e:
             logging.debug(e)
