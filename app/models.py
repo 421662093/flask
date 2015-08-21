@@ -413,6 +413,15 @@ class User(UserMixin, db.Document):  # 会员
         return 1
         #return 0
 
+    def updatelabel(self):
+        #更新标签 - 用户
+        if self._id > 0:
+            update = {}
+            update['set__label'] = self.label
+            User.objects(_id=self._id).update_one(**update)
+            return 1
+        return 0
+
     def editinfo(self):
     	#后台更新用户信息
         if self._id > 0:

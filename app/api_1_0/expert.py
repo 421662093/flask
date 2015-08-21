@@ -261,3 +261,26 @@ def update_expert_inv():
         except Exception,e:
             logging.debug(e)
             return jsonify(ret=-5) #系统异常
+
+@api.route('/user/updatelabel', methods = ['POST'])
+def update_label():
+    '''
+    更新标签
+    URL:/user/updatelabel
+    POST 参数:
+        label -- 标签 字符串数组
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        user = User()
+        data = request.get_json()
+        user._id = g.current_user._id
+        user.label = common.strtoint(data['label'],[])
+        user.label = common.delrepeat(user.label) #移除标签中重复
+        user.updatelabel()
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
