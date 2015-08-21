@@ -135,6 +135,7 @@ def user_edit(roid=2,id=0,pindex=1):
         user.job = request.form.get('job','')
         user.geo = [float(i.strip()) for i in request.form.get('geo','0,0').split(',')]
         user.intro = request.form.get('intro','')
+        user.content = request.form.get('content','')
         user.bgurl = request.form.get('bgurl','')
         user.fileurl = request.form.get('fileurl','')
         user.avaurl = request.form.get('avaurl','')

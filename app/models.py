@@ -217,6 +217,7 @@ class User(UserMixin, db.Document):  # 会员
         UserStats, default=UserStats(), db_field='st')  # 统计
     date = db.IntField(default=common.getstamp(), db_field='d')  # 创建时间
     intro = db.StringField(default='', db_field='i')  # 简介
+    content = db.StringField(default='', db_field='co')  # 简介内容
     bgurl = db.StringField(default='', db_field='b')  # 顶部背景图片
     fileurl = db.StringField(default='', db_field='f')  # 介绍图片或视频地址
     avaurl = db.StringField(default='', db_field='a')  # 头像地址
@@ -413,10 +414,13 @@ class User(UserMixin, db.Document):  # 会员
         return 1
         #return 0
 
-    def updatelabel(self):
-        #更新标签 - 用户
+    def updateintro(self):
+        #更新简介 - 用户
         if self._id > 0:
             update = {}
+            update['set__fileurl'] = self.fileurl
+            update['set__intro'] = self.intro
+            update['set__content'] = self.content
             update['set__label'] = self.label
             User.objects(_id=self._id).update_one(**update)
             return 1
@@ -444,6 +448,7 @@ class User(UserMixin, db.Document):  # 会员
             update['set__job'] = self.job
             update['set__geo'] = self.geo
             update['set__intro'] = self.intro
+            update['set__content'] = self.content
             update['set__bgurl'] = self.bgurl
             update['set__fileurl'] = self.fileurl
             update['set__avaurl'] = self.avaurl
@@ -676,6 +681,7 @@ class User(UserMixin, db.Document):  # 会员
                 # [39.9442, 116.324]
                 'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
                 'intro': self.intro.encode('utf-8'),
+                'content': self.content.encode('utf-8'),
                 'bgurl': self.bgurl.encode('utf-8'),
                 'fileurl': self.fileurl.encode('utf-8'),
                 'avaurl': common.getavaurl(self.avaurl),#common.getavatar(userid=self.id)

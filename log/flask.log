@@ -1,44 +1,5 @@
-config.py[line:93] DEBUG [flask start] 2015-08-21 11:33:40
-errors.py[line:17] ERROR [401 - Invalid credentials] 2015-08-21 11:33:52
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:52] "GET /admin/userlist HTTP/1.1" 401 -] 2015-08-21 11:33:52
-errors.py[line:17] ERROR [401 - Invalid credentials] 2015-08-21 11:33:52
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:52] "GET /admin/userlist HTTP/1.1" 401 -] 2015-08-21 11:33:52
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:57] "GET /admin/userlist HTTP/1.1" 200 -] 2015-08-21 11:33:57
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/font-awesome/css/font-awesome.min.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/simple-line-icons/simple-line-icons.min.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/bootstrap/css/bootstrap.min.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/uniform/css/uniform.default.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/select2/select2.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/bootstrap-datepicker/css/datepicker.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/css/components-md.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/css/plugins-md.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/css/layout.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/css/themes/darkblue.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/css/custom.css HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/scripts/page.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/jquery.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/jquery-migrate.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/jquery-ui/jquery-ui.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/bootstrap/js/bootstrap.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/jquery.blockui.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/jquery.cokie.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/uniform/jquery.uniform.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/select2/select2.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/datatables/media/js/jquery.dataTables.min.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/datatables/plugins/bootstrap/dataTables.bootstrap.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/bootstrap-datepicker/js/bootstrap-datepicker.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/scripts/metronic.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/scripts/layout.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/scripts/quick-sidebar.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/scripts/demo.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/scripts/datatable.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/pages/scripts/ecommerce-orders.js HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/admin/img/sidebar_inline_toggler_icon_darkblue.jpg HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:33:59] "GET /static/global/plugins/font-awesome/fonts/fontawesome-webfont.woff2?v=4.3.0 HTTP/1.1" 304 -] 2015-08-21 11:33:59
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:34:00] "GET /static/global/plugins/simple-line-icons/fonts/Simple-Line-Icons.woff HTTP/1.1" 304 -] 2015-08-21 11:34:00
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 11:34:01] "GET /admin/favicon.ico HTTP/1.1" 404 -] 2015-08-21 11:34:01
+config.py[line:93] DEBUG [flask start] 2015-08-21 18:59:28
+_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 18:59:34] "GET /api/v1.0/user/updateintro HTTP/1.1" 405 -] 2015-08-21 18:59:34
+_internal.py[line:87] INFO [192.168.1.2 - - [21/A_internal.py[line:87] INFO [ * Restarting with stat] 2015-08-21 18:59:47
+-21 18:59:37
+_internal.py[line:87] INFO [ * Detected change in 'D:\\project\\flask\\app\\api_1_0\\errors.py', reloading] 2015-08-21 18:59:47

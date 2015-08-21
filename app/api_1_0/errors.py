@@ -3,7 +3,11 @@ import logging
 from app.exceptions import ValidationError
 from . import api
 
-
+def not_allowed(message):
+    response = jsonify({'error': 'Method Not Allowed', 'message': message})
+    response.status_code = 405
+    logging.error('405 - '+message)
+    return response
 
 def bad_request(message):
     response = jsonify({'error': 'bad request', 'message': message})
@@ -28,5 +32,5 @@ def forbidden(message):
 
 @api.errorhandler(ValidationError)
 def validation_error(e):
-	logging.error(bad_request(e.args[0]))
-	return bad_request(e.args[0])
+    logging.error(bad_request(e.args[0]))
+    return bad_request(e.args[0])

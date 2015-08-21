@@ -3,11 +3,14 @@
 #专家API类
 
 from flask import request, current_app, url_for
+from flask import g
+from .authentication import auth
 from . import api
 from .decorators import permission_required
 from ..models import Permission, User, Topic, Comment
 from ..core.common import jsonify
 from ..core import common
+import logging
 #from .. import searchwhoosh
 # from ..models import discovery
 
@@ -76,6 +79,7 @@ def get_expert_info(uid):
             geo 坐标
             grade 评级
             intro 简介
+            content 详细介绍
             job 职位
             label 标签
             meet_c 见面次数
@@ -186,7 +190,7 @@ def get_expertsearch_list():
     全文检索专家列表
 
     URL:/expert/search
-    GET 参数: 
+    GET 参数:
         text -- 检索关键词 (必填 检索字段name,job,label) 
     '''
     #全文检索，搜索界面
@@ -212,6 +216,7 @@ def get_expertsearch_list():
 @api.route('/expert/inv')
 @api.route('/expert/inv/<int:index>')
 #@permission_required(Permission.DISCOVERY)
+@auth.login_required
 def get_expertinv_list(index=1):
     '''
     专家清单
@@ -231,6 +236,7 @@ def get_expertinv_list(index=1):
     return jsonify(list=[item.to_json() for item in i_list])
 
 @api.route('/expert/updateinv')
+@auth.login_required
 def update_expert_inv():
     '''
     更新专家清单
@@ -262,13 +268,17 @@ def update_expert_inv():
             logging.debug(e)
             return jsonify(ret=-5) #系统异常
 
-@api.route('/user/updatelabel', methods = ['POST'])
-def update_label():
+@api.route('/user/updateintro', methods = ['POST'])
+@auth.login_required
+def update_user_intro():
     '''
-    更新标签
-    URL:/user/updatelabel
+    更新简介
+    URL:/user/updateintro
     POST 参数:
         label -- 标签 字符串数组
+        fileurl -- 上传文件url
+        intro -- 简介
+        content -- 内容
     返回值
         {'ret':1} 成功
         -5 系统异常
@@ -277,9 +287,12 @@ def update_label():
         user = User()
         data = request.get_json()
         user._id = g.current_user._id
+        user.fileurl = data['fileurl']
+        user.intro = data['intro']
+        user.content = data['content']
         user.label = common.strtoint(data['label'],[])
         user.label = common.delrepeat(user.label) #移除标签中重复
-        user.updatelabel()
+        user.updateintro()
         return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)
