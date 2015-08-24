@@ -82,7 +82,7 @@ def index():
         # test_user.addappointment()
         # test_user.iniuserformat()
         # test_expert.initopic(11)
-        #test_expert.initopicformat()
+        # test_expert.initopicformat()
         # test_expert.inicommons()
         # test_user.updateuser()
         # test_discovery.initopicformat()

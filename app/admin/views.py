@@ -9,7 +9,7 @@ from flask.ext.login import login_required, current_user, logout_user
 from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
-from ..models import collection,User,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,Inventory,Appointment,Ad
+from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,Inventory,Appointment,Ad
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
@@ -83,12 +83,14 @@ def user_list(roid=2,index=1):
         uid = request.args.get('uid',0,type=int)
         if uid>0:
             if _type=='state':# 审核通过
+                User.Update_Q_YUNSOU_STATE(uid,1)
                 User.updatestate(uid,1)
                 flash('用户审核通过')
             elif _type=='unstate': # 设为待审核
+                User.Update_Q_YUNSOU_STATE(uid,-2)
                 User.updatestate(uid,-2)
                 flash('用户已下线')
-        return redirect(url_for('.user_list',roid=roid))
+        return redirect(url_for('.user_list',roid=roid,index=index))
     else:
     	pagesize = 8
     	count = User.getcount(roid=roid)
@@ -170,6 +172,15 @@ def user_edit(roid=2,id=0,pindex=1):
                 tempedu.major = request.form.get('edumajor_'+newitem,'')
             	edulist.append(tempedu)
         user.edu = edulist
+
+        u_stats = UserStats()
+        u_stats.baidu = request.form.get('baidu',0)
+        u_stats.weixin = request.form.get('weixin',0)
+        u_stats.zhihu = request.form.get('zhihu',0)
+        u_stats.sina = request.form.get('sina',0)
+        user.stats = u_stats
+
+        user.avaurl = request.form.get('avaurl','')
         user.editinfo()
         #flash('用户更新成功','error')
         return redirect(url_for('.user_list',roid=roid,index=pindex))
@@ -178,6 +189,8 @@ def user_edit(roid=2,id=0,pindex=1):
         user = None
         rolelist = Role.getlist()
         sign=''
+        bgsign=''
+        avasign=''
         if id > 0 :
             q_auth = tencentyun.Auth(conf.QCLOUD_SECRET_ID,conf.QCLOUD_SECRET_KEY)
             expired = int(time.time()) + 999
@@ -244,7 +257,19 @@ def user_topicteamlist_search(text=''):
 @permission_required('topic',Permission.VIEW)
 def topic_list(uid=-2,index=1):
     if request.method == 'POST':
-        return redirect(url_for('.topic_list'))
+        _type = request.args.get('type','')
+        tid = request.args.get('tid',0,type=int)
+        if tid>0:
+            if _type=='state':# 审核通过
+                Topic.updatestate(tid,1)
+                flash('审核通过')
+            elif _type=='unstate': # 设为下线
+                Topic.updatestate(tid,0)
+                flash('下线')
+            elif _type=='del': # 设为已删除
+                Topic.updatestate(tid,-1)
+                flash('已删除')
+        return redirect(url_for('.topic_list',uid=uid,index=index))
     else:
     	pagesize = 8
     	count = Topic.getcount(uid)
@@ -254,7 +279,7 @@ def topic_list(uid=-2,index=1):
     	if index<1:
     		index=1
         topiclist = Topic.getlist(uid=uid,index=index,count=pagesize)
-        func = {'stamp2time': common.stamp2time,'can': common.can}
+        func = {'stamp2time': common.stamp2time,'gettopicstate':common.gettopicstate,'can': common.can}
 
         return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user)
 
@@ -433,7 +458,8 @@ def inventory_edit(iid):
             if len(tempInvTopic.title)>0:
                 tempInvTopic._id = collection.get_next_id('invtopic')
                 tempInvTopic.content = request.form.get('newcontent_'+newitem,'')
-                tempInvTopic.expert = [int(i.strip()) for i in request.form.get('newexpert_'+newitem,'').split(' ')]
+                tempexpert = request.form.get('newexpert_'+newitem,'')
+                tempInvTopic.expert = [int(i.strip()) for i in tempexpert.split(',')]
                 tempInvTopic.sort = int(request.form.get('newsort_'+newitem,'').strip())
                 tempInvTopicStats = InvTopicStats()
                 tempInvTopicStats.like=int(request.form.get('newlike_'+newitem,'').strip())

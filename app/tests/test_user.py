@@ -49,6 +49,10 @@ def updateuser(uid=0):
 def iniuserformat():  # 修复字段结构
     #User.objects().update(unset__workexp__S__intro=1)
     #User.objects.update(set__thinktank=[21,22,23,24])
+
+    for item in User.getlist():
+        if item.role_id==2:
+            User.Update_Q_YUNSOU_STATE(item._id,item.state)
     '''
     update = {}
     update['set__stats'] = UserStats()

@@ -1,5 +1,2 @@
-config.py[line:93] DEBUG [flask start] 2015-08-21 18:59:28
-_internal.py[line:87] INFO [192.168.1.2 - - [21/Aug/2015 18:59:34] "GET /api/v1.0/user/updateintro HTTP/1.1" 405 -] 2015-08-21 18:59:34
-_internal.py[line:87] INFO [192.168.1.2 - - [21/A_internal.py[line:87] INFO [ * Restarting with stat] 2015-08-21 18:59:47
--21 18:59:37
-_internal.py[line:87] INFO [ * Detected change in 'D:\\project\\flask\\app\\api_1_0\\errors.py', reloading] 2015-08-21 18:59:47
+config.py[line:93] DEBUG [flask start] 2015-08-24 20:05:56
+_internal.py[line:87] INFO [192.168.1.2 - - [24/Aug/2015 20:30:38] "GET /admin/loglist HTTP/1.1" 200 -] 2015-08-24 20:30:38

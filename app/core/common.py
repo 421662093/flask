@@ -167,6 +167,16 @@ def getuserstate(state):
     else:
         return '暂停'
 
+def gettopicstate(state):
+    #获取话题状态信息
+    #if state==-1:
+    #    return '新建'
+    if state==0:
+        return '待审核'
+    elif state==1:
+        return '正常'
+    else:
+        return '已删除'
 
 def getappointmentid(uid):
 	# 构建预约id

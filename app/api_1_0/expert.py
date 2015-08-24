@@ -34,23 +34,28 @@ def get_expert_map(x=0, y=0):
 
     return jsonify(list=[item.to_json(6) for item in u_list])
 
+@api.route('/expert/list/<int:ind>/<int:index>')
 @api.route('/expert/list/<float:x>/<float:y>')
 @api.route('/expert/list/<float:x>/<float:y>/<int:ind>')
+@api.route('/expert/list/<float:x>/<float:y>/<int:ind>/<int:index>')
 #@permission_required(Permission.DISCOVERY)
-def get_expert_list(x=0, y=0,ind=0):
+def get_expert_list(x=0.0, y=0.0,ind=0,index=1):
     '''
     获取附近专家(列表)
 
-    URL:/expert/map/<float:x>/<float:y>
+    URL:/expert/list/<int:ind>/<int:index>
+        /expert/map/<float:x>/<float:y>
         /expert/map/<float:x>/<float:y>/<int:ind>
+        /expert/list/<float:x>/<float:y>/<int:ind>/<int:index>
     GET 参数: 
-        x -- 经度 (必填) 
+        x -- 经度 (必填) 为0.0则 按照默认排序 否则 按照附近检索
         y -- 纬度 (必填) 
         ind -- 行业ID (选填 默认 0) 
+        index -- 页码 (选填 默认 1) 
     '''
     pagesize = 10
     if x == 0:
-        u_list = User.getlist_app(count=pagesize)
+        u_list = User.getexpertlist_app(industryid=ind,index=index,count=pagesize)
     else:
         u_list = User.getlist_geo_list(x,y,industryid=ind,count=pagesize)
 

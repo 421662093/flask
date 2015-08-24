@@ -141,13 +141,14 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
     meet = db.IntField(default=0, db_field='m') #见面次数
     comment_count = db.IntField(default=0, db_field='cc')  # 评论人数
     comment_total = db.IntField(default=0, db_field='ct')  # 评论总分
-    lastaction = db.IntField(default=common.getstamp(), db_field='la')  # 最后更新时间
+    lastaction = db.IntField(default=0, db_field='la')  # 最后更新时间
     rand = db.IntField(default=common.getrandom(), db_field='r')  # 随机数 用于随机获取专家列表
     message_count = 0  # 消息个数
     baidu = db.IntField(default=0, db_field='b')  # 百度关注数
     weixin = db.IntField(default=0, db_field='w')  # 微信关注数
     zhihu = db.IntField(default=0, db_field='z')  # 知乎关注数
-    xinlang = db.IntField(default=0, db_field='x')  # 新浪关注数
+    sina = db.IntField(default=0, db_field='s')  # 新浪关注数
+    oldx = db.IntField(default=0, db_field='x')  # 旧字段 无效
 
     def to_json(self):
         json_us = {
@@ -322,7 +323,7 @@ class User(UserMixin, db.Document):  # 会员
     @staticmethod
     def getlist_geo_list(x, y,industryid=0,count=10, max=1000):
     	#根据坐标获取数据列表 max最大距离(米)
-    	query = Q(geo__near=[x, y]) & Q(geo__max_distance=max) & Q(state=1)
+    	query = Q(geo__near=[x, y]) & Q(geo__max_distance=max) &Q(role_id=2) & Q(state=1)
     	if industryid>0:
     		query = query & Q(industryid=industryid)
         list_count = User.objects(query).count()
@@ -340,6 +341,16 @@ class User(UserMixin, db.Document):  # 会员
             return relist
         else:
             return User.objects(query)
+
+    @staticmethod
+    def getexpertlist_app(industryid=0,index=1,count=10):
+        #用于api
+        #.exclude('password_hash') 不包含字段
+        pageindex =(index-1)*count
+        query = Q(role_id=2) & Q(state=1)
+        if industryid>0:
+            query = query & Q(industryid=industryid)
+        return User.objects(query).exclude('password_hash').order_by("-sort").skip(pageindex).limit(count)
 
     @staticmethod
     def isusername(username):
@@ -455,8 +466,13 @@ class User(UserMixin, db.Document):  # 会员
             update['set__label'] = self.label
             update['set__workexp'] = self.workexp
             update['set__edu'] = self.edu
+
             update['set__stats__lastaction'] = common.getstamp()
-            update['set__state'] = self.state
+            update['set__stats__baidu'] = self.stats.baidu
+            update['set__stats__weixin'] = self.stats.weixin
+            update['set__stats__zhihu'] = self.stats.zhihu
+            update['set__stats__sina'] = self.stats.sina
+
 
             User.objects(_id=self._id).update_one(**update)
 
@@ -527,12 +543,36 @@ class User(UserMixin, db.Document):  # 会员
                     "contents.0.id" :data._id,
                     "contents.0.name" : data.name,
                     "contents.0.job" : data.job,
-                    "contents.0.label" : ";".join(data.label)
+                    "contents.0.label" : ";".join(data.label),
+                    "contents.0.state" : data.state
                 }
             msg = q_search.call(Q_SOUYUN_ACTION, params)
             ret = json.loads(msg)
             if ret['retcode'] is not 0:
                 logging.debug(msg)
+        except Exception,e:
+            logging.debug(e)
+
+    @staticmethod
+    def Update_Q_YUNSOU_STATE(id,state):
+        #更新 腾讯云 云搜专家状态
+
+        try:
+            u_info = User.getinfo(id)
+            if u_info is not None:
+                params = {
+                        "appId" : conf.QCLOUDAPI_YUNSOU_APPID,
+                        "op_type":"add",
+                        "contents.0.id" :id,
+                        "contents.0.name" : u_info.name,
+                        "contents.0.job" : u_info.job,
+                        "contents.0.label" : ";".join(u_info.label),
+                        "contents.0.state" : state
+                    }
+                msg = q_search.call(Q_SOUYUN_ACTION, params)
+                ret = json.loads(msg)
+                if ret['retcode'] is not 0:
+                    logging.debug(msg)
         except Exception,e:
             logging.debug(e)
 
@@ -545,6 +585,7 @@ class User(UserMixin, db.Document):  # 会员
                 "search_query" : text,
                 "page_id" : pageindex-1,
                 "num_per_page" : count,
+                "num_filter":'[N:state:1:1]'
             }
             msg = q_search.call(Q_SOUYUN_SEARCH, params)
             ret = json.loads(msg)
@@ -854,6 +895,13 @@ class Topic(db.Document):  # 话题
     sort = db.IntField(default=0, db_field='s')  # 排序
     state = db.IntField(default=0, db_field='st')# 状态 1 正常 0待审核 -1已删除
 
+    @staticmethod
+    def updatestate(tid,state):
+        #更新话题状态 0 -> 1
+        update = {}
+        update['set__state'] = state
+        Topic.objects(_id=tid).update_one(**update)
+    
     @staticmethod
     def getlist_app(uid=0,index=1, count=10):
         # 获取列表 0全部  -1官方  -2专家

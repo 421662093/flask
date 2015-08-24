@@ -258,7 +258,7 @@ def update_user_edu():
                 edu.append(eduitem1)
         user.edu = edu
         state = user.updateedu()
-        return jsonify(ret=state) 
+        return jsonify(ret=state)
 
 @api.route('/appointment/list')
 @api.route('/appointment/list/<int:_type>')  # _type=1我约 _type=2被约

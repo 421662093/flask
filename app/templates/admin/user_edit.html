@@ -184,6 +184,15 @@
 													<textarea id="content" name="content" style="height:174px" class="form-control">{% if isuser %}{{user.content}}{%endif%}</textarea>
 												</div>
 											</div>
+											<div class="form-group">
+												<label class="col-md-2 control-label">第三方关注数: </label>
+												<div class="col-md-10">
+													百度 <input type="text" id="baidu" name="baidu" value="{% if isuser %}{{user.stats.baidu}}{%else%}0{%endif%}">
+													微信 <input type="text" id="weixin" name="weixin" value="{% if isuser %}{{user.stats.weixin}}{%else%}0{%endif%}">
+													知乎 <input type="text" id="zhihu" name="zhihu" value="{% if isuser %}{{user.stats.zhihu}}{%else%}0{%endif%}">
+													新浪 <input type="text" id="sina" name="sina" value="{% if isuser %}{{user.stats.sina}}{%else%}0{%endif%}">
+												</div>
+											</div>
 											<!--<div class="form-group">
 												<label class="col-md-2 control-label">认证: </label>
 												<div class="col-md-10">

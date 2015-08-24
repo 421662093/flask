@@ -58,7 +58,7 @@
 									<th>
 										 标题
 									</th>
-									<th>
+									<th style="width:300px">
 										 简介
 									</th>
 									<th>
@@ -67,6 +67,9 @@
                                     <th>
                                          排序
                                     </th>
+                                    <th>
+										 状态
+									</th>
 									<th>
 										 操作
 									</th>
@@ -90,11 +93,18 @@
                                     <td>
                                     {{item.sort}}
                                     </td>
+                                     <td>
+                                    {{func.gettopicstate(item.state)}}
+                                    </td>
 									<td>
 									<a href="/admin/topicedit/{{item.id}}/{{uid}}/{{index}}" class="label label-sm label-success">编辑</a>
-										<a href="#" class="label label-sm label-success">
-										删除
-										</a>
+									{% if item.state==0 %}
+									<form method="post" action="?type=state&tid={{item.id}}" id="topic_{{item.id}}_form"><a href="javascript:$('#topic_{{item.id}}_form').submit();" class="label label-sm label-success">审核通过</a></form>
+									{% endif %}
+									{% if item.state==1 %}
+									<form method="post" action="?type=unstate&tid={{item.id}}" id="topic_{{item.id}}_form"><a href="javascript:$('#topic_{{item.id}}_form').submit();" class="label label-sm label-success">下线</a></form>
+									{% endif %}
+									<form method="post" action="?type=del&tid={{item.id}}" id="topic_del_{{item.id}}_form"><a href="javascript:if(confirm('确实要删除该话题吗?'))$('#topic_del_{{item.id}}_form').submit();" class="label label-sm label-success">删除</a></form>
 									</td>
 								</tr>
 								{% endfor %}
