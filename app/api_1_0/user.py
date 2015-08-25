@@ -21,6 +21,8 @@ def get_code():
     验证手机号是否存在，并发送手机验证码
 
     URL:/user/getcode
+    格式
+        JSON
     POST 参数:
         username -- 帐号 (必填)
     返回值
@@ -58,6 +60,8 @@ def new_user():
     注册新用户
 
     URL:/user/reg
+    格式
+        JSON
     POST 参数:
         username -- 帐号 (必填)
         password -- 密码 (必填)
@@ -107,6 +111,8 @@ def change_phone():
     更改用户手机号（帐号）
 
     URL:/user/changephone
+    格式
+        JSON
     POST 参数:
         username -- 帐号 (必填)
         code -- 手机验证码 (必填)
@@ -155,6 +161,8 @@ def update_user_info():
     更新个人信息
 
     URL:/user/update
+    格式
+        JSON
     POST 参数: 
     	name -- 姓名 (默认 0)
     	sex -- 性别 (默认1,1:男 0:女)
@@ -182,6 +190,8 @@ def update_user_workexp():
     更新工作经历
 
     URL:/user/updateworkexp
+    格式
+        JSON
     POST 参数:
     	_id -- 用户ID (测试时使用，上线后删除)
     	list -- 工作经历数组 (由多个工作经历字典组成)
@@ -231,6 +241,8 @@ def update_user_edu():
     更新教育背景
 
     URL:/user/updateedu
+    格式
+        JSON
     POST 参数:
         _id -- 用户ID (测试时使用，上线后删除)
         list -- 工作经历数组 (由多个工作经历字典组成)
@@ -271,6 +283,8 @@ def get_appointment_list(_type=0):
     URL:
     	/appointment/list (_type 为缺省值 1)
     	/appointment/list/<int:_type>
+    格式
+        JSON
     GET 参数: 
         _type -- 预约类型 (1:我约 2:被约) 
     '''
@@ -290,14 +304,18 @@ def get_appointment_info(aid,_type=1):
     URL:
         /appointment/info/<int:aid> (_type 为缺省值 1)
         /appointment/info/<int:aid>/<int:_type>
+    格式
+        JSON
     GET 参数: 
         aid -- 预约ID (默认 0)
         _type -- 预约类型 (1:我约 2:被约) 
     '''
 
     a_info = Appointment.getinfo(aid=aid)
-    #print a_info
-    return jsonify(app=a_info.to_json(_type, 0))
+    if a_info is not None:
+        return jsonify(app=a_info.to_json(_type, 0))
+    else:
+        return jsonify(app={})
 
 @api.route('/user/thinktank', methods=['GET'])
 @auth.login_required
@@ -306,6 +324,8 @@ def get_user_thinktank():
     获取用户智囊团列表
 
     URL:/user/thinktank
+    格式
+        JSON
     GET 参数: 
         无
     '''
@@ -325,6 +345,8 @@ def get_user_message(pageindex=1):
 
     URL:/user/message
         /user/message/<int:pageindex>
+    格式
+        JSON
     GET 参数:
         pageindex -- 页码 (默认 1)
     '''
@@ -344,6 +366,8 @@ def get_user_info():
     URL:/user/info
     GET 参数:
         无
+    格式
+        JSON
     返回值
         info 专家信息
             _id 专家ID
@@ -370,6 +394,7 @@ def get_user_info():
                 end # 结束时间
                 name # 公司名称
                 job # 职位
+            money 账户余额
     '''
     u_info = User.getinfo(g.current_user._id)
     return jsonify(info=u_info.to_json())

@@ -283,6 +283,34 @@ def topic_list(uid=-2,index=1):
 
         return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user)
 
+@admin.route('/topicrecycle',methods=['GET', 'POST'])
+@admin.route('/topicrecycle/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
+@permission_required('topic',Permission.VIEW)
+@permission_required('topic',Permission.DELETE)
+def topicrecycle(index=1):
+    # 话题回收站
+    if request.method == 'POST':
+        _type = request.args.get('type','')
+        tid = request.args.get('tid',0,type=int)
+        if tid>0:
+            if _type=='restore':# 恢复
+                Topic.updatestate(tid,0)
+                flash('恢复成功')
+        return redirect(url_for('.topicrecycle',index=index))
+    else:
+        pagesize = 8
+        count = Topic.getcount_recycle()
+        tpcount = common.getpagecount(count,pagesize)
+        if index>tpcount:
+            index = tpcount
+        if index<1:
+            index=1
+        topiclist = Topic.getlist_recycle(index=index,count=pagesize)
+        func = {'stamp2time': common.stamp2time,'gettopicstate':common.gettopicstate,'can': common.can}
+
+        return render_template('admin/topicrecycle.html',topiclist=topiclist, func=func,pagecount=tpcount,index=index,uinfo=g.current_user)
+
 @admin.route('/topicdel/<int:tid>', methods=['POST'])
 @auth.login_required
 @permission_required('topic',Permission.DELETE)

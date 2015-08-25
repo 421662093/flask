@@ -1,2 +1,1 @@
-config.py[line:93] DEBUG [flask start] 2015-08-24 20:05:56
-_internal.py[line:87] INFO [192.168.1.2 - - [24/Aug/2015 20:30:38] "GET /admin/loglist HTTP/1.1" 200 -] 2015-08-24 20:30:38
+config.py[line:93] DEBUG [flask start] 2015-08-25 16:45:47

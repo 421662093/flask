@@ -93,7 +93,7 @@ class Role(db.Document):
                 #rs.set(Role.CACHEKEY['list'],temp)
             else:
                 rv = json.loads(rv)
-            return Role.objects().limit(30)
+            return rv #Role.objects().limit(30)
 
     def editinfo(self):
         mc.delete(Role.CACHEKEY['list'])
@@ -116,6 +116,7 @@ class Role(db.Document):
     def getinfo(rid):
         #获取指定id 角色信息
         #return Role.objects(_id=rid).first()
+        #'''
         if rid>0:
             rlist = Role.getlist()
             for item in rlist:
@@ -124,6 +125,7 @@ class Role(db.Document):
             return None
         else:
             return None
+        #'''
     def to_json(self):
         json_role = {
             '_id': self.id,
@@ -231,6 +233,7 @@ class User(UserMixin, db.Document):  # 会员
     sort = db.IntField(default=0, db_field='so')  # 排序
     thinktank = db.ListField(default=[], db_field='t')  # 智囊团
     wish = db.ListField(default=[], db_field='w')  # 心愿单
+    money = db.IntField(default=0, db_field='m')  # 账户余额
 
     @staticmethod
     def getlist_app(roid=2,index=1,count=10):
@@ -545,7 +548,7 @@ class User(UserMixin, db.Document):  # 会员
                     "contents.0.job" : data.job,
                     "contents.0.label" : ";".join(data.label),
                     "contents.0.state" : data.state
-                }
+            }
             msg = q_search.call(Q_SOUYUN_ACTION, params)
             ret = json.loads(msg)
             if ret['retcode'] is not 0:
@@ -686,7 +689,8 @@ class User(UserMixin, db.Document):  # 会员
     '''
 
     def can(self,name, permissions):
-        return self.role is not None and (getattr(self.role.permissions,name) & permissions) == permissions
+        #return self.role is not None and (getattr(self.role['permissions'],name) & permissions) == permissions
+        return self.role is not None and (self.role['permissions'][name] & permissions) == permissions
 
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
@@ -718,7 +722,7 @@ class User(UserMixin, db.Document):  # 会员
                 'auth': {'vip': 1},  # self.auth.vip
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'meet_c': self.stats.meet,
-                'follow':{'baidu':self.stats.baidu,'weixin':self.stats.weixin,'zhihu':self.stats.zhihu,'xinlang':self.stats.xinlang},
+                'follow':{'baidu':self.stats.baidu,'weixin':self.stats.weixin,'zhihu':self.stats.zhihu,'sina':self.stats.sina},
                 # [39.9442, 116.324]
                 'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
                 'intro': self.intro.encode('utf-8'),
@@ -753,7 +757,8 @@ class User(UserMixin, db.Document):  # 会员
                 'label':self.label,
                 'role_id':self.role_id,
                 'domainid':self.domainid,
-                'industryid':self.industryid
+                'industryid':self.industryid,
+                'money':self.money
             }
         elif type == 1:
             json_user = {
@@ -918,6 +923,12 @@ class Topic(db.Document):  # 话题
             return Topic.objects(user_id=uid,state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
 
     @staticmethod
+    def getlist_recycle(index=1, count=10):
+        # 获取列表 话题回收站
+        pageindex =(index-1)*count
+        return Topic.objects(state=-1).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+
+    @staticmethod
     def getlist(uid=0,index=1, count=10,state=1):
     	# 获取列表 0全部  -1官方  -2专家
         uid = int(uid)
@@ -949,6 +960,11 @@ class Topic(db.Document):  # 话题
             query = query & Q(user_id__gt=0)
         query = query & Q(state__gte=0)
         return Topic.objects(query).limit(count).exclude('content')
+
+    @staticmethod
+    def getcount_recycle():
+        # 话题回收站数量
+        return Topic.objects(state=-1).count()
 
     @staticmethod
     def getcount(uid=0,state=1):
