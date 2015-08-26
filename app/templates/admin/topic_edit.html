@@ -108,17 +108,31 @@
 												</label>
 												<div class="col-md-10">
 													通话时间 <select class="table-group-action-input form-control input-medium" id="calltime" name="calltime">
-														<option value="15" {% if istopic %}{% if topic.pay.calltime==15 %}selected="selected"{%endif%}{%endif%}>15分钟</option>
+														<option value="10" {% if istopic %}{% if topic.pay.calltime==10 %}selected="selected"{%endif%}{%endif%}>10分钟</option>
+                                                        <option value="15" {% if istopic %}{% if topic.pay.calltime==15 %}selected="selected"{%endif%}{%endif%}>15分钟</option>
+                                                        <option value="20" {% if istopic %}{% if topic.pay.calltime==20 %}selected="selected"{%endif%}{%endif%}>20分钟</option>
+                                                        <option value="25" {% if istopic %}{% if topic.pay.calltime==25 %}selected="selected"{%endif%}{%endif%}>25分钟</option>
 														<option value="30" {% if istopic %}{% if topic.pay.calltime==30 %}selected="selected"{%endif%}{%endif%}>30分钟</option>
+                                                        <option value="40" {% if istopic %}{% if topic.pay.calltime==40 %}selected="selected"{%endif%}{%endif%}>40分钟</option>
 														<option value="45" {% if istopic %}{% if topic.pay.calltime==45 %}selected="selected"{%endif%}{%endif%}>45分钟</option>
+                                                        <option value="50" {% if istopic %}{% if topic.pay.calltime==50 %}selected="selected"{%endif%}{%endif%}>50分钟</option>
 														<option value="60" {% if istopic %}{% if topic.pay.calltime==60 %}selected="selected"{%endif%}{%endif%}>1小时</option>
+                                                        <option value="90" {% if istopic %}{% if topic.pay.calltime==90 %}selected="selected"{%endif%}{%endif%}>1.5小时</option>
 														<option value="120" {% if istopic %}{% if topic.pay.calltime==120 %}selected="selected"{%endif%}{%endif%}>2小时</option>
+                                                        <option value="150" {% if istopic %}{% if topic.pay.calltime==150 %}selected="selected"{%endif%}{%endif%}>2.5小时</option>
 														<option value="180" {% if istopic %}{% if topic.pay.calltime==180 %}selected="selected"{%endif%}{%endif%}>3小时</option>
 														<option value="240" {% if istopic %}{% if topic.pay.calltime==240 %}selected="selected"{%endif%}{%endif%}>4小时</option>
 													</select>
 													通话价格(元) <input type="text" class="form-control" id="call" name="call" value="{% if istopic %}{{topic.pay.call}}{%else%}0{%endif%}">
 													见面时间 <select class="table-group-action-input form-control input-medium" id="meettime" name="meettime">
-														<option value="60" {% if istopic %}{% if topic.pay.meettime==60 %}selected="selected"{%endif%}{%endif%}>1小时</option>
+                                                        <option value="30" {% if istopic %}{% if topic.pay.meettime==30 %}selected="selected"{%endif%}{%endif%}>0.5小时</option>
+                                                        <option value="60" {% if istopic %}{% if topic.pay.meettime==60 %}selected="selected"{%endif%}{%endif%}>1小时</option>
+                                                        <option value="90" {% if istopic %}{% if topic.pay.meettime==90 %}selected="selected"{%endif%}{%endif%}>1.5小时</option>
+                                                        <option value="120" {% if istopic %}{% if topic.pay.meettime==120 %}selected="selected"{%endif%}{%endif%}>2小时</option>
+                                                        <option value="150" {% if istopic %}{% if topic.pay.meettime==150 %}selected="selected"{%endif%}{%endif%}>2.5小时</option>
+														<option value="180" {% if istopic %}{% if topic.pay.meettime==180 %}selected="selected"{%endif%}{%endif%}>3小时</option>
+                                                        <option value="210" {% if istopic %}{% if topic.pay.meettime==210 %}selected="selected"{%endif%}{%endif%}>3.5小时</option>
+                                                        <option value="240" {% if istopic %}{% if topic.pay.meettime==240 %}selected="selected"{%endif%}{%endif%}>4小时</option>
 													</select>
 													见面价格(元) <input type="text" class="form-control" id="meet" name="meet" value="{% if istopic %}{{topic.pay.meet}}{%else%}0{%endif%}">
 												</div>
