@@ -1,0 +1,393 @@
+\hypertarget{namespaceapp_1_1api__1__0_1_1user}{}\section{app.\+api\+\_\+1\+\_\+0.\+user 命名空间参考}
+\label{namespaceapp_1_1api__1__0_1_1user}\index{app.\+api\+\_\+1\+\_\+0.\+user@{app.\+api\+\_\+1\+\_\+0.\+user}}
+\subsection*{函数}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_aaa1dafab3a77326e0392cf339082e647}{get\+\_\+code} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a55691ec00cfa22b8722440ac1c0e5488}{new\+\_\+user} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a3decbd5fa1b9c12c3c07f4fd24c9334d}{change\+\_\+phone} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a112fe5de3606f23f630ad74b003c3793}{update\+\_\+user\+\_\+info} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a0bfdfa2ffc75a64ccceb916fecf3ca4e}{update\+\_\+user\+\_\+workexp} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a8717211160238bc1ebc8017125817a3b}{update\+\_\+user\+\_\+edu} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_ac5e8e848c1b276331fd4973c7cceebc0}{get\+\_\+appointment\+\_\+list}
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a612d69aae95b49b644832971825b8c0b}{get\+\_\+appointment\+\_\+info}
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a7c088bb5f7150ff7ea87f1ddea02ba5e}{get\+\_\+user\+\_\+thinktank} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a5024fd93f333168232806a99ad6cbbd4}{get\+\_\+user\+\_\+message}
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_aa9a18cd0a720a6b498b2bd35be03ea4e}{get\+\_\+user\+\_\+info} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_aba3f803f01094c46bab3a2537f5a0e1b}{update\+\_\+user\+\_\+topic} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_aeb3490c84ceb14d756200260e7c8b2fd}{update\+\_\+user\+\_\+password} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a87d06d052af0b620ed79eb30b38dbff4}{get\+\_\+user\+\_\+wish}
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a7c93d9eed896ab2dcd9134e48eeb88af}{update\+\_\+wish} ()
+\item 
+def \hyperlink{namespaceapp_1_1api__1__0_1_1user_a59970954545af8670d30330ede81432d}{update\+\_\+ocp} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{函数说明}
+\hypertarget{namespaceapp_1_1api__1__0_1_1user_a3decbd5fa1b9c12c3c07f4fd24c9334d}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!change\+\_\+phone@{change\+\_\+phone}}
+\index{change\+\_\+phone@{change\+\_\+phone}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{change\+\_\+phone()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+change\+\_\+phone (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a3decbd5fa1b9c12c3c07f4fd24c9334d}
+\begin{DoxyVerb}更改用户手机号（帐号）
+
+URL:/user/changephone
+格式
+    JSON
+POST 参数:
+    username -- 帐号 (必填)
+    code -- 手机验证码 (必填)
+返回值
+    {'ret':1,'username':'帐号'} 发送成功
+    -1 帐号或密码为空
+    -2 帐号已存在
+    -3 验证码错误
+    -4 手机号格式错误
+    -5 系统异常
+    -6 帐号更新异常
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a612d69aae95b49b644832971825b8c0b}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!get\+\_\+appointment\+\_\+info@{get\+\_\+appointment\+\_\+info}}
+\index{get\+\_\+appointment\+\_\+info@{get\+\_\+appointment\+\_\+info}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{get\+\_\+appointment\+\_\+info}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+get\+\_\+appointment\+\_\+info (
+\begin{DoxyParamCaption}
+\item[{}]{aid, }
+\item[{}]{\+\_\+type = {\ttfamily 1}}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a612d69aae95b49b644832971825b8c0b}
+\begin{DoxyVerb}获取用户预约详情
+
+URL:
+    /appointment/info/<int:aid> (_type 为缺省值 1)
+    /appointment/info/<int:aid>/<int:_type>
+格式
+    JSON
+GET 参数: 
+    aid -- 预约ID (默认 0)
+    _type -- 预约类型 (1:我约 2:被约) 
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_ac5e8e848c1b276331fd4973c7cceebc0}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!get\+\_\+appointment\+\_\+list@{get\+\_\+appointment\+\_\+list}}
+\index{get\+\_\+appointment\+\_\+list@{get\+\_\+appointment\+\_\+list}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{get\+\_\+appointment\+\_\+list}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+get\+\_\+appointment\+\_\+list (
+\begin{DoxyParamCaption}
+\item[{}]{\+\_\+type = {\ttfamily 0}}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_ac5e8e848c1b276331fd4973c7cceebc0}
+\begin{DoxyVerb}获取用户预约列表
+
+URL:
+    /appointment/list (_type 为缺省值 1)
+    /appointment/list/<int:_type>
+格式
+    JSON
+GET 参数: 
+    _type -- 预约类型 (1:我约 2:被约) 
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_aaa1dafab3a77326e0392cf339082e647}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!get\+\_\+code@{get\+\_\+code}}
+\index{get\+\_\+code@{get\+\_\+code}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{get\+\_\+code()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+get\+\_\+code (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_aaa1dafab3a77326e0392cf339082e647}
+\begin{DoxyVerb}验证手机号是否存在，并发送手机验证码
+
+URL:/user/getcode
+格式
+    JSON
+POST 参数:
+    username -- 帐号 (必填)
+返回值
+    {'ret':1} 发送成功
+    -1 帐号为空
+    -2 帐号已存在
+    -3 验证码发送失败,联系运营商
+    -4 手机号格式错误
+    -5 系统异常
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_aa9a18cd0a720a6b498b2bd35be03ea4e}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!get\+\_\+user\+\_\+info@{get\+\_\+user\+\_\+info}}
+\index{get\+\_\+user\+\_\+info@{get\+\_\+user\+\_\+info}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{get\+\_\+user\+\_\+info()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+get\+\_\+user\+\_\+info (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_aa9a18cd0a720a6b498b2bd35be03ea4e}
+\begin{DoxyVerb}获取用户详细信息
+
+URL:/user/info
+GET 参数:
+    无
+格式
+    JSON
+返回值
+    info 专家信息
+        _id 专家ID
+        name 姓名
+        sex 性别
+        auth 认证
+            vip VIP认证
+        avaurl 头像地址
+        fileurl 介绍图片或视频地址
+        geo 坐标
+        grade 评级
+        intro 简介
+        job 职位
+        label 标签
+        meet_c 见面次数
+        edu 教育背景List
+            name 学校名称
+            start 开始时间
+            end 结束时间
+            major 专业
+            dip 学历
+        work 工作经历
+            start # 开始时间
+            end # 结束时间
+            name # 公司名称
+            job # 职位
+        money 账户余额
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a5024fd93f333168232806a99ad6cbbd4}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!get\+\_\+user\+\_\+message@{get\+\_\+user\+\_\+message}}
+\index{get\+\_\+user\+\_\+message@{get\+\_\+user\+\_\+message}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{get\+\_\+user\+\_\+message}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+get\+\_\+user\+\_\+message (
+\begin{DoxyParamCaption}
+\item[{}]{pageindex = {\ttfamily 1}}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a5024fd93f333168232806a99ad6cbbd4}
+\begin{DoxyVerb}获取用户消息列表
+
+URL:/user/message
+    /user/message/<int:pageindex>
+格式
+    JSON
+GET 参数:
+    pageindex -- 页码 (默认 1)
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a7c088bb5f7150ff7ea87f1ddea02ba5e}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!get\+\_\+user\+\_\+thinktank@{get\+\_\+user\+\_\+thinktank}}
+\index{get\+\_\+user\+\_\+thinktank@{get\+\_\+user\+\_\+thinktank}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{get\+\_\+user\+\_\+thinktank()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+get\+\_\+user\+\_\+thinktank (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a7c088bb5f7150ff7ea87f1ddea02ba5e}
+\begin{DoxyVerb}获取用户智囊团列表
+
+URL:/user/thinktank
+格式
+    JSON
+GET 参数: 
+    无
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a87d06d052af0b620ed79eb30b38dbff4}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!get\+\_\+user\+\_\+wish@{get\+\_\+user\+\_\+wish}}
+\index{get\+\_\+user\+\_\+wish@{get\+\_\+user\+\_\+wish}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{get\+\_\+user\+\_\+wish}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+get\+\_\+user\+\_\+wish (
+\begin{DoxyParamCaption}
+\item[{}]{pageindex = {\ttfamily 1}}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a87d06d052af0b620ed79eb30b38dbff4}
+\begin{DoxyVerb}获取用户心愿单列表
+
+URL:/user/wish
+    /user/wish/<int:pageindex>  
+GET 参数:
+    pageindex -- 页码 (默认 1)
+返回值
+    list
+        _id 用户ID
+        name 姓名
+        job 职位
+        avaurl 头像
+        grade 评分
+        auth 认证
+            vip
+        sex 性别\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a55691ec00cfa22b8722440ac1c0e5488}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!new\+\_\+user@{new\+\_\+user}}
+\index{new\+\_\+user@{new\+\_\+user}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{new\+\_\+user()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+new\+\_\+user (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a55691ec00cfa22b8722440ac1c0e5488}
+\begin{DoxyVerb}注册新用户
+
+URL:/user/reg
+格式
+    JSON
+POST 参数:
+    username -- 帐号 (必填)
+    password -- 密码 (必填)
+    code -- 手机验证码 (必填)
+返回值
+    {'ret':1,'username':'帐号'} 发送成功
+    -1 帐号或密码为空
+    -2 帐号已存在
+    -3 验证码错误
+    -4 手机号格式错误
+    -5 系统异常
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a59970954545af8670d30330ede81432d}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!update\+\_\+ocp@{update\+\_\+ocp}}
+\index{update\+\_\+ocp@{update\+\_\+ocp}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{update\+\_\+ocp()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+update\+\_\+ocp (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a59970954545af8670d30330ede81432d}
+\begin{DoxyVerb}认证专家
+URL:/user/updateocp
+POST 参数:
+    type -- 类型 (必填) 1个人简介  2个人标签 3工作经历 4教育背景  
+    type=1
+        intro 简介
+    type=2 
+        label 数组[字符串1,字符串2]
+    type=3 workexp 数组[字典1，字典2]
+        name 姓名
+        start 开始时间 格式 2015-8-25
+        end 结束时间 格式 2015-8-25
+        job 职业
+    type=4 edu 数组[字典1，字典2]
+        name 姓名
+        start 开始时间 格式 2015-8-25
+        end 结束时间 格式 2015-8-25
+        dip 学历
+        major 专业
+返回值
+    {'ret':1} 成功
+    -5 系统异常
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a8717211160238bc1ebc8017125817a3b}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!update\+\_\+user\+\_\+edu@{update\+\_\+user\+\_\+edu}}
+\index{update\+\_\+user\+\_\+edu@{update\+\_\+user\+\_\+edu}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{update\+\_\+user\+\_\+edu()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+update\+\_\+user\+\_\+edu (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a8717211160238bc1ebc8017125817a3b}
+\begin{DoxyVerb}更新教育背景
+
+URL:/user/updateedu
+格式
+    JSON
+POST 参数:
+    _id -- 用户ID (测试时使用，上线后删除)
+    list -- 工作经历数组 (由多个工作经历字典组成)
+        start -- 工作起始时间 (必填，时间戳)
+        end -- 工作结束时间 (必填，时间戳)
+        name -- 学校名称 (必填)
+        dip -- 学历 (必填)
+        major -- 专业 (必填)
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a112fe5de3606f23f630ad74b003c3793}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!update\+\_\+user\+\_\+info@{update\+\_\+user\+\_\+info}}
+\index{update\+\_\+user\+\_\+info@{update\+\_\+user\+\_\+info}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{update\+\_\+user\+\_\+info()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+update\+\_\+user\+\_\+info (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a112fe5de3606f23f630ad74b003c3793}
+\begin{DoxyVerb}更新个人信息
+
+URL:/user/update
+格式
+    JSON
+POST 参数: 
+    name -- 姓名 (默认 0)
+    sex -- 性别 (默认1,1:男 0:女)
+    domainid -- 领域分类id
+    industryid -- 行业分类id
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_aeb3490c84ceb14d756200260e7c8b2fd}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!update\+\_\+user\+\_\+password@{update\+\_\+user\+\_\+password}}
+\index{update\+\_\+user\+\_\+password@{update\+\_\+user\+\_\+password}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{update\+\_\+user\+\_\+password()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+update\+\_\+user\+\_\+password (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_aeb3490c84ceb14d756200260e7c8b2fd}
+\begin{DoxyVerb}更改用户密码
+
+URL:/user/updatepassword
+POST 参数:
+    oldpaw -- 旧密码
+    newpaw -- 新密码
+返回值
+    {'ret':1} 成功
+    0 旧密码验证失败
+    -1 系统异常
+    -2 旧密码为空
+    -3 新密码为空
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_aba3f803f01094c46bab3a2537f5a0e1b}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!update\+\_\+user\+\_\+topic@{update\+\_\+user\+\_\+topic}}
+\index{update\+\_\+user\+\_\+topic@{update\+\_\+user\+\_\+topic}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{update\+\_\+user\+\_\+topic()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+update\+\_\+user\+\_\+topic (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_aba3f803f01094c46bab3a2537f5a0e1b}
+\begin{DoxyVerb}添加话题（专家）
+
+URL:/user/updatetopic
+POST 参数:
+    tid -- 话题id  id大于0为编辑 否则新添加
+    title -- 标题
+    content -- 内容
+    call -- 通话价格
+    calltime -- 通话时间
+    meet -- 见面价格
+    meettime -- 见面时间
+返回值 
+    {'ret':1} 成功
+    -1 系统异常\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a0bfdfa2ffc75a64ccceb916fecf3ca4e}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!update\+\_\+user\+\_\+workexp@{update\+\_\+user\+\_\+workexp}}
+\index{update\+\_\+user\+\_\+workexp@{update\+\_\+user\+\_\+workexp}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{update\+\_\+user\+\_\+workexp()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+update\+\_\+user\+\_\+workexp (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a0bfdfa2ffc75a64ccceb916fecf3ca4e}
+\begin{DoxyVerb}更新工作经历
+
+URL:/user/updateworkexp
+格式
+    JSON
+POST 参数:
+    _id -- 用户ID (测试时使用，上线后删除)
+    list -- 工作经历数组 (由多个工作经历字典组成)
+        start -- 工作起始时间 (必填，时间戳)
+        end -- 工作结束时间 (必填，时间戳)
+        name -- 公司名称 (必填)
+        job -- 职位名称 (必填)
+返回值
+    {'ret':1} 成功
+    0 更新失败
+    -1 系统异常
+\end{DoxyVerb}
+ \hypertarget{namespaceapp_1_1api__1__0_1_1user_a7c93d9eed896ab2dcd9134e48eeb88af}{}\index{app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}!update\+\_\+wish@{update\+\_\+wish}}
+\index{update\+\_\+wish@{update\+\_\+wish}!app\+::api\+\_\+1\+\_\+0\+::user@{app\+::api\+\_\+1\+\_\+0\+::user}}
+\subsubsection[{update\+\_\+wish()}]{\setlength{\rightskip}{0pt plus 5cm}def app.\+api\+\_\+1\+\_\+0.\+user.\+update\+\_\+wish (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\label{namespaceapp_1_1api__1__0_1_1user_a7c93d9eed896ab2dcd9134e48eeb88af}
+\begin{DoxyVerb}关注专家
+URL:/user/updatewish
+POST 参数:
+    eid -- 专家ID (必填)
+    type -- 方式 1添加 0取消
+返回值
+    {'ret':1} 成功
+    -5 系统异常
+\end{DoxyVerb}
+ 

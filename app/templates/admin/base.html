@@ -102,19 +102,44 @@
 							预约管理</a>
 						</li>
                         {%endif%}
+                        
+                        {% if func.can(uinfo.role.permissions.expertauth,Permission.VIEW) %}
+                        <li>
+                            <a href="{{ url_for('.becomeexpert_list') }}">
+                            <i class="icon-bulb"></i>
+                            成为专家审核</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('.expertauth_list') }}">
+                            <i class="icon-bulb"></i>
+                            认证专家审核</a>
+                        </li>
+                        
+                        {%endif%}
+                        
+					</ul>
+				</li>
+
+				<li class="last ">
+					<a href="javascript:;">
+					<i class="icon-pointer"></i>
+					<span class="title">系统管理</span>
+					<span class="arrow "></span>
+					</a>
+					<ul class="sub-menu">
                         {% if func.can(uinfo.role.permissions.ad,Permission.VIEW) %}
                         <li>
                             <a href="{{ url_for('.ad_list') }}">
                             <i class="icon-graph"></i>
                             广告管理</a>
                         </li>
-						{%endif%}
-                        {% if func.can(uinfo.role.permissions.role,Permission.VIEW) %}
-						<li>
-							<a href="{{ url_for('.role_list') }}">
-							<i class="icon-bulb"></i>
-							角色管理</a>
-						</li>
+                        {%endif%}
+						{% if func.can(uinfo.role.permissions.role,Permission.VIEW) %}
+                        <li>
+                            <a href="{{ url_for('.role_list') }}">
+                            <i class="icon-bulb"></i>
+                            角色管理</a>
+                        </li>
                         {%endif%}
                         {% if func.can(uinfo.role.permissions.log,Permission.VIEW) %}
                         <li>
@@ -123,29 +148,11 @@
                             日志管理</a>
                         </li>
                         {%endif%}
-						<li>
-							<a href="{{ url_for('.plugin_list') }}">
-							<i class="icon-bulb"></i>
-							插件管理</a>
-						</li>
-					</ul>
-				</li>
-
-				<li class="last ">
-					<a href="javascript:;">
-					<i class="icon-pointer"></i>
-					<span class="title">系统</span>
-					<span class="arrow "></span>
-					</a>
-					<ul class="sub-menu">
-						<li>
-							<a href="maps_google.html">
-							设置</a>
-						</li>
-						<li>
-							<a href="maps_vector.html">
-							退出</a>
-						</li>
+                        <li>
+                            <a href="{{ url_for('.plugin_list') }}">
+                            <i class="icon-bulb"></i>
+                            插件管理</a>
+                        </li>
 					</ul>
 				</li>
 			</ul>

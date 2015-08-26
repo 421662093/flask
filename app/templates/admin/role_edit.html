@@ -130,6 +130,12 @@
                                                     <label><input name="log" {% if isrole and func.can(role.permissions.log,Permission.DELETE) %} checked="checked"{%endif%}type="checkbox" value="{{Permission.DELETE}}" />删除 </label>
                                                 </div>
                                             </div>
+                                            <div class="form-group">
+                                                <label class="col-md-2 control-label">认证专家: </label>
+                                                <div class="col-md-10">
+                                                 <label><input name="expertauth" {% if isrole and func.can(role.permissions.expertauth,Permission.VIEW) %} checked="checked"{%endif%} type="checkbox" value="{{Permission.VIEW}}" />列表 </label>
+                                                </div>
+                                            </div>
 										</div>
 									</div>
 								</div>

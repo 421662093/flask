@@ -178,6 +178,15 @@ def gettopicstate(state):
     else:
         return '已删除'
 
+def getexpertauthstate(state):
+    #获取认证专家状态
+    if state==0:
+        return '待审核'
+    elif state==1:
+        return '已审核'
+    else:
+        return '已删除'
+
 def getappointmentid(uid):
 	# 构建预约id
     today = datetime.date.today()

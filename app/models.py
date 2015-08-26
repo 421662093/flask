@@ -38,6 +38,7 @@ class RolePermissions(db.EmbeddedDocument):  # 角色权限
     ad = db.IntField(default=0, db_field='ad') #广告
     role = db.IntField(default=0, db_field='r') #角色
     log = db.IntField(default=0, db_field='l') #日志
+    expertauth = db.IntField(default=0, db_field='ea') #审核专家
 
     def to_json(self):
         json_rp = {
@@ -47,7 +48,8 @@ class RolePermissions(db.EmbeddedDocument):  # 角色权限
             'appointment': self.appointment,
             'ad': self.ad,
             'role': self.role,
-            'log': self.log
+            'log': self.log,
+            'expertauth': self.expertauth
         }
         return json_rp
 
@@ -194,6 +196,18 @@ class Edu(db.EmbeddedDocument):  # 教育背景
         }
         return json_edu
 
+class UserAuth(db.EmbeddedDocument):  # 认证信息
+    expertprocess = db.IntField(default=0,  db_field='ep')  #认证专家流程  0未认证 1-5
+    expert = db.IntField(default=0,  db_field='e')  #认证专家 1已认证 0未认证
+    becomeexpert = db.IntField(default=0,  db_field='be')  #成为专家 1已提交 0未提交
+    def to_json(self):
+        json = {
+            'expertprocess': self.expertprocess,
+            'expert':self.expert,
+            'becomeexpert':self.becomeexpert
+        }
+        return json
+
 class User(UserMixin, db.Document):  # 会员
     __tablename__ = 'users'
     meta = {
@@ -229,6 +243,7 @@ class User(UserMixin, db.Document):  # 会员
         db.EmbeddedDocumentField(WorkExp), default=[], db_field='we')  # 工作经历
     edu = db.ListField(
         db.EmbeddedDocumentField(Edu), default=[], db_field='ed')  # 教育背景
+    auth = db.EmbeddedDocumentField(UserAuth, default=UserAuth(), db_field='au')  # 用户认证
     state = db.IntField(default=1, db_field='sta')# 状态 1 正常  -1新增  -2待审核 0暂停
     sort = db.IntField(default=0, db_field='so')  # 排序
     thinktank = db.ListField(default=[], db_field='t')  # 智囊团
@@ -439,6 +454,32 @@ class User(UserMixin, db.Document):  # 会员
             User.objects(_id=self._id).update_one(**update)
             return 1
         return 0
+
+    def updateocp(self,_type):
+        #认证专家 - 用户
+        update = {}
+        if _type==1:
+            update['set__intro'] = self.intro
+            
+        elif _type==2:
+            update['set__label'] = self.label
+        elif _type==3:
+            update['set__workexp'] = self.workexp
+        elif _type==4:
+            update['set__edu'] = self.edu
+        elif _type==5:
+            eaitem = ExpertAuth()
+            eaitem.user_id = self._id
+            eaitem.saveinfo()
+        update['set__auth__expertprocess'] = _type
+        User.objects(_id=self._id).update_one(**update)
+
+    @staticmethod
+    def updateexpert(uid):
+        #更新认证专家状态
+        update = {}
+        update['set__auth__expert'] = 1
+        User.objects(_id=uid).update_one(**update)
 
     def editinfo(self):
     	#后台更新用户信息
@@ -719,7 +760,7 @@ class User(UserMixin, db.Document):  # 会员
                 'name': self.name.encode('utf-8'),
                 'sex': self.sex,
                 'job': self.job.encode('utf-8'),
-                'auth': {'vip': 1},  # self.auth.vip
+                'auth': {'expert': self.auth.expert,'expertprocess': self.auth.expertprocess},  # self.auth.vip
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'meet_c': self.stats.meet,
                 'follow':{'baidu':self.stats.baidu,'weixin':self.stats.weixin,'zhihu':self.stats.zhihu,'sina':self.stats.sina},
@@ -744,7 +785,7 @@ class User(UserMixin, db.Document):  # 会员
                 'name': self.name.encode('utf-8'),
                 'sex': self.sex,
                 'job': self.job.encode('utf-8'),
-                'auth': {'vip': 1},  # self.auth.vip
+                'auth': {'becomeexpert': self.auth.becomeexpert}, # self.auth.vip
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'meet_c': self.stats.meet,
                 # [39.9442, 116.324]
@@ -1523,7 +1564,7 @@ class Message(db.Document):
         }
         return json_message
 
-class ExpertInv(db.EmbeddedDocument):
+class ExpertInv(db.Document):
     #专家清单
     __tablename__ = 'expertinv'
     meta = {
@@ -1533,11 +1574,11 @@ class ExpertInv(db.EmbeddedDocument):
     title = db.StringField(default='', max_length=64,  db_field='t')  # 标题
     content = db.StringField(default='', db_field='c')  # 内容
     user_id = db.IntField(db_field='ui')  # 专家ID
+    date = db.IntField(default=0, db_field='d')  # 创建时间
     price = db.IntField(default=0, db_field='p')  # 支付价格
     unit = db.IntField(default='', db_field='u')  # 单位
     sort = db.IntField(default=0, db_field='s')  # 排序
 
-    @staticmethod
     def saveinfo(self):
         if self._id > 0:
             update = {}
@@ -1566,3 +1607,67 @@ class ExpertInv(db.EmbeddedDocument):
             'sort': self.sort
         }
         return json_invt
+
+class ExpertAuth(db.Document):
+    #专家认证审核
+    __tablename__ = 'expertauth'
+    meta = {
+        'collection': __tablename__,
+    }
+    _id = db.IntField(primary_key=True)  # id
+    user_id = db.IntField(default=0, db_field='ui')  # 专家ID
+    state = db.IntField(default=0, db_field='s')  # 1审核通过 0审核中
+    date = db.IntField(default=0, db_field='d')  # 创建时间
+    admin_id =  db.IntField(default=0, db_field='ai')  # 操作人
+
+
+    @staticmethod
+    def getinfo(eid):
+        return ExpertAuth.objects(_id=eid).first()
+
+    @staticmethod
+    def getlist(index=1, count=10):
+        pageindex =(index-1)*count
+        return ExpertAuth.objects.order_by("-_id").skip(pageindex).limit(count)
+
+    @staticmethod
+    def getcount():
+        return ExpertAuth.objects.count()
+
+    def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        self.date = common.getstamp()
+        self.save()
+
+    @staticmethod
+    def updatestate(eid):
+        #更新审核状态
+        update = {}
+        update['set__state'] = 1
+        ExpertAuth.objects(_id=eid).update_one(**update)
+
+class BecomeExpert(db.Document):
+    #成为审核
+    __tablename__ = 'becomeexpert'
+    meta = {
+        'collection': __tablename__,
+    }
+    _id = db.IntField(primary_key=True)  # id
+    user_id = db.IntField(default=0, db_field='ui')  # 用户ID
+    state = db.IntField(default=0, db_field='s')  # 1审核通过 0审核中
+    date = db.IntField(default=0, db_field='d')  # 创建时间
+    admin_id =  db.IntField(default=0, db_field='ai')  # 操作人
+
+    @staticmethod
+    def getlist(index=1, count=10):
+        pageindex =(index-1)*count
+        return BecomeExpert.objects.order_by("-_id").skip(pageindex).limit(count)
+
+    @staticmethod
+    def getcount():
+        return BecomeExpert.objects.count()
+
+    def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        self.date = common.getstamp()
+        self.save()

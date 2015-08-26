@@ -9,7 +9,8 @@ from flask.ext.login import login_required, current_user, logout_user
 from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
-from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,Inventory,Appointment,Ad
+from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,\
+                    Inventory,Appointment,Ad,ExpertAuth,BecomeExpert
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
@@ -595,6 +596,9 @@ def role_edit(rid):
         for item in tempperarr:
             temp_per=temp_per|int(item)
         r_edit.permissions.log = temp_per
+
+        r_edit.permissions.expertauth = request.form.get('expertauth')
+
         r_edit.editinfo()
         return redirect(url_for('.role_list'))
     else:
@@ -684,3 +688,53 @@ def ad_edit(id=0):
             sign = q_auth.get_app_sign_v2(bucket=conf.QCLOUD_BUCKET, fileid='ad_'+str(id),expired=expired)
         func = {'can': common.can}
         return render_template('admin/ad_edit.html', ad=ad, isad=isad, form=form,sign=sign,func=func,uinfo=g.current_user)
+
+
+@admin.route('/expertauthlist', methods=['GET', 'POST'])
+@admin.route('/expertauthlist/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
+@permission_required('expertauth',Permission.VIEW)
+def expertauth_list(index=1):
+    if request.method == 'POST':
+        _type = request.args.get('type','')
+        eid = request.args.get('eid',0,type=int)
+        if eid>0:
+            if _type=='audit':# 审核通过
+                ea_info = ExpertAuth.getinfo(eid)
+                if ea_info is not None:
+                    ExpertAuth.updatestate(eid)
+                    User.updateexpert(ea_info.user_id)
+                    flash('用户审核通过')
+        return redirect(url_for('.expertauth_list',index=index))
+    else:
+        pagesize = 8
+        count = ExpertAuth.getcount()
+        pcount = common.getpagecount(count,pagesize)
+        if index>pcount:
+            index = pcount
+        if index<1:
+            index=1
+
+        ealist = ExpertAuth.getlist(index=index,count=pagesize)
+        func = {'stamp2time': common.stamp2time,'can': common.can,'getexpertauthstate':common.getexpertauthstate}
+        return render_template('admin/expertauth_list.html',ealist=ealist, func=func,pagecount=pcount,index=index,uinfo=g.current_user)
+
+@admin.route('/becomeexpertlist', methods=['GET', 'POST'])
+@admin.route('/becomeexpertlist/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
+@permission_required('expertauth',Permission.VIEW)
+def becomeexpert_list(index=1):
+    if request.method == 'POST':
+        return redirect(url_for('.becomeexpert_list'))
+    else:
+        pagesize = 8
+        count = BecomeExpert.getcount()
+        pcount = common.getpagecount(count,pagesize)
+        if index>pcount:
+            index = pcount
+        if index<1:
+            index=1
+
+        belist = BecomeExpert.getlist(index=index,count=pagesize)
+        func = {'stamp2time': common.stamp2time,'can': common.can,'getexpertauthstate':common.getexpertauthstate}
+        return render_template('admin/becomeexpert_list.html',belist=belist, func=func,pagecount=pcount,index=index,uinfo=g.current_user)

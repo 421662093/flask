@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-#用户API类
+'''
+用户API类
+'''
 
 from flask import make_response, request, current_app, url_for
 from flask import g
@@ -546,6 +548,75 @@ def update_wish():
         if eid>0:
             User.updatewish(g.current_user._id,eid,_type)
         return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+
+@api.route('/user/updateocp', methods = ['POST'])
+@auth.login_required
+def update_ocp():
+    '''
+    认证专家
+    URL:/user/updateocp
+    POST 参数:
+        type -- 类型 (必填) 1个人简介  2个人标签 3工作经历 4教育背景  
+        type=1
+            intro 简介
+        type=2 
+            label 数组[字符串1,字符串2]
+        type=3 workexp 数组[字典1，字典2]
+            name 姓名
+            start 开始时间 格式 2015-8-25
+            end 结束时间 格式 2015-8-25
+            job 职业
+        type=4 edu 数组[字典1，字典2]
+            name 姓名
+            start 开始时间 格式 2015-8-25
+            end 结束时间 格式 2015-8-25
+            dip 学历
+            major 专业
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        _type = common.strtoint(data['type'],0)
+        if _type>0:
+            user = User()
+            user._id = g.current_user._id
+            if _type==1:
+                user.intro = data['intro']
+            elif _type==2:
+                user.label = common.delrepeat(data['label'])
+            elif _type==3:
+                welist= []
+                tempwe = data['workexp']
+                for item in tempwe:
+                    tempWorkExp = WorkExp()
+                    tempWorkExp.name = item['name']
+                    if len(tempWorkExp.name)>0:
+                        tempWorkExp.start = item['start']
+                        tempWorkExp.end = item['end']
+                        tempWorkExp.job = item['job']
+                    welist.append(tempWorkExp)
+                user.workexp = welist
+            elif _type==4:
+                edulist= []
+                tempedu = data['edu']
+                for item in tempedu:
+                    tempedu = Edu()
+                    tempedu.name = item['name']
+                    if len(tempedu.name)>0:
+                        tempedu.start = item['start']
+                        tempedu.end = item['end']
+                        tempedu.dip = item['dip']
+                        tempedu.major = item['major']
+                        edulist.append(tempedu)
+                user.edu = edulist
+            user.updateocp(_type)
+            return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
