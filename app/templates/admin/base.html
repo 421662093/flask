@@ -77,16 +77,17 @@
 							<i class="icon-graph"></i>
 							话题管理</a>
 						</li>
-						<li>
-							<a href="{{ url_for('.topicrecycle') }}">
-							<i class="icon-graph"></i>
-							话题回收站</a>
-						</li>
+						
 						<li>
 							<a href="{{ url_for('.topicteam_list') }}">
 							<i class="icon-graph"></i>
 							话题团管理</a>
 						</li>
+                        <li>
+                            <a href="{{ url_for('.topicrecycle') }}">
+                            <i class="icon-graph"></i>
+                            话题回收站</a>
+                        </li>
                         {%endif%}
                         {% if func.can(uinfo.role.permissions.inventory,Permission.VIEW) %}
 						<li>
@@ -107,7 +108,7 @@
                         <li>
                             <a href="{{ url_for('.becomeexpert_list') }}">
                             <i class="icon-bulb"></i>
-                            成为专家审核</a>
+                            成为专家记录</a>
                         </li>
                         <li>
                             <a href="{{ url_for('.expertauth_list') }}">

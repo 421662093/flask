@@ -397,23 +397,26 @@ def topic_edit(id,_type=0,uid=-2,pindex=1):
 def topicteam_edit(id,uid=-1,pindex=1):
     form = EditTopicForm()
     if request.method == 'POST' and form.validate_on_submit():
-
-        topic = Topic()
-        topic._id = id
-        topic.user_id = 0
-        topic.title = form.title.data
-        topic.intro = request.form.get('intro','')
-        topic.content = request.form.get('content','')
-        #topic.pay.call = form.call.data
-        #topic.pay.meet = form.meet.data
-        tempexp = request.form.get('expert','')
-        if len(tempexp)>0:
-            topic.expert = [int(i.strip()) for i in tempexp.split(',')]
-        topic.config.background = request.form.get('background','')
-        #topic.stats.topic_count = form.topic_count.data
-        #topic.stats.topic_total = form.topic_total.data
-        topic.sort = request.form.get('sort',0)
-        topic.editinfo()
+        try:
+            topic = Topic()
+            topic._id = id
+            topic.user_id = 0
+            topic.title = form.title.data
+            topic.intro = request.form.get('intro','')
+            topic.content = request.form.get('content','')
+            #topic.pay.call = form.call.data
+            #topic.pay.meet = form.meet.data
+            tempexp = request.form.get('expert','')
+            if len(tempexp)>0:
+                topic.expert = [int(i.strip()) for i in tempexp.split(',')]
+            #topic.config = TopicConfig()
+            topic.config.background = request.form.get('background','')
+            #topic.stats.topic_count = form.topic_count.data
+            #topic.stats.topic_total = form.topic_total.data
+            topic.sort = request.form.get('sort',0)
+            topic.editinfo(1)
+        except Exception,e:
+                logging.debug(e)
         return redirect(url_for('.topicteam_list',uid=uid,index=pindex))
     else:
         istopic = False

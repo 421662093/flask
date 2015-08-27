@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% block title %}成为专家审核{% endblock %}
+{% block title %}成为专家记录{% endblock %}
 {% block active %}class="active"{% endblock %}
 {% block css %}
 <!-- BEGIN PAGE LEVEL STYLES -->
@@ -24,7 +24,7 @@
 					<div class="portlet grey-cascade box">
 						<div class="portlet-title">
 							<div class="caption">
-								<i class="fa fa-cogs"></i>成为专家审核
+								<i class="fa fa-cogs"></i>成为专家记录
 							</div>
 						</div>
 						<div class="portlet-body">
@@ -36,16 +36,28 @@
 										 ID
 									</th>
 									<th>
-										 会员
+										 用户ID
+									</th>
+									<th>
+										 姓名
+									</th>
+									<th>
+										 行业
+									</th>
+									<th>
+										 公司
+									</th>
+									<th>
+										 职位
+									</th>
+									<th>
+										 微信号
+									</th>
+									<th>
+										 QQ
 									</th>
 									<th>
 										 时间
-									</th>
-                                    <th>
-										 状态
-									</th>
-									<th>
-										 操作
 									</th>
 								</tr>
 								</thead>
@@ -59,15 +71,25 @@
 									{{item.user_id}}
 									</td>
 									<td>
-									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
+									{{item.name}}
 									</td>
-                                    <td>
-                                    {{func.getexpertauthstate(item.state)}}
-                                    </td>
 									<td>
-									{% if item.state==0 %}
-									<form method="post" action="?type=state&tid={{item.id}}" id="topic_{{item.id}}_form"><a href="javascript:$('#topic_{{item.id}}_form').submit();" class="label label-sm label-success">审核通过</a></form>
-									{% endif %}
+									{{item.industry}}
+									</td>
+									<td>
+									{{item.company}}
+									</td>
+									<td>
+									{{item.job}}
+									</td>
+									<td>
+									{{item.weixin}}
+									</td>
+									<td>
+									{{item.qq}}
+									</td>
+									<td>
+									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
 									</td>
 								</tr>
 								{% endfor %}

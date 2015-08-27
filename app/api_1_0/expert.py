@@ -48,8 +48,8 @@ def get_expert_list(x=0.0, y=0.0,ind=0,index=1):
         /expert/map/<float:x>/<float:y>/<int:ind>
         /expert/list/<float:x>/<float:y>/<int:ind>/<int:index>
     GET 参数: 
-        x -- 经度 (必填) 为0.0则 按照默认排序 否则 按照附近检索
-        y -- 纬度 (必填) 
+        x -- 经度 (选填) 为0.0则 按照默认排序 否则 按照附近检索
+        y -- 纬度 (选填) 
         ind -- 行业ID (选填 默认 0) 
         index -- 页码 (选填 默认 1) 
     '''
@@ -77,7 +77,8 @@ def get_expert_info(uid):
             name 姓名
             sex 性别
             auth 认证
-                vip VIP认证
+                expertprocess 认证专家流程  0未认证 1-5
+                expert 认证专家 1已认证 0未认证
             bgurl 顶部背景图片
             avaurl 头像地址
             fileurl 介绍图片或视频地址

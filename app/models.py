@@ -232,7 +232,7 @@ class User(UserMixin, db.Document):  # 会员
     geo = db.PointField(default=[0, 0], db_field='ge')  # 坐标
     stats = db.EmbeddedDocumentField(
         UserStats, default=UserStats(), db_field='st')  # 统计
-    date = db.IntField(default=common.getstamp(), db_field='d')  # 创建时间
+    date = db.IntField(default=0, db_field='d')  # 创建时间
     intro = db.StringField(default='', db_field='i')  # 简介
     content = db.StringField(default='', db_field='co')  # 简介内容
     bgurl = db.StringField(default='', db_field='b')  # 顶部背景图片
@@ -311,9 +311,9 @@ class User(UserMixin, db.Document):  # 会员
 
     @staticmethod
     def getinfo_app(username):
-        # 获取指定id 管理员(web后台)
+        # 获取指定id 用户(APP)
 
-        query = Q(username=username) & (Q(role_id=2) | Q(role_id=3))
+        query = Q(username=username) # & (Q(role_id=2) | Q(role_id=3))
 
         u_info = User.objects(query).first()
 
@@ -460,7 +460,7 @@ class User(UserMixin, db.Document):  # 会员
         update = {}
         if _type==1:
             update['set__intro'] = self.intro
-            
+
         elif _type==2:
             update['set__label'] = self.label
         elif _type==3:
@@ -479,6 +479,13 @@ class User(UserMixin, db.Document):  # 会员
         #更新认证专家状态
         update = {}
         update['set__auth__expert'] = 1
+        User.objects(_id=uid).update_one(**update)
+
+    @staticmethod
+    def updatebecomeexpert(uid):
+        #更新成为专家状态
+        update = {}
+        update['set__auth__becomeexpert'] = 1
         User.objects(_id=uid).update_one(**update)
 
     def editinfo(self):
@@ -546,6 +553,7 @@ class User(UserMixin, db.Document):  # 会员
             istrue = User.isusername(username=self.username)
             if istrue == 0:
                 self.password = self.password_hash
+                self.date = common.getstamp()
                 self.save()
 
                 if self.role_id==2:
@@ -785,7 +793,7 @@ class User(UserMixin, db.Document):  # 会员
                 'name': self.name.encode('utf-8'),
                 'sex': self.sex,
                 'job': self.job.encode('utf-8'),
-                'auth': {'becomeexpert': self.auth.becomeexpert}, # self.auth.vip
+                'auth': {'becomeexpert': self.auth.becomeexpert,'expertprocess': self.auth.expertprocess}, # self.auth.vip
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'meet_c': self.stats.meet,
                 # [39.9442, 116.324]
@@ -1066,27 +1074,31 @@ class Topic(db.Document):  # 话题
             self.save()
             return self._id
 
-    def editinfo(self):
+    def editinfo(self,_type=0):
+        # _type 0话题  1话题团
         if self._id > 0:
             update = {}
             # update.append({'set__email': self.email})
 
-            update['set__user_id'] = self.user_id
+            
             if len(self.title) > 0:
                 update['set__title'] = self.title
             if len(self.intro) > 0:
                 update['set__intro'] = self.intro
             if len(self.content) > 0:
                 update['set__content'] = self.content
-            update['set__pay__call'] = self.pay.call
-            update['set__pay__meet'] = self.pay.meet
-            update['set__pay__calltime'] = self.pay.calltime
-            update['set__pay__meettime'] = self.pay.meettime
-            update['set__expert'] = self.expert
-            update['set__config__background'] = self.config.background
 
-            update['set__stats__topic_count'] = self.stats.topic_count
-            update['set__stats__topic_total'] = self.stats.topic_total
+            if _type==1:
+                update['set__expert'] = self.expert
+                update['set__config__background'] = self.config.background
+            else:
+                update['set__user_id'] = self.user_id
+                update['set__pay__call'] = self.pay.call
+                update['set__pay__meet'] = self.pay.meet
+                update['set__pay__calltime'] = self.pay.calltime
+                update['set__pay__meettime'] = self.pay.meettime
+                update['set__stats__topic_count'] = self.stats.topic_count
+                update['set__stats__topic_total'] = self.stats.topic_total
             update['set__sort'] = self.sort
             Topic.objects(_id=self._id).update_one(**update)
 
@@ -1148,7 +1160,7 @@ class Topic(db.Document):  # 话题
                 'title': self.title.encode('utf-8'),
                 'intro': self.intro.encode('utf-8'),
                 'date': self.date,
-                'expert': u_info is not None and u_info.to_json(2) or {},
+                'expert': u_info is not None and u_info.to_json(3) or {},
                 'stats': self.stats.to_json()
 
                 #'expert': [50, 38, 47, 39]
@@ -1189,7 +1201,7 @@ class Comment(db.Document):  # 评论
             'content': self.content.encode('utf-8'),
             'date': self.date,
             'grade': self.grade,
-            'avaurl': common.getavaurl(self.avaurl)
+            'avaurl':'' #common.getavaurl(self.avaurl)
         }
         return json_topic
 
@@ -1253,7 +1265,7 @@ class InvTopic(db.EmbeddedDocument):  # 清单话题
             '_id': self._id,
             'title': self.title.encode('utf-8'),
             'content': self.content.encode('utf-8'),
-            'expert': [item.to_json(3) for item in User.getlist_uid(uidlist=self.expert, count=4)],
+            'expert': [item.to_json(3) for item in User.getlist_uid(uidlist=self.expert)],
             'sort': self.sort
         }
         return json_invt
@@ -1654,9 +1666,13 @@ class BecomeExpert(db.Document):
     }
     _id = db.IntField(primary_key=True)  # id
     user_id = db.IntField(default=0, db_field='ui')  # 用户ID
-    state = db.IntField(default=0, db_field='s')  # 1审核通过 0审核中
+    name = db.StringField(default='', db_field='n')  # 姓名
+    industry = db.StringField(default='', db_field='i')  # 行业
+    company = db.StringField(default='', db_field='c')  # 公司
+    job = db.StringField(default='', db_field='j')  # 职位
+    weixin = db.StringField(default='', db_field='w')  # 微信号
+    qq = db.StringField(default='', db_field='q')  # QQ
     date = db.IntField(default=0, db_field='d')  # 创建时间
-    admin_id =  db.IntField(default=0, db_field='ai')  # 操作人
 
     @staticmethod
     def getlist(index=1, count=10):
@@ -1671,3 +1687,4 @@ class BecomeExpert(db.Document):
         self._id = collection.get_next_id(self.__tablename__)
         self.date = common.getstamp()
         self.save()
+        User.updatebecomeexpert(self.user_id)

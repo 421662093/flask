@@ -9,7 +9,7 @@ from flask import g
 from .authentication import auth
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay
+from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert
 from ..core.common import jsonify
 from ..core import common
 from .. import mc
@@ -376,7 +376,8 @@ def get_user_info():
             name 姓名
             sex 性别
             auth 认证
-                vip VIP认证
+                expertprocess 认证专家流程  0未认证 1-5
+                becomeexpert 成为专家 1已提交 0未提交
             avaurl 头像地址
             fileurl 介绍图片或视频地址
             geo 坐标
@@ -560,20 +561,27 @@ def update_ocp():
     认证专家
     URL:/user/updateocp
     POST 参数:
-        type -- 类型 (必填) 1个人简介  2个人标签 3工作经历 4教育背景  
+        type -- 类型 (必填) 0成为专家 1个人简介  2个人标签 3工作经历 4教育背景
+        type=0
+            name 姓名
+            industry 行业
+            company 公司
+            job 职位
+            weixin 微信号
+            qq QQ
         type=1
             intro 简介
-        type=2 
+        type=2
             label 数组[字符串1,字符串2]
         type=3 workexp 数组[字典1，字典2]
             name 姓名
-            start 开始时间 格式 2015-8-25
-            end 结束时间 格式 2015-8-25
+            start 开始时间 时间戳
+            end 结束时间 时间戳
             job 职业
         type=4 edu 数组[字典1，字典2]
             name 姓名
-            start 开始时间 格式 2015-8-25
-            end 结束时间 格式 2015-8-25
+            start 开始时间 时间戳
+            end 结束时间 时间戳
             dip 学历
             major 专业
     返回值
@@ -616,7 +624,18 @@ def update_ocp():
                         edulist.append(tempedu)
                 user.edu = edulist
             user.updateocp(_type)
-            return jsonify(ret=1)#添加成功
+        elif _type==0:
+            if g.current_user.auth.becomeexpert==0:
+                be = BecomeExpert()
+                be.user_id = g.current_user._id
+                be.name=data['name']
+                be.industry=data['industry']
+                be.company=data['company']
+                be.job=data['job']
+                be.weixin=data['weixin']
+                be.qq=data['qq']
+                be.saveinfo()
+        return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常

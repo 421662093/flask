@@ -14,13 +14,14 @@ def verify_password(username_or_token, password):
     #print username_or_token+'___'+password
     #username_or_token = 'eyJhbGciOiJIUzI1NiIsImV4cCI6MTQzOTI4MjY4MywiaWF0IjoxNDM5Mjc5MDgzfQ.eyJpZCI6NzF9.GPqrpHaqL1d42vZaewOa10XQKjyswXz0dDnz5gYlve0'
     #password = '123456'
-
+    
     unlen = len(username_or_token)
     if unlen>0:
         user =None
         if unlen==11 or unlen<50:
             # try to authenticate with username/password
             user = User.getinfo_app(username_or_token)
+            print user
             if not user or not user.verify_password(password):
                 return False
             g.token_used = False
@@ -89,7 +90,7 @@ def get_token():
     if g.token_used:
         return unauthorized('Invalid credentials') #帐号或密码错误,或身份过期
     return jsonify({'token': g.current_user.generate_auth_token(
-        expiration=3600), 'expiration': 3600})
+        expiration=3600), 'expiration': 3600,'_id': g.current_user.id})
     '''
     if g.current_user.is_anonymous() or g.token_used:
         return unauthorized('Invalid credentials')
