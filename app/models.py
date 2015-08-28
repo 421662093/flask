@@ -148,11 +148,23 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
     lastaction = db.IntField(default=0, db_field='la')  # 最后更新时间
     rand = db.IntField(default=common.getrandom(), db_field='r')  # 随机数 用于随机获取专家列表
     message_count = 0  # 消息个数
+    oldx = db.IntField(default=0, db_field='x')  # 旧字段 无效
+
     baidu = db.IntField(default=0, db_field='b')  # 百度关注数
     weixin = db.IntField(default=0, db_field='w')  # 微信关注数
     zhihu = db.IntField(default=0, db_field='z')  # 知乎关注数
     sina = db.IntField(default=0, db_field='s')  # 新浪关注数
-    oldx = db.IntField(default=0, db_field='x')  # 旧字段 无效
+    twitter = db.IntField(default=0, db_field='t')  # 推特关注数
+    facebook = db.IntField(default=0, db_field='f')  # 脸谱关注数
+    github = db.IntField(default=0, db_field='g')  # GIT关注数
+
+    baiduurl = db.StringField(default='', db_field='bu')  # 百度地址
+    weixinurl = db.StringField(default='', db_field='wu')  # 微信地址
+    zhihuurl = db.StringField(default='', db_field='zu')  # 知乎地址
+    sinaurl = db.StringField(default='', db_field='su')  # 新浪地址
+    twitterurl = db.StringField(default='', db_field='tu')  # 推特地址
+    facebookurl = db.StringField(default='', db_field='fu')  # 脸谱地址
+    githuburl = db.StringField(default='', db_field='gu')  # GIT地址
 
     def to_json(self):
         json_us = {
@@ -254,7 +266,7 @@ class User(UserMixin, db.Document):  # 会员
     def getlist_app(roid=2,index=1,count=10):
         # 用于APP接口
         pageindex =(index-1)*count
-        return User.objects(role_id=roid,state=1).order_by("-_id").skip(pageindex).limit(count)
+        return User.objects(role_id=roid,state=1).order_by("sort").skip(pageindex).limit(count)
 
     @staticmethod
     def getlist(roid=0,index=1,count=10):
@@ -262,9 +274,9 @@ class User(UserMixin, db.Document):  # 会员
         #.exclude('password_hash') 不包含字段
         pageindex =(index-1)*count
         if roid == 0:
-            return User.objects.order_by("-_id").skip(pageindex).limit(count)
+            return User.objects.order_by("sort").skip(pageindex).limit(count)
         else:
-            return User.objects(role_id=roid).order_by("-_id").skip(pageindex).limit(count)
+            return User.objects(role_id=roid).order_by("sort").skip(pageindex).limit(count)
 
     @staticmethod
     def getcount(roid=0):
@@ -368,7 +380,7 @@ class User(UserMixin, db.Document):  # 会员
         query = Q(role_id=2) & Q(state=1)
         if industryid>0:
             query = query & Q(industryid=industryid)
-        return User.objects(query).exclude('password_hash').order_by("-sort").skip(pageindex).limit(count)
+        return User.objects(query).exclude('password_hash').order_by("sort").skip(pageindex).limit(count)
 
     @staticmethod
     def isusername(username):
@@ -479,7 +491,11 @@ class User(UserMixin, db.Document):  # 会员
         #更新认证专家状态
         update = {}
         update['set__auth__expert'] = 1
+        update['set__role_id'] = 2
         User.objects(_id=uid).update_one(**update)
+
+        u_info = User.objects(_id=uid).first()
+        User.Create_Q_YUNSOU_DATA(u_info)
 
     @staticmethod
     def updatebecomeexpert(uid):
@@ -523,7 +539,18 @@ class User(UserMixin, db.Document):  # 会员
             update['set__stats__weixin'] = self.stats.weixin
             update['set__stats__zhihu'] = self.stats.zhihu
             update['set__stats__sina'] = self.stats.sina
+            update['set__stats__twitter'] = self.stats.twitter
+            update['set__stats__facebook'] = self.stats.facebook
+            update['set__stats__github'] = self.stats.github
 
+            update['set__stats__baiduurl'] = self.stats.baiduurl
+            update['set__stats__weixinurl'] = self.stats.weixinurl
+            update['set__stats__zhihuurl'] = self.stats.zhihuurl
+            update['set__stats__sinaurl'] = self.stats.sinaurl
+            update['set__stats__twitterurl'] = self.stats.twitterurl
+            update['set__stats__facebookurl'] = self.stats.facebookurl
+            update['set__stats__githuburl'] = self.stats.githuburl
+            
 
             User.objects(_id=self._id).update_one(**update)
 
@@ -771,7 +798,7 @@ class User(UserMixin, db.Document):  # 会员
                 'auth': {'expert': self.auth.expert,'expertprocess': self.auth.expertprocess},  # self.auth.vip
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'meet_c': self.stats.meet,
-                'follow':{'baidu':self.stats.baidu,'weixin':self.stats.weixin,'zhihu':self.stats.zhihu,'sina':self.stats.sina},
+                'follow':[{'baidu':self.stats.baidu,'baiduurl':self.stats.baiduurl},{'weixin':self.stats.weixin,'weixinurl':self.stats.weixinurl},{'zhihu':self.stats.zhihu,'zhihuurl':self.stats.zhihuurl},{'sina':self.stats.sina,'sinaurl':self.stats.sinaurl},{'twitter':self.stats.twitter,'twitterurl':self.stats.twitterurl},{'facebook':self.stats.facebook,'facebookurl':self.stats.facebookurl},{'github':self.stats.github,'githuburl':self.stats.githuburl}],
                 # [39.9442, 116.324]
                 'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
                 'intro': self.intro.encode('utf-8'),
@@ -947,6 +974,7 @@ class Topic(db.Document):  # 话题
     stats = db.EmbeddedDocumentField(
         TopicStats, default=TopicStats(), db_field='ts')  # 话题统计信息
     sort = db.IntField(default=0, db_field='s')  # 排序
+    discoverysort = db.IntField(default=0, db_field='ds')  # 发现首页排序
     state = db.IntField(default=0, db_field='st')# 状态 1 正常 0待审核 -1已删除
 
     @staticmethod
@@ -958,16 +986,18 @@ class Topic(db.Document):  # 话题
     
     @staticmethod
     def getlist_app(uid=0,index=1, count=10):
-        # 获取列表 0全部  -1官方  -2专家
+        # 获取列表 0全部  -1官方  -2专家  -3发现首页
         uid = int(uid)
         pageindex =(index-1)*count
-        sort = '-sort'
+        sort = 'sort'
         if uid == 0:
             return Topic.objects(state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
         elif uid == -1:
-            return Topic.objects(user_id=0,state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
+            return Topic.objects(user_id=0,state=1,discoverysort__gt=0).exclude('content').order_by('discoverysort').skip(pageindex).limit(count)
         elif uid == -2:
             return Topic.objects(user_id__gt=0,state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
+        elif uid == -3:
+            return Topic.objects(user_id__gt=0,state=1,discoverysort__gt=0).exclude('content').order_by('discoverysort').skip(pageindex).limit(count)
         else:
             return Topic.objects(user_id=uid,state=1).exclude('content').order_by(sort).skip(pageindex).limit(count)
 
@@ -983,21 +1013,22 @@ class Topic(db.Document):  # 话题
         uid = int(uid)
         pageindex =(index-1)*count
         query=None
+        sort = 'sort'
         if state==1:
             query = Q(state__gte=0)
         else:
             query = Q(state=-1)
         if uid == 0:
-            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+            return Topic.objects(query).exclude('content').order_by(sort).skip(pageindex).limit(count)
         elif uid == -1:
             query=query&Q(user_id=0)
-            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+            return Topic.objects(query).exclude('content').order_by(sort).skip(pageindex).limit(count)
         elif uid == -2:
             query=query&Q(user_id__gt=0)
-            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+            return Topic.objects(query).exclude('content').order_by(sort).skip(pageindex).limit(count)
         else:
             query=query&Q(user_id=uid)
-            return Topic.objects(query).exclude('content').order_by("-_id").skip(pageindex).limit(count)
+            return Topic.objects(query).exclude('content').order_by(sort).skip(pageindex).limit(count)
 
     @staticmethod
     def list_search(uid,text, count=10):  # 后台搜索
@@ -1080,7 +1111,7 @@ class Topic(db.Document):  # 话题
             update = {}
             # update.append({'set__email': self.email})
 
-            
+
             if len(self.title) > 0:
                 update['set__title'] = self.title
             if len(self.intro) > 0:
@@ -1089,6 +1120,7 @@ class Topic(db.Document):  # 话题
                 update['set__content'] = self.content
 
             if _type==1:
+                update['set__state'] = self.state
                 update['set__expert'] = self.expert
                 update['set__config__background'] = self.config.background
             else:
@@ -1100,6 +1132,8 @@ class Topic(db.Document):  # 话题
                 update['set__stats__topic_count'] = self.stats.topic_count
                 update['set__stats__topic_total'] = self.stats.topic_total
             update['set__sort'] = self.sort
+            update['set__discoverysort'] = self.discoverysort
+
             Topic.objects(_id=self._id).update_one(**update)
 
             logmsg = '编辑话题-'+str(self._id)+'-'+self.title
@@ -1132,7 +1166,7 @@ class Topic(db.Document):  # 话题
                 'intro': self.intro.encode('utf-8'),
                 #'date': self.date,
                 'exp_count': len(self.expert),
-                'expert': [item.to_json(1) for item in User.getlist_uid(uidlist=self.expert, count=4)],
+                'expert': [item.to_json(1) for item in User.getlist_uid(uidlist=self.expert)],
                 'stats': self.stats.to_json()
                 #'expert': [50, 38, 47, 39]
             }
@@ -1145,7 +1179,7 @@ class Topic(db.Document):  # 话题
                 #'intro': self.intro.encode('utf-8'),
                 'content': self.content.split('{split}'),#内容用 {split} 分割
                 #'exp_count': len(self.expert),
-                'expert': [item.to_json(5) for item in User.getlist_uid(uidlist=self.expert, count=4)],
+                'expert': [item.to_json(5) for item in User.getlist_uid(uidlist=self.expert)],
                 'like': self.stats.like,
                 'background':self.config.background
             }
@@ -1340,7 +1374,7 @@ class Ad(db.Document):  # 广告
     _id = db.IntField(primary_key=True)
     title = db.StringField(
         default='', max_length=64, required=True, db_field='t')
-    group_id = db.IntField(default=0, required=True, db_field='g')  # 分组id
+    group_id = db.IntField(default=0, required=True, db_field='g')  # 分组id 0未分组 1清单 
     fileurl = db.StringField(default='', db_field='fu')  # 文件地址
     url = db.StringField(db_field='u')  # 跳转地址或 跳转id
     sort = db.IntField(default=0, db_field='s')  # 排序
@@ -1348,7 +1382,7 @@ class Ad(db.Document):  # 广告
     @staticmethod
     def getlist_app(gid=0,index=1, count=10):
         pageindex =(index-1)*count
-        sort='-sort'
+        sort='sort'
         if gid is 0:
             return Ad.objects.order_by(sort).skip(pageindex).limit(count)
         else:
@@ -1607,7 +1641,7 @@ class ExpertInv(db.Document):
     @staticmethod
     def getlist(uid,index=1, count=10):
         pageindex =(index-1)*count
-        return ExpertInv.objects(user_id=uid).order_by("-sort").skip(pageindex).limit(count)
+        return ExpertInv.objects(user_id=uid).order_by("sort").skip(pageindex).limit(count)
 
     def to_json(self):
         json_invt = {

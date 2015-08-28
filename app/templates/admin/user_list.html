@@ -109,6 +109,9 @@
 										 状态
 									</th>
 									<th>
+										 排序
+									</th>
+									<th>
 										 操作
 									</th>
 								</tr>
@@ -148,6 +151,9 @@
 									<td>
 									{{func.getuserstate(item.state)}}
 									</td>
+									<td>
+                                    {{item.sort}}
+                                    </td>
 									<td>
 										<a href="/admin/useredit/{{item.id}}/{{roid==2 and 2 or 3}}/{{index}}" class="label label-sm label-success">
 										编辑

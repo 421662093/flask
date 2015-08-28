@@ -94,6 +94,14 @@
 												</div>
 											</div>-->
 											<div class="form-group">
+												<label class="col-md-2 control-label">排序: <span class="required">
+												* </span>
+												</label>
+												<div class="col-md-10">
+													<input type="text" class="form-control" id="sort" name="sort" value="{% if isuser %}{{user.sort}}{%else%}0{%endif%}">
+												</div>
+											</div>
+											<div class="form-group">
 												<label class="col-md-2 control-label">帐号: <span class="required">
 												* </span>
 												</label>
@@ -187,10 +195,26 @@
 											<div class="form-group">
 												<label class="col-md-2 control-label">第三方关注数: </label>
 												<div class="col-md-10">
+													值大于等于0 显示，等于-1不显示<br/>
 													百度 <input type="text" id="baidu" name="baidu" value="{% if isuser %}{{user.stats.baidu}}{%else%}0{%endif%}">
 													微信 <input type="text" id="weixin" name="weixin" value="{% if isuser %}{{user.stats.weixin}}{%else%}0{%endif%}">
 													知乎 <input type="text" id="zhihu" name="zhihu" value="{% if isuser %}{{user.stats.zhihu}}{%else%}0{%endif%}">
-													新浪 <input type="text" id="sina" name="sina" value="{% if isuser %}{{user.stats.sina}}{%else%}0{%endif%}">
+													新浪 <input type="text" id="sina" name="sina" value="{% if isuser %}{{user.stats.sina}}{%else%}0{%endif%}"><br/>
+													推特 <input type="text" id="twitter" name="twitter" value="{% if isuser %}{{user.stats.twitter}}{%else%}-1{%endif%}">
+													脸谱 <input type="text" id="facebook" name="facebook" value="{% if isuser %}{{user.stats.facebook}}{%else%}-1{%endif%}">
+													GitHub <input type="text" id="github" name="github" value="{% if isuser %}{{user.stats.github}}{%else%}-1{%endif%}">
+												</div>
+											</div>
+											<div class="form-group">
+												<label class="col-md-2 control-label">第三方地址: </label>
+												<div class="col-md-10">
+													百度 <input type="text" id="baiduurl" name="baiduurl" value="{% if isuser %}{{user.stats.baiduurl}}{%else%}{%endif%}">
+													微信 <input type="text" id="weixinurl" name="weixinurl" value="{% if isuser %}{{user.stats.weixinurl}}{%else%}{%endif%}">
+													知乎 <input type="text" id="zhihuurl" name="zhihuurl" value="{% if isuser %}{{user.stats.zhihuurl}}{%else%}{%endif%}">
+													新浪 <input type="text" id="sinaurl" name="sinaurl" value="{% if isuser %}{{user.stats.sinaurl}}{%else%}{%endif%}"><br/>
+													推特 <input type="text" id="twitterurl" name="twitterurl" value="{% if isuser %}{{user.stats.twitterurl}}{%else%}{%endif%}">
+													脸谱 <input type="text" id="facebookurl" name="facebookurl" value="{% if isuser %}{{user.stats.facebookurl}}{%else%}{%endif%}">
+													GitHub <input type="text" id="githuburl" name="githuburl" value="{% if isuser %}{{user.stats.githuburl}}{%else%}{%endif%}">
 												</div>
 											</div>
 											<!--<div class="form-group">

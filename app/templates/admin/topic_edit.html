@@ -71,11 +71,12 @@
 												</div>
 											</div>
                                             <div class="form-group">
-                                                <label class="col-md-2 control-label">排序: <span class="required">
+                                                <label class="col-md-2 control-label">发现首页排序: <span class="required">
                                                 * </span>
                                                 </label>
                                                 <div class="col-md-10">
-                                                    <input type="text" class="form-control" id="sort" name="sort" {% if istopic %}value="{{topic.sort}}" {%endif%}>
+                                                	大于0显示到发现首页 <br/>
+                                                    <input type="text" class="form-control" id="discoverysort" name="discoverysort" {% if istopic %}value="{{topic.discoverysort}}" {%endif%}>
                                                 </div>
                                             </div>
 											<div class="form-group">

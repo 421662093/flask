@@ -58,11 +58,12 @@
 										<div class="form-body">	
 											<form class="form-horizontal form-row-seperated" action='{{ url_for('.topicteam_edit',pindex=pindex, id=istopic and topic._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">{{form.hidden_tag()}}
                                             <div class="form-group">
-                                                <label class="col-md-2 control-label">排序: <span class="required">
+                                                <label class="col-md-2 control-label">发现首页排序: <span class="required">
                                                 * </span>
                                                 </label>
                                                 <div class="col-md-10">
-                                                    <input type="text" class="form-control" id="sort" name="sort" {% if istopic %}value="{{topic.sort}}" {%endif%}>
+                                                	大于0显示到发现首页 <br/>
+                                                    <input type="text" class="form-control" id="discoverysort" name="discoverysort" {% if istopic %}value="{{topic.discoverysort}}" {%endif%}>
                                                 </div>
                                             </div>
 											<div class="form-group">

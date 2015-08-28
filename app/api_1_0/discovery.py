@@ -21,9 +21,9 @@ def get_discovery_list():
     GET 参数: 
         无
     '''
-    i_list = Ad.getlist_app(count=6)
-    tt_list = Topic.getlist_app(uid=-1, count=2)
-    t_list = Topic.getlist_app(uid=-2, count=2)
+    i_list = Ad.getlist_app(gid=1)
+    tt_list = Topic.getlist_app(uid=-1, count=20)
+    t_list = Topic.getlist_app(uid=-3, count=20)
     return jsonify(discovery={
         'ad': [item.to_json() for item in i_list],
         'topic_team': [item.to_json(1) for item in tt_list],

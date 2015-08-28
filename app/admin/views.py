@@ -123,6 +123,7 @@ def user_edit(roid=2,id=0,pindex=1):
 
         user = User()
         user._id = id
+        user.sort = request.form.get('sort',0)
         user.role_id = roid #request.form.get('roleid',0)
         user.name = form.name.data
         user.username = form.username.data
@@ -179,6 +180,18 @@ def user_edit(roid=2,id=0,pindex=1):
         u_stats.weixin = request.form.get('weixin',0)
         u_stats.zhihu = request.form.get('zhihu',0)
         u_stats.sina = request.form.get('sina',0)
+        u_stats.twitter = request.form.get('twitter',0)
+        u_stats.facebook = request.form.get('facebook',0)
+        u_stats.github = request.form.get('github',0)
+
+        u_stats.baiduurl = request.form.get('baiduurl','')
+        u_stats.weixinurl = request.form.get('weixinurl','')
+        u_stats.zhihuurl = request.form.get('zhihuurl','')
+        u_stats.sinaurl = request.form.get('sinaurl','')
+        u_stats.twitterurl = request.form.get('twitterurl','')
+        u_stats.facebookurl = request.form.get('facebookurl','')
+        u_stats.githuburl = request.form.get('githuburl','')
+
         user.stats = u_stats
 
         user.avaurl = request.form.get('avaurl','')
@@ -220,7 +233,9 @@ def plugin_list():
     if request.method == 'POST':
         rebuild = request.args.get('rebuild', 0, type=int)
         if rebuild==1:
-            pass
+            for item in User.getlist(count=1000):
+                if item.role_id==2:
+                    User.Update_Q_YUNSOU_STATE(item._id,item.state)
             #重新生成whoosh
             #searchwhoosh.rebuild_index()
         elif rebuild==2:
@@ -369,6 +384,7 @@ def topic_edit(id,_type=0,uid=-2,pindex=1):
         topic.stats.topic_count = request.form.get('topic_count',0)
         topic.stats.topic_total = request.form.get('topic_total',0)
         topic.sort = request.form.get('sort',0)
+        topic.discoverysort = request.form.get('discoverysort',0)
         topic.config = TopicConfig()
         topic.editinfo()
         if _type==0:
@@ -378,13 +394,13 @@ def topic_edit(id,_type=0,uid=-2,pindex=1):
     else:
         istopic = False
         topic = None
-        uid = 0
         if _type==1:
             uid = id
         elif id > 0 :
             topic = Topic.getinfo(id)
             if topic:
                 istopic = True
+
         func = {'can': common.can}
         return render_template('admin/topic_edit.html', topic=topic,_type=_type, istopic=istopic,uid=uid,pindex=pindex, form=form,func=func,uinfo=g.current_user)
 
@@ -414,6 +430,8 @@ def topicteam_edit(id,uid=-1,pindex=1):
             #topic.stats.topic_count = form.topic_count.data
             #topic.stats.topic_total = form.topic_total.data
             topic.sort = request.form.get('sort',0)
+            topic.state = 1
+            topic.discoverysort = request.form.get('discoverysort',0)
             topic.editinfo(1)
         except Exception,e:
                 logging.debug(e)

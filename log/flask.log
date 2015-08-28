@@ -1,5 +1,1 @@
-config.py[line:93] DEBUG [flask start] 2015-08-27 19:39:47
-_internal.py[line:87] INFO [192.168.1.31 - - [27/Aug/2015 19:39:49] "GET /static/html/namespaceapp_1_1api__1__0_1_1sys.html HTTP/1.1" 200 -] 2015-08-27 19:39:49
-_internal.py[line:87] INFO [192.168.1.31 - - [27/Aug/2015 19:42:04] "GET /static/html/namespaceapp_1_1api__1__0.html HTTP/1.1" 200 -] 2015-08-27 19:42:04
-_internal.py[line:87] INFO [192.168.1.31 - - [27/Aug/2015 19:42:06] "GET /static/html/namespaceapp_1_1api__1__0_1_1discovery.html HTTP/1.1" 200 -] 2015-08-27 19:42:06
-_internal.py[line:87] INFO [192.168.1.31 - - [27/Aug/2015 19:43:29] "GET /static/html/namespaceapp_1_1api__1__0_1_1expert.html HTTP/1.1" 200 -] 2015-08-27 19:43:29
+config.py[line:91] DEBUG [flask start] 2015-08-28 18:10:23
