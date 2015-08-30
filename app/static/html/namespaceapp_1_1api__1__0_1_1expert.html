@@ -74,6 +74,8 @@
 <tr class="separator:a6bcc721401e0183a61d6dca2ce7e5cd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba553c448587fe1245d73fb42bf47741"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapp_1_1api__1__0_1_1expert.html#aba553c448587fe1245d73fb42bf47741">update_user_intro</a> ()</td></tr>
 <tr class="separator:aba553c448587fe1245d73fb42bf47741"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af76dad7f4f1c0ff33d1487959ea61b1d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapp_1_1api__1__0_1_1expert.html#af76dad7f4f1c0ff33d1487959ea61b1d">update_expert_apptime</a> ()</td></tr>
+<tr class="separator:af76dad7f4f1c0ff33d1487959ea61b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">函数说明</h2>
 <a class="anchor" id="a90c29c044f8ce0bb1d8c550e73b9a143"></a>
@@ -337,6 +339,28 @@ GET 参数:
 URL:/topic/info/&lt;int:tid&gt;
 GET 参数: 
     tid -- 话题ID (必填) 
+</pre> 
+</div>
+</div>
+<a class="anchor" id="af76dad7f4f1c0ff33d1487959ea61b1d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def app.api_1_0.expert.update_expert_apptime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">更新专家可预约时间
+URL:/expert/updateapptime
+POST 参数:
+    apptime -- 预约时间数组[时间戳1,时间戳2]
+返回值
+    {'ret':1} 成功
+    -5 系统异常
 </pre> 
 </div>
 </div>

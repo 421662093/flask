@@ -88,7 +88,7 @@
 									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
 									</td>
                                     <td>
-                                    {{item.discoverysort}}
+                                    <input type="text" class="sortupdate" tid="{{item.id}}" id="sort_{{item.id}}" old="{{item.discoverysort}}" value="{{item.discoverysort}}" style="width:30px">
                                     </td>
 									<td>
 										<a href="/admin/topicteamedit/{{item.id}}/{{index}}" class="label label-sm label-success">编辑</a><br/>
@@ -144,6 +144,27 @@
 			QuickSidebar.init(); // init quick sidebar
 			Demo.init(); // init demo features
             EcommerceOrders.init();
+            $('.sortupdate').blur(function(){
+            	ethis = $(this)
+            	val = ethis.val()
+
+            	if(val!=ethis.attr('old')){
+            		ethis.attr('disabled','disabled')
+	            	$.ajax({
+					    type: "POST",
+					    url: '/admin/topiclist?type=sort&tid='+ethis.attr('tid')+'&val='+val,
+					    data: {},
+					    dataType: 'json',
+					    success: function(ret) {
+					    	ethis.attr('old',val)
+					    	ethis.removeAttr('disabled')
+					    },
+				    	error:function(ret) {
+				    		alert('更新失败请重试')
+				    	}
+					});
+	            }
+            })
         });
 function searchfun(){
 	var searchtext = $('#search').val()

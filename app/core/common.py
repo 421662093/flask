@@ -30,6 +30,10 @@ def time2stamp(_time, _type='%Y-%m-%d %H:%M:%S'):  # 将时间转化为时间戳
 
     return time.mktime(time.strptime(_time, _type))
 
+def getdaystamp():  # 获取当前时间戳
+    import datetime
+    today = datetime.date.today()
+    return time2stamp(str(today.year)+'-'+str(today.month)+'-'+str(today.day),'%Y-%m-%d')
 
 def getstamp():  # 获取当前时间戳
     return time.time()
@@ -186,6 +190,13 @@ def getexpertauthstate(state):
         return '已审核'
     else:
         return '已删除'
+
+def getadgroupname(gid):
+    #获取广告分组名  1首页顶部广告(清单)
+    if gid==1:
+        return '发现顶部图片(清单)'
+    else:
+        return '未分组'
 
 def getappointmentid(uid):
 	# 构建预约id

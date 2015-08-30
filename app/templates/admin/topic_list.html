@@ -91,7 +91,7 @@
 									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
 									</td>
                                     <td>
-                                    {{item.discoverysort}}
+                                    <input type="text" class="sortupdate" tid="{{item.id}}" id="sort_{{item.id}}" old="{{item.discoverysort}}" value="{{item.discoverysort}}" style="width:30px">
                                     </td>
                                      <td>
                                     {{func.gettopicstate(item.state)}}
@@ -99,12 +99,12 @@
 									<td>
 									<a href="/admin/topicedit/{{item.id}}/{{uid}}/{{index}}" class="label label-sm label-success">编辑</a>
 									{% if item.state==0 %}
-									<form method="post" action="?type=state&tid={{item.id}}" id="topic_{{item.id}}_form"><a href="javascript:$('#topic_{{item.id}}_form').submit();" class="label label-sm label-success">审核通过</a></form>
+									<form method="post" action="/admin/topiclist?type=state&tid={{item.id}}" id="topic_{{item.id}}_form"><a href="javascript:$('#topic_{{item.id}}_form').submit();" class="label label-sm label-success">审核通过</a></form>
 									{% endif %}
 									{% if item.state==1 %}
-									<form method="post" action="?type=unstate&tid={{item.id}}" id="topic_{{item.id}}_form"><a href="javascript:$('#topic_{{item.id}}_form').submit();" class="label label-sm label-success">下线</a></form>
+									<form method="post" action="/admin/topiclist?type=unstate&tid={{item.id}}" id="topic_{{item.id}}_form"><a href="javascript:$('#topic_{{item.id}}_form').submit();" class="label label-sm label-success">下线</a></form>
 									{% endif %}
-									<form method="post" action="?type=del&tid={{item.id}}" id="topic_del_{{item.id}}_form"><a href="javascript:if(confirm('确实要删除该话题吗?'))$('#topic_del_{{item.id}}_form').submit();" class="label label-sm label-success">删除</a></form>
+									<form method="post" action="/admin/topiclist?type=del&tid={{item.id}}" id="topic_del_{{item.id}}_form"><a href="javascript:if(confirm('确实要删除该话题吗?'))$('#topic_del_{{item.id}}_form').submit();" class="label label-sm label-success">删除</a></form>
 									</td>
 								</tr>
 								{% endfor %}
@@ -156,6 +156,27 @@ jQuery(document).ready(function() {
 	QuickSidebar.init(); // init quick sidebar
 	Demo.init(); // init demo features
     EcommerceOrders.init();
+    $('.sortupdate').blur(function(){
+            	ethis = $(this)
+            	val = ethis.val()
+
+            	if(val!=ethis.attr('old')){
+            		ethis.attr('disabled','disabled')
+	            	$.ajax({
+					    type: "POST",
+					    url: '/admin/topiclist?type=sort&tid='+ethis.attr('tid')+'&val='+val,
+					    data: {},
+					    dataType: 'json',
+					    success: function(ret) {
+					    	ethis.attr('old',val)
+					    	ethis.removeAttr('disabled')
+					    },
+				    	error:function(ret) {
+				    		alert('更新失败请重试')
+				    	}
+					});
+	            }
+            })
 });
 
 function searchfun(){

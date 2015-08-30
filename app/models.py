@@ -166,6 +166,11 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
     facebookurl = db.StringField(default='', db_field='fu')  # 脸谱地址
     githuburl = db.StringField(default='', db_field='gu')  # GIT地址
 
+    wxshare = db.IntField(default=0, db_field='ws')  # 微信分享 分享后记录当天时间戳，一天可分享一次
+    pyshare = db.IntField(default=0, db_field='ps')  # 朋友圈分享 分享后记录当天时间戳，一天可分享一次
+    qqshare = db.IntField(default=0, db_field='qs')  # QQ地址 分享后记录当天时间戳，一天可分享一次
+    sinashare = db.IntField(default=0, db_field='ss')  # 新浪分享 分享后记录当天时间戳，一天可分享一次
+
     def to_json(self):
         json_us = {
             'meet': self.meet
@@ -261,6 +266,8 @@ class User(UserMixin, db.Document):  # 会员
     thinktank = db.ListField(default=[], db_field='t')  # 智囊团
     wish = db.ListField(default=[], db_field='w')  # 心愿单
     money = db.IntField(default=0, db_field='m')  # 账户余额
+    apptime = db.ListField(default=[], db_field='at')  # 预约时间（专家可预约时间）
+    calltime = db.IntField(default=0, db_field='ct')  # 通话时间 (分享可获得)
 
     @staticmethod
     def getlist_app(roid=2,index=1,count=10):
@@ -274,9 +281,9 @@ class User(UserMixin, db.Document):  # 会员
         #.exclude('password_hash') 不包含字段
         pageindex =(index-1)*count
         if roid == 0:
-            return User.objects.order_by("sort").skip(pageindex).limit(count)
+            return User.objects.order_by("-_id").skip(pageindex).limit(count)
         else:
-            return User.objects(role_id=roid).order_by("sort").skip(pageindex).limit(count)
+            return User.objects(role_id=roid).order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
     def getcount(roid=0):
@@ -377,7 +384,7 @@ class User(UserMixin, db.Document):  # 会员
         #用于api
         #.exclude('password_hash') 不包含字段
         pageindex =(index-1)*count
-        query = Q(role_id=2) & Q(state=1)
+        query = Q(role_id=2) & Q(state=1) & Q(sort__gt=0)
         if industryid>0:
             query = query & Q(industryid=industryid)
         return User.objects(query).exclude('password_hash').order_by("sort").skip(pageindex).limit(count)
@@ -393,17 +400,15 @@ class User(UserMixin, db.Document):  # 会员
     def useredit(self):
         # 更新个人信息(用户)
         if self._id > 0:
+            #print str(self._id)
             update = {}
-            if self.role_id==1:
-                if len(self.name) > 0:
-                    update['set__name'] = self.name
-                update['set__sex'] = self.sex
-                update['set__domainid'] = self.domainid
-                update['set__industryid'] = self.industryid
-                update['set__stats__lastaction'] = common.getstamp()
-                User.objects(_id=self._id).update_one(**update)
-            else:
-	        	pass
+            if len(self.name) > 0:
+                update['set__name'] = self.name
+            update['set__sex'] = self.sex
+            update['set__domainid'] = self.domainid
+            update['set__industryid'] = self.industryid
+            update['set__stats__lastaction'] = common.getstamp()
+            User.objects(_id=self._id).update_one(**update)
 
     def updateworkexp(self):
         #更新工作经历 - 用户
@@ -504,6 +509,43 @@ class User(UserMixin, db.Document):  # 会员
         update['set__auth__becomeexpert'] = 1
         User.objects(_id=uid).update_one(**update)
 
+    @staticmethod
+    def updatesort(uid,sort):
+        #更新排序
+        update = {}
+        update['set__sort'] = sort
+        User.objects(_id=uid).update_one(**update)
+
+    @staticmethod
+    def updateapptime(uid,apptime):
+        #更新专家预约时间
+        update = {}
+        update['set__apptime'] = apptime
+        User.objects(_id=uid).update_one(**update)
+
+    @staticmethod
+    def updateshare(uid,_type):
+        #更新分享获时间
+        update = {}
+        query=Q(_id=uid)
+        nowtime = common.getdaystamp()
+        if _type==1:
+            update['set__stats__wxshare'] = nowtime
+            query = query & Q(stats__wxshare__ne=nowtime)
+        elif _type==2:
+            update['set__stats__pyshare'] = nowtime
+            query = query & Q(stats__pyshare__ne=nowtime)
+        elif _type==3:
+            update['set__stats__qqshare'] = nowtime
+            query = query & Q(stats__qqshare__ne=nowtime)
+        elif _type==4:
+            update['set__stats__sinashare'] = nowtime
+            query = query & Q(stats__sinashare__ne=nowtime)
+
+        update['inc__calltime'] = conf.SHARE_CALL_TIME
+
+        User.objects(query).update_one(**update)
+
     def editinfo(self):
     	#后台更新用户信息
         if self._id > 0:
@@ -551,7 +593,7 @@ class User(UserMixin, db.Document):  # 会员
             update['set__stats__facebookurl'] = self.stats.facebookurl
             update['set__stats__githuburl'] = self.stats.githuburl
             
-
+            update['set__sort'] = self.sort
             User.objects(_id=self._id).update_one(**update)
 
             if self.role_id==2:
@@ -834,7 +876,10 @@ class User(UserMixin, db.Document):  # 会员
                 'role_id':self.role_id,
                 'domainid':self.domainid,
                 'industryid':self.industryid,
-                'money':self.money
+                'money':self.money,
+                'apptime':self.apptime,
+                'calltime':self.calltime,
+                'wish':self.wish
             }
         elif type == 1:
             json_user = {
@@ -1013,7 +1058,7 @@ class Topic(db.Document):  # 话题
         uid = int(uid)
         pageindex =(index-1)*count
         query=None
-        sort = 'sort'
+        sort = '-_id'
         if state==1:
             query = Q(state__gte=0)
         else:
@@ -1048,22 +1093,25 @@ class Topic(db.Document):  # 话题
 
     @staticmethod
     def getcount(uid=0,state=1):
-        uid = int(uid)
-        if state==1:
-            query = Q(state__gte=0)
+        uid = common.strtoint(uid,-10)
+        if uid>-10:
+            if state==1:
+                query = Q(state__gte=0)
+            else:
+                query = Q(state=-1)
+            if uid == 0:
+                return Topic.objects(query).count()
+            elif uid == -1:
+                query = query & Q(user_id=0)
+                return Topic.objects(query).count()
+            elif uid == -2:
+                query = query & Q(user_id__gt=0)
+                return Topic.objects(query).count()
+            else:
+                query = query & Q(user_id=uid)
+                return Topic.objects(query).count()
         else:
-            query = Q(state=-1)
-    	if uid == 0:
-            return Topic.objects(query).count()
-        elif uid == -1:
-            query = query & Q(user_id=0)
-            return Topic.objects(query).count()
-        elif uid == -2:
-            query = query & Q(user_id__gt=0)
-            return Topic.objects(query).count()
-        else:
-            query = query & Q(user_id=uid)
-            return Topic.objects(query).count()
+            return 0
 
     @staticmethod
     def getinfo(tid=0):
@@ -1079,6 +1127,13 @@ class Topic(db.Document):  # 话题
         #删除话题 设置话题状态
         update = {}
         update['set__state'] = -1
+        Topic.objects(_id=tid).update_one(**update)
+
+    @staticmethod
+    def updatediscoverysort(tid,val):
+        #更新排序 discoverysort
+        update = {}
+        update['set__discoverysort'] = val
         Topic.objects(_id=tid).update_one(**update)
 
     def saveinfo_app(self):
@@ -1430,6 +1485,10 @@ class Ad(db.Document):  # 广告
             Log.saveinfo(remark=logmsg)
             return self._id
 
+    @staticmethod
+    def delinfo(aid):
+        Ad.objects(_id=aid).delete()
+
     def to_json(self):
         json_ad = {
             '_id': self.id,
@@ -1475,11 +1534,11 @@ class Appointment(db.Document):  # 预约
     def getlist(_type=0, appid=0, index=1, count=10):
         pageindex =(index-1)*count
         if _type == 0:
-            return Appointment.objects().order_by("-_id").skip(pageindex).limit(count)
+            return Appointment.objects().order_by("-appdate").skip(pageindex).limit(count)
         elif _type == 2:
-            return Appointment.objects(appid=appid).order_by("-_id").skip(pageindex).limit(count)
+            return Appointment.objects(appid=appid).order_by("-appdate").skip(pageindex).limit(count)
         elif _type == 1:
-            return Appointment.objects(user_id=appid).order_by("-_id").skip(pageindex).limit(count)
+            return Appointment.objects(user_id=appid).order_by("-appdate").skip(pageindex).limit(count)
 
     @staticmethod
     def getinfo(aid):
@@ -1503,7 +1562,7 @@ class Appointment(db.Document):  # 预约
         return self._id
 
     def to_json(self, _type=1, type=1):  # type返回相应字段 1列表 0详情
-        uinfo = User.getinfo(_type == 2 and self.appid or self.user_id)
+        uinfo = User.getinfo(_type == 1 and self.appid or self.user_id)
         if uinfo is not None:
             if type == 1:
                 json_app = {
@@ -1609,6 +1668,36 @@ class Message(db.Document):
             'type': self.type
         }
         return json_message
+
+class PayLog(db.Document):  
+    # 充值日志
+    __tablename__ = 'paylog'
+    meta = {
+        'collection': __tablename__,
+    }
+    _id = db.StringField(primary_key=True)
+    created = db.IntField(default=0, db_field='c') 
+    paid = db.StringField(default='', db_field='p')
+    app =  db.StringField(default='', db_field='a')
+    channel =  db.StringField(default='', db_field='ch')
+    order_no =  db.StringField(default='', db_field='o')
+    #client_ip
+    amount =  db.IntField(default='', db_field='am')
+    amount_settle =  db.IntField(default='', db_field='ams')
+    currency =  db.StringField(default='', db_field='cu')
+    subject =  db.StringField(default='', db_field='s')
+    body =  db.StringField(default='', db_field='b')
+    time_paid =  db.IntField(default='', db_field='t')  # 支付成功时间
+    time_expire =  db.IntField(default='', db_field='te')
+    transaction_no =  db.StringField(default='', db_field='tr')
+    amount_refunded =  db.StringField(default='', db_field='ar')
+    failure_code =  db.StringField(default='', db_field='f')
+    failure_msg =  db.StringField(default='', db_field='fa')
+    description =  db.StringField(default='', db_field='d')
+
+    def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        self.save()
 
 class ExpertInv(db.Document):
     #专家清单

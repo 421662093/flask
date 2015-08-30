@@ -14,6 +14,7 @@ from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
+from ..core.common import jsonify
 import logging
 import time
 
@@ -83,14 +84,21 @@ def user_list(roid=2,index=1):
         _type = request.args.get('type','')
         uid = request.args.get('uid',0,type=int)
         if uid>0:
+            print uid
             if _type=='state':# 审核通过
                 User.Update_Q_YUNSOU_STATE(uid,1)
                 User.updatestate(uid,1)
                 flash('用户审核通过')
+                return jsonify(ret=1)
             elif _type=='unstate': # 设为待审核
                 User.Update_Q_YUNSOU_STATE(uid,-2)
                 User.updatestate(uid,-2)
                 flash('用户已下线')
+                return jsonify(ret=1)
+            elif _type=='sort': # 更新排序
+                val = request.args.get('val',0)
+                User.updatesort(uid,val)
+                return jsonify(ret=1)
         return redirect(url_for('.user_list',roid=roid,index=index))
     else:
     	pagesize = 8
@@ -285,6 +293,10 @@ def topic_list(uid=-2,index=1):
             elif _type=='del': # 设为已删除
                 Topic.updatestate(tid,-1)
                 flash('已删除')
+            elif _type=='sort': # 更新排序
+                val = request.args.get('val',0)
+                Topic.updatediscoverysort(tid,val)
+                return jsonify(ret=1)
         return redirect(url_for('.topic_list',uid=uid,index=index))
     else:
     	pagesize = 8
@@ -662,7 +674,14 @@ def log_list(aid=0,index=1):
 @permission_required('ad',Permission.VIEW)
 def ad_list(gid=0,index=1):
     if request.method == 'POST':
-        return redirect(url_for('.ad_list'))
+        _type = request.args.get('type','')
+        aid = request.args.get('aid',0,type=int)
+        if aid>0:
+            if _type=='del':# 恢复
+                q_image.delete(conf.QCLOUD_BUCKET, 'ad_'+str(aid))
+                Ad.delinfo(aid)
+                flash('删除成功')
+        return redirect(url_for('.ad_list',gid=gid,index=index))
     else:
         pagesize = 8
         count = Ad.getcount(gid=gid)
@@ -673,7 +692,7 @@ def ad_list(gid=0,index=1):
             index=1
 
         adlist = Ad.getlist(gid=gid,index=index,count=pagesize)
-        func = {'stamp2time': common.stamp2time,'can': common.can}
+        func = {'stamp2time': common.stamp2time,'getadgroupname':common.getadgroupname,'can': common.can}
         return render_template('admin/ad_list.html',adlist=adlist, func=func,gid=gid,pagecount=adcount,index=index,uinfo=g.current_user)
 
 @admin.route('/adedit', methods=['GET', 'POST'])

@@ -4,7 +4,6 @@ import os
 import time
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
 
@@ -59,6 +58,14 @@ class DevelopmentConfig(Config):
     QCLOUD_SECRET_KEY = '8bw7cA3KGdTdk1FerPkL7n94Kdx0LrE0'
     QCLOUD_BUCKET = 'kdzj2015' #空间名称
 
+    PINGPP_API_KEY = 'sk_live_FSqiwUW3uBeY5u47xMskEFtW'
+    PINGPP_APP_ID = 'app_9qXXjTvjHW98Tmv9'
+
+    JPush_API_KEY = '2d85bc2c4cc44f976c26286d'
+    JPush_MASTER_SECRET = '9e245d142adba0289b329b73'
+
+    SHARE_CALL_TIME = 30 #分享获通话时间 默认每次分享可获得30分钟，一种途径一天可分享1次
+
     #上传配置
     UPLOAD_FOLDER = 'uploads' #上传目录
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024 #上传大小限制
@@ -74,14 +81,15 @@ class DevelopmentConfig(Config):
     def init_app(cls, app):
         Config.init_app(app)
         import logging  # 日志系统
+        '''
         logging.basicConfig(level=logging.DEBUG,
                             format='%(filename)s[line:%(lineno)d] %(levelname)s [%(message)s] %(asctime)s',
                             datefmt='%Y-%m-%d %H:%M:%S',
                             filename='log/flask.log',
                             filemode='w')
-
-        DEBUG = logging.StreamHandler()
-        DEBUG.setLevel(logging.DEBUG)
+        '''
+        #DEBUG = logging.StreamHandler()
+        #DEBUG.setLevel(logging.DEBUG)
         ERROR = logging.StreamHandler()
         ERROR.setLevel(logging.ERROR)  #
 
@@ -94,7 +102,7 @@ class DevelopmentConfig(Config):
         #    '%(name)-12s: %(levelname)-8s %(message)s')
         # console.setFormatter(formatter)
         ###########
-        app.logger.addHandler(DEBUG)
+        #app.logger.addHandler(DEBUG)
         app.logger.addHandler(ERROR)
 
 

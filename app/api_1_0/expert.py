@@ -306,3 +306,24 @@ def update_user_intro():
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
+
+@api.route('/expert/updateapptime', methods = ['POST'])
+@auth.login_required
+def update_expert_apptime():
+    '''
+    更新专家可预约时间
+    URL:/expert/updateapptime
+    POST 参数:
+        apptime -- 预约时间数组[时间戳1,时间戳2]
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        apptime = data['apptime']
+        User.updateapptime(g.current_user._id,apptime)
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常

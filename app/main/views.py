@@ -72,8 +72,13 @@ def index():
         # orig.get(body='Ross19').update({'$rename': {'body_html': 'body_w'}})
         '''
 
-        from ..tests import test_expert, test_user, test_discovery, test_sys
+        import jpush as jpush
+        from ..sdk.jgpush import pushmessage
+        pushmessage(jpush,'口袋专家测试测试11111111',{'k1':'v1'},[30])
 
+        from ..tests import test_expert, test_user, test_discovery, test_sys
+        #from ..sdk.getui import igetuipush
+        #igetuipush.pushMessageToSingle()
         #print common.getappointmentid(Appointment.createid())
         #test_user.addappointment()
         #test_user.iniuserformat()
@@ -92,8 +97,8 @@ def index():
         # print User.getlist_uid(uidlist=[39, 40]).to_json()
         #User.ensure_index('name')
         #User.ensure_index('job')
-        print str((0x01 | 0x02 | 0x04 | 0x08 | 0x80) & 0x01)
-        print str(0x01 | 0x11 | 0x12 | 0x08 | 0x10 | 0x20 | 0x40 | 0x80| 0x100 | 0x200)
+        #print str((0x01 | 0x02 | 0x04 | 0x08 | 0x80) & 0x01)
+        #print str(0x01 | 0x11 | 0x12 | 0x08 | 0x10 | 0x20 | 0x40 | 0x80| 0x100 | 0x200)
         '''
         print str(len(Appointment.getlist()))
         for i in Appointment.getlist():

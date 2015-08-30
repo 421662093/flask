@@ -148,14 +148,14 @@
 										{{ item.state==1 and '正常' or '禁止' }}
 										</span>
 									</td>-->
-									<td>
+									<td id="state_txt_{{item.id}}">
 									{{func.getuserstate(item.state)}}
 									</td>
 									<td>
-                                    {{item.sort}}
+									<input type="text" class="sortupdate" uid="{{item.id}}" id="sort_{{item.id}}" old="{{item.sort}}" value="{{item.sort}}" style="width:30px">
                                     </td>
 									<td>
-										<a href="/admin/useredit/{{item.id}}/{{roid==2 and 2 or 3}}/{{index}}" class="label label-sm label-success">
+										<a href="/admin/useredit/{{item.id}}/{{roid==2 and 2 or 3}}/{{index==-1 and 1 or index}}" class="label label-sm label-success">
 										编辑
 										</a><br/>
 										{% if roid==2 %}
@@ -167,10 +167,10 @@
 										</a><br/>
 										{% endif %}
 										{% if item.state==-2 %}
-										<form method="post" action="?type=state&uid={{item.id}}" id="user_{{item.id}}_form"><a href="javascript:$('#user_{{item.id}}_form').submit();" class="label label-sm label-success">审核通过</a></form><br/>
+										<a id="state_{{item.id}}" href="javascript:javascript:state({{item.id}});" class="label label-sm label-success">审核通过</a><br/>
 										{% endif %}
 										{% if item.state==1 %}
-										<form method="post" action="?type=unstate&uid={{item.id}}" id="user_{{item.id}}_form"><a href="javascript:$('#user_{{item.id}}_form').submit();" class="label label-sm label-success">下线</a></form>
+										<a id="state_{{item.id}}" href="javascript:unstate({{item.id}});" class="label label-sm label-success">下线</a>
 										{% endif %}
 									</td>
 								</tr>
@@ -223,13 +223,82 @@
 			QuickSidebar.init(); // init quick sidebar
 			Demo.init(); // init demo features
             EcommerceOrders.init();
-        });
+            $('.sortupdate').blur(function(){
+            	ethis = $(this)
+            	val = ethis.val()
+            	if(val!=$(this).attr('old'))
+            	{
+            		ethis.attr('disabled','disabled')
+	            	$.ajax({
+					    type: "POST",
+					    url: '/admin/userlist?type=sort&uid='+ethis.attr('uid')+'&val='+val,
+					    data: {},
+					    dataType: 'json',
+					    success: function(ret) {
+					    	ethis.attr('old',val)
+					    	ethis.removeAttr('disabled')
+					    },
+				    	error:function(ret) {
+				    		alert('更新失败请重试')
+				    	}
+					});
+	            }
+            })
 
+        });
+lock=true
 function searchfun(){
 	var searchtext = $('#search').val()
 	if(searchtext.length>0)
 	{
 		location.href='{{ url_for('.user_list') }}/search/{{roid}}/'+searchtext
+	}
+}
+function unstate(uid){
+	ethis = $("#state_"+uid)
+	
+	if(lock)
+	{
+		lock = false
+		ethis.html('Loading')
+	$.ajax({
+	    type: "POST",
+	    url: '/admin/userlist?type=unstate&uid='+uid,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	lock = true
+	    	ethis.attr('href','javascript:state('+uid+');')
+	    	ethis.html('审核通过')
+	    	$('#state_txt_'+uid).html('待审核');
+	    },
+    	error:function(ret) {
+    		alert('更新失败请重试')
+    	}
+	});
+	}
+}
+function state(uid){
+	ethis = $("#state_"+uid)
+	if(lock)
+	{
+		lock = false
+		ethis.html('Loading')
+	$.ajax({
+	    type: "POST",
+	    url: '/admin/userlist?type=state&uid='+uid,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	lock = true
+	    	ethis.attr('href','javascript:unstate('+uid+');')
+	    	ethis.html('下线')
+	    	$('#state_txt_'+uid).html('正常');
+	    },
+    	error:function(ret) {
+    		alert('更新失败请重试')
+    	}
+	});
 	}
 }
 </script>

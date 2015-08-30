@@ -54,7 +54,7 @@
                                          文件地址
                                     </th>
                                     <th>
-                                          跳转地址或跳转话题id
+                                          跳转地址或项目ID
                                     </th>
 									<th>
 										 排序
@@ -71,7 +71,7 @@
 									{{item.id}}
 									</td>
 									<td>
-									{{item.group_id}}
+									{{func.getadgroupname(item.group_id)}}
 									</td>
                                     <td>
                                     {{item.title}}
@@ -89,9 +89,7 @@
 										<a href="/admin/adedit/{{item.id}}" class="label label-sm label-success">
 										编辑
 										</a><br/>
-										<a href="#" class="label label-sm label-success">
-										删除
-										</a>
+										<form method="post" action="?type=del&aid={{item.id}}" id="ad_del_{{item.id}}_form"><a href="javascript:if(confirm('确实要删除吗?'))$('#ad_del_{{item.id}}_form').submit();" class="label label-sm label-success">删除</a></form>
 									</td>
 								</tr>
 								{% endfor %}

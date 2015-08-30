@@ -173,17 +173,19 @@ def update_user_info():
     '''
     if request.method == 'POST':
         try: 
+            data = request.get_json()
             user = User()
             user._id = g.current_user._id
-            user.name = request.form.get('name','')
-            user.sex = request.form.get('sex',1)
-            user.domainid = request.form.get('domainid',1)
-            user.industryid = request.form.get('industryid',1)
+            user.name = data['name']
+            user.sex = common.strtoint(data['sex'],1)
+            user.domainid = common.strtoint(data['domainid'],0)
+            user.industryid = common.strtoint(data['industryid'],0)
             user.useredit()
             return jsonify(ret=1) #更新成功
         except Exception,e:
             logging.debug(e)
             return jsonify(ret=-1)#系统异常
+
 @api.route('/user/updateworkexp', methods=['GET','POST'])
 #@permission_required(Permission.DISCOVERY)
 @auth.login_required
@@ -208,12 +210,9 @@ def update_user_workexp():
     '''
     if request.method == 'POST':
         try:
-            print '0'
-            data = request.get_json(force=True)
+            data = request.get_json()
             #print data+'__________________________'
-            print '1'
             _id = g.current_user._id #data['_id']
-            print '2_'+str(_id)
             #_id = 73
             _list = data['list']
             we = []
@@ -291,8 +290,8 @@ def get_appointment_list(_type=0):
         _type -- 预约类型 (1:我约 2:被约) 
     '''
 
-    a_list = Appointment.getlist(_type=_type, appid=23)
-    return jsonify(list=[item.to_json(_type) for item in a_list])
+    a_list = Appointment.getlist(_type=_type, appid=g.current_user._id)
+    return jsonify(list=[item.to_json(_type=_type) for item in a_list])
 
 
 @api.route('/appointment/info/<int:aid>')
@@ -318,6 +317,58 @@ def get_appointment_info(aid,_type=1):
         return jsonify(app=a_info.to_json(_type, 0))
     else:
         return jsonify(app={})
+
+@api.route('/user/addappointment', methods=['POST'])
+@auth.login_required
+def add_user_appointment():
+    '''
+    提交预约订单（用户）
+
+    URL:
+        /user/addappointment
+    格式
+        JSON
+    POST 参数:
+        aid -- 预约ID
+        tid -- 话题ID
+        at -- 预约方式  1通话 2见面
+        appdate -- 预约时间
+        address -- 地址
+        remark -- 备注
+    返回值
+        {'ret':1} 成功
+        -1 认证失败，无法创建订单
+    '''
+
+    data = request.get_json()
+    aid = common.strtoint(data['aid'],0)
+    tid = common.strtoint(data['tid'],0)
+    at = common.strtoint(data['at'],1)
+    temppri = 0
+    t_info = Topic.getinfo(tid)
+    if t_info is not None and aid is t_info.user_id:
+        app = Appointment()
+        app._id = Appointment.createid()
+        app.user_id = g.current_user._id
+        app.appid = aid
+        app.topic_title = t_info.title
+        app.topic_id = tid
+        app.appdate = common.strtoint(data['appdate'],0)
+        app.apptype = common.strtoint(data['at'],1)
+        app.address = data['address']
+
+        if app.apptype==1:
+            app.price = t_info.pay.call
+        elif app.apptype==2:
+            app.price = t_info.pay.meet
+
+        app.attachment = []
+        #app.remark = data['remark']
+        app.state = 1
+        app.paystate = 0
+        app.save()
+        return jsonify(ret=app._id)  #创建订单成功
+    return jsonify(ret=-1)  #认证失败，无法创建订单
 
 @api.route('/user/thinktank', methods=['GET'])
 @auth.login_required
@@ -398,6 +449,9 @@ def get_user_info():
                 name # 公司名称
                 job # 职位
             money 账户余额
+            apptime 预约时间（专家可预约时间）
+            calltime 通话时间 (分享可获得)
+            wish 心愿单 数组[用户id,用户id]
     '''
     u_info = User.getinfo(g.current_user._id)
     return jsonify(info=u_info.to_json())
@@ -635,6 +689,40 @@ def update_ocp():
                 be.weixin=data['weixin']
                 be.qq=data['qq']
                 be.saveinfo()
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+
+@api.route('/user/updateshare', methods = ['POST'])
+@auth.login_required
+def update_share():
+    '''
+    关注专家
+    URL:/user/updateshare
+    POST 参数:
+        type -- 分享途径 1微信 2朋友圈 3QQ 4新浪
+    返回值
+        {'ret':1} 成功
+        -1 今天已分享
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        _type = common.strtoint(data['type'],0)
+        nowtime = common.getdaystamp()
+
+        if _type==1 and g.current_user.stats.wxshare==nowtime:
+            return jsonify(ret=-1)
+        elif _type==2 and g.current_user.stats.pyshare==nowtime:
+           return jsonify(ret=-1)
+        elif _type==3 and g.current_user.stats.qqshare==nowtime:
+            return jsonify(ret=-1)
+        elif _type==4 and g.current_user.stats.sinashare==nowtime:
+            return jsonify(ret=-1)
+
+        User.updateshare(g.current_user._id,_type)
         return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)
