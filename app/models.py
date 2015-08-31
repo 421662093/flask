@@ -225,6 +225,12 @@ class UserAuth(db.EmbeddedDocument):  # 认证信息
         }
         return json
 
+class SNS(db.EmbeddedDocument):  # 第三方社交登录
+    sina = db.StringField(default='', db_field='s') 
+    qq = db.StringField(default='',  db_field='q') 
+    weixin = db.StringField(default='', db_field='w') 
+    token = db.StringField(default='',  db_field='t')  #token
+
 class User(UserMixin, db.Document):  # 会员
     __tablename__ = 'users'
     meta = {
@@ -268,6 +274,7 @@ class User(UserMixin, db.Document):  # 会员
     money = db.IntField(default=0, db_field='m')  # 账户余额
     apptime = db.ListField(default=[], db_field='at')  # 预约时间（专家可预约时间）
     calltime = db.IntField(default=0, db_field='ct')  # 通话时间 (分享可获得)
+    sns = db.EmbeddedDocumentField(SNS, default=SNS(), db_field='sn') 
 
     @staticmethod
     def getlist_app(roid=2,index=1,count=10):
@@ -405,8 +412,9 @@ class User(UserMixin, db.Document):  # 会员
             if len(self.name) > 0:
                 update['set__name'] = self.name
             update['set__sex'] = self.sex
-            update['set__domainid'] = self.domainid
-            update['set__industryid'] = self.industryid
+            if self.role_id==2:
+                update['set__domainid'] = self.domainid
+                update['set__industryid'] = self.industryid
             update['set__stats__lastaction'] = common.getstamp()
             User.objects(_id=self._id).update_one(**update)
 
@@ -546,6 +554,30 @@ class User(UserMixin, db.Document):  # 会员
 
         User.objects(query).update_one(**update)
 
+    @staticmethod
+    def snslogin(sns,uid):
+        query = None
+        if sns==1:
+            query=Q(sns__sina=uid)
+        elif sns==2:
+            query=Q(sns__qq=uid)
+        elif sns==3:
+            query=Q(sns__weixin=uid)
+        return User.objects(query).first()
+
+    def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        if len(self.username)==0:
+            if self.role_id==2:
+                self.username = 'zj_'+str(self._id)
+            elif self.role_id==3:
+                self.username = 'pt_'+str(self._id)
+
+        self.password = self.password_hash
+        self.date = common.getstamp()
+        self.save()
+
+        return self._id
     def editinfo(self):
     	#后台更新用户信息
         if self._id > 0:
@@ -1310,7 +1342,7 @@ login_manager.anonymous_user = AnonymousUser
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.objects(id=user_id)
+    return User.objects(id=user_id).first()
 
 
 class collection(db.Document):
@@ -1518,6 +1550,7 @@ class Appointment(db.Document):  # 预约
     remark = db.StringField(default='', db_field='r')  # 备注
     state = db.IntField(default=0, db_field='s')  # 预约状态  0预约失败 1申请中 2待付款 3进行中 4已完成
     paystate = db.IntField(default=0, db_field='ps')  # 支付状态 0未支付 1已支付
+    date = db.IntField(default=0, db_field='d')  # 创建时间
 
     @staticmethod
     # _type=1我约 _type=2被约  /  appid 约/被约 专家id
@@ -1554,6 +1587,7 @@ class Appointment(db.Document):  # 预约
         #创建订单信息
         self._id = Appointment.createid()
         try:
+            self.date = common.getstamp()
             self.save()
         except Exception, e:
             logging.debug(e)

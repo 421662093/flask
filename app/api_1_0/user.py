@@ -5,11 +5,13 @@
 '''
 
 from flask import make_response, request, current_app, url_for
-from flask import g
+from flask import g,jsonify as flask_jsonify
+from flask.ext.login import login_user, logout_user, login_required, \
+    current_user
 from .authentication import auth
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert
+from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS
 from ..core.common import jsonify
 from ..core import common
 from .. import mc
@@ -177,9 +179,11 @@ def update_user_info():
             user = User()
             user._id = g.current_user._id
             user.name = data['name']
+            user.role_id = g.current_user.role_id
             user.sex = common.strtoint(data['sex'],1)
-            user.domainid = common.strtoint(data['domainid'],0)
-            user.industryid = common.strtoint(data['industryid'],0)
+            if user.role_id==2:
+                user.domainid = common.strtoint(data['domainid'],0)
+                user.industryid = common.strtoint(data['industryid'],0)
             user.useredit()
             return jsonify(ret=1) #更新成功
         except Exception,e:
@@ -348,7 +352,6 @@ def add_user_appointment():
     t_info = Topic.getinfo(tid)
     if t_info is not None and aid is t_info.user_id:
         app = Appointment()
-        app._id = Appointment.createid()
         app.user_id = g.current_user._id
         app.appid = aid
         app.topic_title = t_info.title
@@ -366,7 +369,7 @@ def add_user_appointment():
         #app.remark = data['remark']
         app.state = 1
         app.paystate = 0
-        app.save()
+        app.editinfo()
         return jsonify(ret=app._id)  #创建订单成功
     return jsonify(ret=-1)  #认证失败，无法创建订单
 
@@ -727,3 +730,60 @@ def update_share():
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
+
+@api.route('/user/snslogin', methods = ['POST'])
+def user_snslogin():
+    '''
+    第三方登录
+    URL:/user/snslogin
+    POST 参数:
+        sns -- 第三方平台 1新浪 2QQ 3微信
+        uid -- 第三方UID
+        username -- 第三方昵称
+        token -- 第三方token
+        avaurl -- 头像
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        sns = common.strtoint(data['sns'],0)
+        uid = data['uid']
+        name = data['username']
+        token = data['token']
+        avaurl = data['avaurl']
+        if sns>0:
+            user = User.snslogin(sns,uid)
+            if user is not None:
+                user = User.objects(_id=user._id).first()
+                login_user(user, True)
+            else:
+                col1 = User()
+                col1.role_id = 3
+                col1.username = ''
+                col1.name = name
+                col1.password = ''
+                col1.avaurl = avaurl
+                sn = SNS()
+                sn.token = token
+                if sns==1:
+                    sn.sina = uid
+                elif sns==2:
+                    sn.qq = uid
+                elif sns==3:
+                    sn.weixin = uid
+                col1.sns = sn
+                col1.saveinfo()
+                user = User.snslogin(sns,uid)
+                user = User.objects(_id=user._id).first()
+                login_user(user, True)
+            return flask_jsonify({'token': user.generate_auth_token(expiration=3600), 'expiration': 3600,'_id': user._id})
+        #return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+
+
+

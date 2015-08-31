@@ -81,15 +81,15 @@ class DevelopmentConfig(Config):
     def init_app(cls, app):
         Config.init_app(app)
         import logging  # 日志系统
-        '''
+
         logging.basicConfig(level=logging.DEBUG,
                             format='%(filename)s[line:%(lineno)d] %(levelname)s [%(message)s] %(asctime)s',
                             datefmt='%Y-%m-%d %H:%M:%S',
                             filename='log/flask.log',
                             filemode='w')
-        '''
-        #DEBUG = logging.StreamHandler()
-        #DEBUG.setLevel(logging.DEBUG)
+
+        DEBUG = logging.StreamHandler()
+        DEBUG.setLevel(logging.DEBUG)
         ERROR = logging.StreamHandler()
         ERROR.setLevel(logging.ERROR)  #
 
@@ -102,7 +102,7 @@ class DevelopmentConfig(Config):
         #    '%(name)-12s: %(levelname)-8s %(message)s')
         # console.setFormatter(formatter)
         ###########
-        #app.logger.addHandler(DEBUG)
+        app.logger.addHandler(DEBUG)
         app.logger.addHandler(ERROR)
 
 

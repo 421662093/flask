@@ -71,6 +71,8 @@ def do_charge():
         JSON
     POST 参数:
         order_no -- 预约订单ID
+        channel -- 支付方式
+        amount -- 价格
     返回值
         返回charge JSON对象(pingpp)
     '''
@@ -81,8 +83,7 @@ def do_charge():
         if o_info is not None:
             if isinstance(form, dict):
                 form['app'] = dict(id=conf.PINGPP_APP_ID)
-                form['channel'] = 'alipay'
-                form['amount'] = o_info.price
+                #form['amount'] = o_info.price
                 form['currency'] = "cny"
                 form['client_ip'] = "127.0.0.1"
                 form['subject'] = '口袋专家充值'

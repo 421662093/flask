@@ -74,9 +74,15 @@ def index():
 
         import jpush as jpush
         from ..sdk.jgpush import pushmessage
-        pushmessage(jpush,'口袋专家测试测试11111111',{'k1':'v1'},[30])
-
+        #pushmessage(jpush,'口袋专家测试测试11111111',{'type':'update_appointment_state','app_id':111111111,'app_state':1},[])
+        from flask.ext.login import login_user, logout_user, login_required,current_user
         from ..tests import test_expert, test_user, test_discovery, test_sys
+        from flask import g
+        user = User.objects(_id=72).first()
+        login_user(user, True)
+
+        print user.generate_auth_token(expiration=3600)
+        print '___'+str(user._id)+'___'
         #from ..sdk.getui import igetuipush
         #igetuipush.pushMessageToSingle()
         #print common.getappointmentid(Appointment.createid())
