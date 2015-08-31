@@ -412,6 +412,8 @@ class User(UserMixin, db.Document):  # 会员
             if len(self.name) > 0:
                 update['set__name'] = self.name
             update['set__sex'] = self.sex
+            if len(self.avaurl)>0:
+                update['set__avaurl'] = self.avaurl
             if self.role_id==2:
                 update['set__domainid'] = self.domainid
                 update['set__industryid'] = self.industryid
@@ -1583,6 +1585,14 @@ class Appointment(db.Document):  # 预约
         aid = collection.get_next_id(Appointment.__tablename__)
         return int(common.getappointmentid(aid))
 
+    @staticmethod
+    def updateappstate(aid,state,paystate):
+        #更新订单状态
+        update = {}
+        update['set__state'] = state
+        update['set__paystate'] = paystate
+        Appointment.objects(_id=aid).update_one(**update)
+
     def editinfo(self):
         #创建订单信息
         self._id = Appointment.createid()
@@ -1709,9 +1719,9 @@ class PayLog(db.Document):
     meta = {
         'collection': __tablename__,
     }
-    _id = db.StringField(primary_key=True)
+    _id = db.IntField(primary_key=True)
     created = db.IntField(default=0, db_field='c') 
-    paid = db.StringField(default='', db_field='p')
+    paid = db.BooleanField(default=False, db_field='p')
     app =  db.StringField(default='', db_field='a')
     channel =  db.StringField(default='', db_field='ch')
     order_no =  db.StringField(default='', db_field='o')
@@ -1724,7 +1734,7 @@ class PayLog(db.Document):
     time_paid =  db.IntField(default='', db_field='t')  # 支付成功时间
     time_expire =  db.IntField(default='', db_field='te')
     transaction_no =  db.StringField(default='', db_field='tr')
-    amount_refunded =  db.StringField(default='', db_field='ar')
+    amount_refunded =  db.IntField(default=0, db_field='ar')
     failure_code =  db.StringField(default='', db_field='f')
     failure_msg =  db.StringField(default='', db_field='fa')
     description =  db.StringField(default='', db_field='d')

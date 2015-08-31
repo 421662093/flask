@@ -58,8 +58,9 @@ class DevelopmentConfig(Config):
     QCLOUD_SECRET_KEY = '8bw7cA3KGdTdk1FerPkL7n94Kdx0LrE0'
     QCLOUD_BUCKET = 'kdzj2015' #空间名称
 
-    PINGPP_API_KEY = 'sk_live_FSqiwUW3uBeY5u47xMskEFtW'
     PINGPP_APP_ID = 'app_9qXXjTvjHW98Tmv9'
+    PINGPP_API_KEY = 'sk_live_FSqiwUW3uBeY5u47xMskEFtW'
+    
 
     JPush_API_KEY = '2d85bc2c4cc44f976c26286d'
     JPush_MASTER_SECRET = '9e245d142adba0289b329b73'

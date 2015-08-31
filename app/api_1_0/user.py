@@ -172,6 +172,7 @@ def update_user_info():
     	sex -- 性别 (默认1,1:男 0:女)
         domainid -- 领域分类id
         industryid -- 行业分类id
+        isava -- 是否更新头像 1是 0否
     '''
     if request.method == 'POST':
         try: 
@@ -181,6 +182,9 @@ def update_user_info():
             user.name = data['name']
             user.role_id = g.current_user.role_id
             user.sex = common.strtoint(data['sex'],1)
+            isava = common.strtoint(data['isava'],0)
+            if isava==1:
+                user.avaurl = 'http://kdzj2015-10001870.image.myqcloud.com/kdzj2015-10001870/0/avatar_'+str(user._id)+'/original?random='+str(common.getstamp())
             if user.role_id==2:
                 user.domainid = common.strtoint(data['domainid'],0)
                 user.industryid = common.strtoint(data['industryid'],0)
