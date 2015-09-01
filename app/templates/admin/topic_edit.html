@@ -76,7 +76,7 @@
                                                 </label>
                                                 <div class="col-md-10">
                                                 	大于0显示到发现首页 <br/>
-                                                    <input type="text" class="form-control" id="discoverysort" name="discoverysort" {% if istopic %}value="{{topic.discoverysort}}" {%endif%}>
+                                                    <input type="text" class="form-control" id="discoverysort" name="discoverysort" value="{% if istopic %}{{topic.discoverysort}}{%else%}0{%endif%}">
                                                 </div>
                                             </div>
 											<div class="form-group">

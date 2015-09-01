@@ -274,6 +274,7 @@ class User(UserMixin, db.Document):  # 会员
     money = db.IntField(default=0, db_field='m')  # 账户余额
     apptime = db.ListField(default=[], db_field='at')  # 预约时间（专家可预约时间）
     calltime = db.IntField(default=0, db_field='ct')  # 通话时间 (分享可获得)
+    apptype = db.IntField(default=0, db_field='aty')  # 预约模式
     sns = db.EmbeddedDocumentField(SNS, default=SNS(), db_field='sn') 
 
     @staticmethod
@@ -555,6 +556,14 @@ class User(UserMixin, db.Document):  # 会员
         update['inc__calltime'] = conf.SHARE_CALL_TIME
 
         User.objects(query).update_one(**update)
+
+    @staticmethod
+    def updateapptype(uid,_type):
+        #更新专家预约模式
+        update = {}
+        update['set__apptype'] = _type
+        User.objects(_id=uid).update_one(**update)
+
 
     @staticmethod
     def snslogin(sns,uid):
@@ -913,7 +922,9 @@ class User(UserMixin, db.Document):  # 会员
                 'money':self.money,
                 'apptime':self.apptime,
                 'calltime':self.calltime,
-                'wish':self.wish
+                'wish':self.wish,
+                'calltype':(self.apptype&0x01)==0x01 and 1 or 0, #通话模式开启
+                'meettype':(self.apptype&0x02)==0x02 and 1 or 0 #见面模式开启
             }
         elif type == 1:
             json_user = {
@@ -995,7 +1006,7 @@ class User(UserMixin, db.Document):  # 会员
 
 class TopicConfig(db.EmbeddedDocument):  # 工作经历
     background = db.StringField(
-        default='', max_length=100, db_field='b')  # 背景图片地址
+        default='', db_field='b')  # 背景图片地址
 
     def to_json(self):
         json_tc = {
@@ -1687,13 +1698,15 @@ class Message(db.Document):
     _id = db.IntField(primary_key=True)
     user_id = db.IntField(default=0, db_field='u')  # 用户id
     appointment_id = db.IntField(default=0, db_field='a')  # 预约订单id
-    date = db.IntField(default=common.getstamp(), db_field='d')  # 创建时间
-    type = db.IntField(default=0, db_field='ty')  # 消息类型
+    date = db.IntField(default=0, db_field='d')  # 创建时间
+    type = db.IntField(default=0, db_field='ty')  # 消息类型 1成功 2失败 3温馨提醒 4消息提醒
     title = db.StringField(default='', db_field='t')  # 标题
     content = db.StringField(default='', db_field='c')  # 内容
 
     @staticmethod
     def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        self.date = common.getstamp()
         self.save()
 
     @staticmethod
@@ -1706,7 +1719,6 @@ class Message(db.Document):
             '_id': self.id,
             'title': self.title.encode('utf-8'),
             'content': self.content.encode('utf-8'),
-            'user_id': self.user_id,
             'appointment_id': self.appointment_id,
             'date': self.date,
             'type': self.type
@@ -1769,6 +1781,8 @@ class ExpertInv(db.Document):
             #update['set__sort'] = self.sort
             ExpertInv.objects(_id=self._id,user_id=self.user_id).update_one(**update)
         else:
+            self._id = collection.get_next_id(self.__tablename__)
+            self.date = common.getstamp()
             self.save()
 
     @staticmethod
@@ -1855,3 +1869,28 @@ class BecomeExpert(db.Document):
         self.date = common.getstamp()
         self.save()
         User.updatebecomeexpert(self.user_id)
+
+class Guestbook(db.Document):
+    #成为审核
+    __tablename__ = 'guestbook'
+    meta = {
+        'collection': __tablename__,
+    }
+    _id = db.IntField(primary_key=True)  # id
+    user_id = db.IntField(default=0, db_field='ui')  # 用户ID
+    content = db.StringField(default='', db_field='c')  # 留言内容
+    date = db.IntField(default=0, db_field='d')  # 创建时间
+
+    def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        self.date = common.getstamp()
+        self.save()
+
+    @staticmethod
+    def getlist(index=1, count=10):
+        pageindex =(index-1)*count
+        return Guestbook.objects.order_by("-_id").skip(pageindex).limit(count)
+
+    @staticmethod
+    def getcount():
+        return Guestbook.objects.count()

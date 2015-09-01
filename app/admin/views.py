@@ -10,7 +10,7 @@ from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
 from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,\
-                    Inventory,Appointment,Ad,ExpertAuth,BecomeExpert
+                    Inventory,Appointment,Ad,ExpertAuth,BecomeExpert,Guestbook
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
@@ -412,7 +412,6 @@ def topic_edit(id,_type=0,uid=-2,pindex=1):
             topic = Topic.getinfo(id)
             if topic:
                 istopic = True
-
         func = {'can': common.can}
         return render_template('admin/topic_edit.html', topic=topic,_type=_type, istopic=istopic,uid=uid,pindex=pindex, form=form,func=func,uinfo=g.current_user)
 
@@ -437,8 +436,9 @@ def topicteam_edit(id,uid=-1,pindex=1):
             tempexp = request.form.get('expert','')
             if len(tempexp)>0:
                 topic.expert = [int(i.strip()) for i in tempexp.split(',')]
-            #topic.config = TopicConfig()
+            topic.config = TopicConfig()
             topic.config.background = request.form.get('background','')
+            logging.debug(topic.config.background)
             #topic.stats.topic_count = form.topic_count.data
             #topic.stats.topic_total = form.topic_total.data
             topic.sort = request.form.get('sort',0)
@@ -778,3 +778,24 @@ def becomeexpert_list(index=1):
         belist = BecomeExpert.getlist(index=index,count=pagesize)
         func = {'stamp2time': common.stamp2time,'can': common.can,'getexpertauthstate':common.getexpertauthstate}
         return render_template('admin/becomeexpert_list.html',belist=belist, func=func,pagecount=pcount,index=index,uinfo=g.current_user)
+
+
+@admin.route('/guestbooklist',methods=['GET', 'POST'])
+@admin.route('/guestbooklist/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
+#@permission_required('user',Permission.VIEW)
+def guestbook_list(index=1):
+    if request.method == 'POST':
+        return redirect(url_for('.guestbook_list'))
+    else:
+        pagesize = 8
+        count = Guestbook.getcount()
+        lcount = common.getpagecount(count,pagesize)
+        if index>lcount:
+            index = lcount
+        if index<1:
+            index=1
+        gblist = Guestbook.getlist(index=index,count=pagesize)
+
+        func = {'stamp2time': common.stamp2time,'can': common.can}
+        return render_template('admin/guestbook_list.html',gblist=gblist, func=func,pagecount=lcount,index=index,uinfo=g.current_user)

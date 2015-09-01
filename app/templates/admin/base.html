@@ -115,9 +115,20 @@
                             <i class="icon-bulb"></i>
                             认证专家审核</a>
                         </li>
-                        
                         {%endif%}
-                        
+
+                        {% if func.can(uinfo.role.permissions.ad,Permission.VIEW) %}
+                        <li>
+                            <a href="{{ url_for('.ad_list') }}">
+                            <i class="icon-graph"></i>
+                            广告管理</a>
+                        </li>
+                        {%endif%}
+                        <li>
+                            <a href="{{ url_for('.guestbook_list') }}">
+                            <i class="icon-graph"></i>
+                            留言反馈管理</a>
+                        </li>
 					</ul>
 				</li>
 
@@ -128,13 +139,7 @@
 					<span class="arrow "></span>
 					</a>
 					<ul class="sub-menu">
-                        {% if func.can(uinfo.role.permissions.ad,Permission.VIEW) %}
-                        <li>
-                            <a href="{{ url_for('.ad_list') }}">
-                            <i class="icon-graph"></i>
-                            广告管理</a>
-                        </li>
-                        {%endif%}
+                        
 						{% if func.can(uinfo.role.permissions.role,Permission.VIEW) %}
                         <li>
                             <a href="{{ url_for('.role_list') }}">

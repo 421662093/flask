@@ -60,7 +60,7 @@
                                                 * </span>
                                                 </label>
                                                 <div class="col-md-10">
-                                                    <input type="text" class="form-control" id="sort" name="sort" {% if isad %}value="{{ad.sort}}" {%endif%}>
+                                                    <input type="text" class="form-control" id="sort" name="sort" value="{% if isad %}{{ad.sort}}{%else%}0{%endif%}" >
                                                 </div>
                                             </div>
 											<div class="form-group">

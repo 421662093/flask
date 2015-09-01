@@ -327,3 +327,33 @@ def update_expert_apptime():
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
+
+@api.route('/expert/updateapptype', methods = ['POST'])
+@auth.login_required
+def update_expert_apptype():
+    '''
+    更新专家预约模式
+    URL:/expert/updateapptime
+    POST 参数:
+        call -- 通话模式 1开启 0关闭
+        meet -- 见面模式 1开启 0关闭
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        call = common.strtoint(data['call'],0)
+        meet = common.strtoint(data['meet'],0)
+        apptype = 0
+        if call==1 and meet==1:
+            apptype=0x01 | 0x02
+        elif call==1:
+            apptype=0x01
+        elif meet==1:
+            apptype=0x02
+        User.updateapptype(g.current_user._id,apptype)
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常

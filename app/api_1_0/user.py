@@ -11,7 +11,7 @@ from flask.ext.login import login_user, logout_user, login_required, \
 from .authentication import auth
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS
+from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS,Guestbook
 from ..core.common import jsonify
 from ..core import common
 from .. import mc
@@ -373,7 +373,15 @@ def add_user_appointment():
         #app.remark = data['remark']
         app.state = 1
         app.paystate = 0
-        app.editinfo()
+        nowid = app.editinfo()
+
+        msg = Message()
+        msg.user_id = app.appid
+        msg.appointment_id = nowid
+        msg.type = 4
+        msg.title = '预约消息'
+        msg.content = '您有一个新的预约订单请您查看。'
+        msg.saveinfo()
         return jsonify(ret=app._id)  #创建订单成功
     return jsonify(ret=-1)  #认证失败，无法创建订单
 
@@ -409,6 +417,13 @@ def get_user_message(pageindex=1):
         JSON
     GET 参数:
         pageindex -- 页码 (默认 1)
+    返回值
+        _id -- 消息ID
+        title -- 标题
+        content -- 内容
+        appointment_id -- 预约订单ID
+        date -- 创建时间
+        type -- 消息类型 1预约成功 2预约失败 3温馨提醒 4消息提醒
     '''
     m_list = Message.getlist(uid=g.current_user._id,index=pageindex)
     if m_list is not None:
@@ -788,6 +803,28 @@ def user_snslogin():
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
 
+
+@api.route('/user/addguestbook', methods = ['POST'])
+#@auth.login_required
+def add_guestbook():
+    '''
+    添加留言反馈
+    URL:/user/addguestbook
+    POST 参数:
+        content -- 反馈内容
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        gb = Guestbook()
+        gb.content = data['content']
+        gb.saveinfo()
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
 
 
 
