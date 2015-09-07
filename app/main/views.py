@@ -74,15 +74,15 @@ def index():
 
         import jpush as jpush
         from ..sdk.jgpush import pushmessage
-        #pushmessage(jpush,'口袋专家测试测试11111111',{'type':'update_appointment_state','app_id':111111111,'app_state':1},[])
+        pushmessage(jpush,'口袋专家测试测试11111111',{'type':'viewapp','app_id':111111111},[])
         from flask.ext.login import login_user, logout_user, login_required,current_user
         from ..tests import test_expert, test_user, test_discovery, test_sys
         from flask import g
-        user = User.objects(_id=72).first()
-        login_user(user, True)
+        #user = User.objects(_id=72).first()
+        #login_user(user, True)
 
-        print user.generate_auth_token(expiration=3600)
-        print '___'+str(user._id)+'___'
+        #print user.generate_auth_token(expiration=3600)
+        #print '___'+str(user._id)+'___'
         #from ..sdk.getui import igetuipush
         #igetuipush.pushMessageToSingle()
         #print common.getappointmentid(Appointment.createid())
@@ -105,6 +105,22 @@ def index():
         #User.ensure_index('job')
         #print str((0x01 | 0x02 | 0x04 | 0x08 | 0x80) & 0x01)
         #print str(0x01 | 0x11 | 0x12 | 0x08 | 0x10 | 0x20 | 0x40 | 0x80| 0x100 | 0x200)
+
+        '''
+        User.objects().update(unset__stats__oldx=1)
+        User.objects().update(unset__stats__baidu=1)
+        User.objects().update(unset__stats__zhihu=1)
+        User.objects().update(unset__stats__sina=1)
+        User.objects().update(unset__stats__twitter=1)
+        User.objects().update(unset__stats__facebook=1)
+        User.objects().update(unset__stats__github=1)
+        User.objects().update(unset__stats__baiduurl=1)
+        User.objects().update(unset__stats__zhihuurl=1)
+        User.objects().update(unset__stats__sinaurl=1)
+        User.objects().update(unset__stats__twitterurl=1)
+        User.objects().update(unset__stats__facebookurl=1)
+        User.objects().update(unset__stats__githuburl=1)
+        '''
         '''
         print str(len(Appointment.getlist()))
         for i in Appointment.getlist():

@@ -77,7 +77,7 @@ def get_expert_info(uid):
             name 姓名
             sex 性别
             auth 认证
-                expertprocess 认证专家流程  0未认证 1-5
+                expertprocess 认证专家流程  0未认证 1-4
                 expert 认证专家 1已认证 0未认证
             bgurl 顶部背景图片
             avaurl 头像地址
@@ -89,14 +89,9 @@ def get_expert_info(uid):
             job 职位
             label 标签
             meet_c 见面次数
-            follow 第三方
-                {baidu 关注数,baiduurl 地址} 百度
-                {weixin 关注数,weixinurl 地址} 微信
-                {zhihu 关注数,zhihuurl 地址} 知乎
-                {sina 关注数,sinaurl 地址} 新浪
-                {twitter 关注数,twitterurl 地址} 推特
-                {facebook 关注数,facebookurl 地址} 脸谱
-                {github 关注数,githuburl 地址} Github
+            follow 第三方List
+                name 名称
+                url 地址
             edu 教育背景List
                 name 学校名称
                 start 开始时间
@@ -112,7 +107,7 @@ def get_expert_info(uid):
         topic
     '''
     u_info = User.getinfo(uid)
-    t_list = Topic.getlist(uid=uid, count=2)
+    t_list = Topic.getlist(uid=uid, count=3)
     c_list = Comment.getlist(uid=uid, page=1, count=2)
     return jsonify(expert={
         'info': u_info.to_json(-1),

@@ -31,6 +31,7 @@ def get_payid():
 @api.route('/pay/webhooks', methods=['POST'])
 def get_payid():
 
+    
     try:
 
         data = request.get_json()
@@ -72,7 +73,6 @@ def get_payid():
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
-    
 
     return jsonify(ret=1) 
 

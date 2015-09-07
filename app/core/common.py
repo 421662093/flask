@@ -223,3 +223,10 @@ def strtoint(val,default):
         return num
     except Exception, e:
         return default
+
+def getopenplatform(_list,name):
+    # 用户开放平台 根据name 返回地址
+    for item in _list:
+        if item.name==name:
+            return item.url
+    return ''

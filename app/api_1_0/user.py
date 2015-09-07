@@ -18,6 +18,8 @@ from .. import mc
 import logging
 import json
 from ..sdk.yuntongxun import SendTemplateSMS as SMS
+import jpush as jpush
+from ..sdk.jgpush import pushmessage
 
 @api.route('/user/getcode', methods = ['POST'])
 def get_code():
@@ -382,7 +384,8 @@ def add_user_appointment():
         msg.title = '预约消息'
         msg.content = '您有一个新的预约订单请您查看。'
         msg.saveinfo()
-        return jsonify(ret=app._id)  #创建订单成功
+        pushmessage(jpush,'您有一个新的预约订单请您查看。',{'type':'viewapp','app_id':nowid},[app.appid])
+        return jsonify(ret=nowid)  #创建订单成功
     return jsonify(ret=-1)  #认证失败，无法创建订单
 
 @api.route('/user/thinktank', methods=['GET'])
@@ -417,7 +420,7 @@ def get_user_message(pageindex=1):
         JSON
     GET 参数:
         pageindex -- 页码 (默认 1)
-    返回值
+    返回值 
         _id -- 消息ID
         title -- 标题
         content -- 内容

@@ -10,7 +10,7 @@ from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
 from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,\
-                    Inventory,Appointment,Ad,ExpertAuth,BecomeExpert,Guestbook
+                    Inventory,Appointment,Ad,ExpertAuth,BecomeExpert,Guestbook,UserOpenPlatform
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
@@ -183,24 +183,43 @@ def user_edit(roid=2,id=0,pindex=1):
             	edulist.append(tempedu)
         user.edu = edulist
 
-        u_stats = UserStats()
-        u_stats.baidu = request.form.get('baidu',0)
-        u_stats.weixin = request.form.get('weixin',0)
-        u_stats.zhihu = request.form.get('zhihu',0)
-        u_stats.sina = request.form.get('sina',0)
-        u_stats.twitter = request.form.get('twitter',0)
-        u_stats.facebook = request.form.get('facebook',0)
-        u_stats.github = request.form.get('github',0)
 
-        u_stats.baiduurl = request.form.get('baiduurl','')
-        u_stats.weixinurl = request.form.get('weixinurl','')
-        u_stats.zhihuurl = request.form.get('zhihuurl','')
-        u_stats.sinaurl = request.form.get('sinaurl','')
-        u_stats.twitterurl = request.form.get('twitterurl','')
-        u_stats.facebookurl = request.form.get('facebookurl','')
-        u_stats.githuburl = request.form.get('githuburl','')
+        u_sp_1 = UserOpenPlatform()
+        u_sp_2 = UserOpenPlatform()
+        u_sp_3 = UserOpenPlatform()
+        u_sp_4 = UserOpenPlatform()
+        u_sp_5 = UserOpenPlatform()
+        u_sp_6 = UserOpenPlatform()
+        u_sp_7 = UserOpenPlatform()
 
-        user.stats = u_stats
+        u_sp_1.name = 'baidu'
+        u_sp_1.url = request.form.get('baiduurl','')
+
+        u_sp_2.name = 'weixin'
+        u_sp_2.url = request.form.get('weixinurl','')
+
+        u_sp_3.name = 'zhihu'
+        u_sp_3.url = request.form.get('zhihuurl','')
+
+        u_sp_4.name = 'sina'
+        u_sp_4.url = request.form.get('sinaurl','')
+
+        u_sp_5.name = 'twitter'
+        u_sp_5.url = request.form.get('twitterurl','')
+
+        u_sp_6.name = 'facebook'
+        u_sp_6.url = request.form.get('facebookurl','')
+
+        u_sp_7.name = 'github'
+        u_sp_7.url = request.form.get('githuburl','')
+
+        user.openplatform.append(u_sp_1)
+        user.openplatform.append(u_sp_2)
+        user.openplatform.append(u_sp_3)
+        user.openplatform.append(u_sp_4)
+        user.openplatform.append(u_sp_5)
+        user.openplatform.append(u_sp_6)
+        user.openplatform.append(u_sp_7)
 
         user.avaurl = request.form.get('avaurl','')
         user.editinfo()
@@ -222,7 +241,7 @@ def user_edit(roid=2,id=0,pindex=1):
             user = User.getinfo(id)
             if user:
                 isuser = True
-        func = {'stamp2time': common.stamp2time,'len': len,'can': common.can}
+        func = {'stamp2time': common.stamp2time,'len': len,'getopenplatform':common.getopenplatform,'can': common.can}
         return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,bgsign=bgsign,sign=sign,avasign=avasign,pindex=pindex,uinfo=g.current_user)
 
 @admin.route('/logout')

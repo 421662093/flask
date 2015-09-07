@@ -177,6 +177,16 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
         }
         return json_us
 
+class UserOpenPlatform(db.EmbeddedDocument):  # 开放平台
+    name = db.StringField(default='', db_field='n')  # 名称
+    url = db.StringField(default='', db_field='u')  # 地址
+
+    def to_json(self):
+        json = {
+            'name': self.name,
+            'url':self.url
+        }
+        return json
 
 class WorkExp(db.EmbeddedDocument):  # 工作经历
     start = db.IntField(default=common.getstamp(),  db_field='s')  # 开始时间
@@ -275,7 +285,8 @@ class User(UserMixin, db.Document):  # 会员
     apptime = db.ListField(default=[], db_field='at')  # 预约时间（专家可预约时间）
     calltime = db.IntField(default=0, db_field='ct')  # 通话时间 (分享可获得)
     apptype = db.IntField(default=0, db_field='aty')  # 预约模式
-    sns = db.EmbeddedDocumentField(SNS, default=SNS(), db_field='sn') 
+    sns = db.EmbeddedDocumentField(SNS, default=SNS(), db_field='sn')
+    openplatform = db.ListField(db.EmbeddedDocumentField(UserOpenPlatform), default=[], db_field='sp')  # 开放平台
 
     @staticmethod
     def getlist_app(roid=2,index=1,count=10):
@@ -618,8 +629,10 @@ class User(UserMixin, db.Document):  # 会员
             update['set__label'] = self.label
             update['set__workexp'] = self.workexp
             update['set__edu'] = self.edu
+            update['set__openplatform'] = self.openplatform
 
             update['set__stats__lastaction'] = common.getstamp()
+            '''
             update['set__stats__baidu'] = self.stats.baidu
             update['set__stats__weixin'] = self.stats.weixin
             update['set__stats__zhihu'] = self.stats.zhihu
@@ -635,6 +648,7 @@ class User(UserMixin, db.Document):  # 会员
             update['set__stats__twitterurl'] = self.stats.twitterurl
             update['set__stats__facebookurl'] = self.stats.facebookurl
             update['set__stats__githuburl'] = self.stats.githuburl
+            '''
             
             update['set__sort'] = self.sort
             User.objects(_id=self._id).update_one(**update)
@@ -883,7 +897,8 @@ class User(UserMixin, db.Document):  # 会员
                 'auth': {'expert': self.auth.expert,'expertprocess': self.auth.expertprocess},  # self.auth.vip
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'meet_c': self.stats.meet,
-                'follow':[{'baidu':self.stats.baidu,'baiduurl':self.stats.baiduurl},{'weixin':self.stats.weixin,'weixinurl':self.stats.weixinurl},{'zhihu':self.stats.zhihu,'zhihuurl':self.stats.zhihuurl},{'sina':self.stats.sina,'sinaurl':self.stats.sinaurl},{'twitter':self.stats.twitter,'twitterurl':self.stats.twitterurl},{'facebook':self.stats.facebook,'facebookurl':self.stats.facebookurl},{'github':self.stats.github,'githuburl':self.stats.githuburl}],
+                'follow':[len(item.url)>0 and item.to_json() for item in self.openplatform],
+                #'follow':[{'baidu':self.stats.baidu,'baiduurl':self.stats.baiduurl},{'weixin':self.stats.weixin,'weixinurl':self.stats.weixinurl},{'zhihu':self.stats.zhihu,'zhihuurl':self.stats.zhihuurl},{'sina':self.stats.sina,'sinaurl':self.stats.sinaurl},{'twitter':self.stats.twitter,'twitterurl':self.stats.twitterurl},{'facebook':self.stats.facebook,'facebookurl':self.stats.facebookurl},{'github':self.stats.github,'githuburl':self.stats.githuburl}],
                 # [39.9442, 116.324]
                 'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
                 'intro': self.intro.encode('utf-8'),
@@ -1580,11 +1595,11 @@ class Appointment(db.Document):  # 预约
     def getlist(_type=0, appid=0, index=1, count=10):
         pageindex =(index-1)*count
         if _type == 0:
-            return Appointment.objects().order_by("-appdate").skip(pageindex).limit(count)
+            return Appointment.objects().order_by("-date").skip(pageindex).limit(count)
         elif _type == 2:
-            return Appointment.objects(appid=appid).order_by("-appdate").skip(pageindex).limit(count)
+            return Appointment.objects(appid=appid).order_by("-date").skip(pageindex).limit(count)
         elif _type == 1:
-            return Appointment.objects(user_id=appid).order_by("-appdate").skip(pageindex).limit(count)
+            return Appointment.objects(user_id=appid).order_by("-date").skip(pageindex).limit(count)
 
     @staticmethod
     def getinfo(aid):
@@ -1607,8 +1622,8 @@ class Appointment(db.Document):  # 预约
     def editinfo(self):
         #创建订单信息
         self._id = Appointment.createid()
+        self.date = common.getstamp()
         try:
-            self.date = common.getstamp()
             self.save()
         except Exception, e:
             logging.debug(e)
@@ -1703,7 +1718,6 @@ class Message(db.Document):
     title = db.StringField(default='', db_field='t')  # 标题
     content = db.StringField(default='', db_field='c')  # 内容
 
-    @staticmethod
     def saveinfo(self):
         self._id = collection.get_next_id(self.__tablename__)
         self.date = common.getstamp()
