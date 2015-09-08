@@ -74,10 +74,15 @@ def index():
 
         import jpush as jpush
         from ..sdk.jgpush import pushmessage
-        pushmessage(jpush,'口袋专家测试测试11111111',{'type':'viewapp','app_id':111111111},[])
+        pushmessage(jpush,'口袋专家测试测试11111111',{'type':'viewapp','app_id':157785751945953,'apptype':2},[])
         from flask.ext.login import login_user, logout_user, login_required,current_user
         from ..tests import test_expert, test_user, test_discovery, test_sys
         from flask import g
+
+        from ..sdk.yuntongxun import CreateSubAccount as CSA
+
+        #CSA.CreateSubAccount('13659488152')
+
         #user = User.objects(_id=72).first()
         #login_user(user, True)
 

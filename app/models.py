@@ -177,6 +177,12 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
         }
         return json_us
 
+class YuntongxunAccount(db.EmbeddedDocument):  # 容联云子帐号
+    voipAccount = db.StringField(default='', db_field='va')
+    subAccountSid = db.StringField(default='', db_field='sa')
+    voipPwd = db.StringField(default='', db_field='vp')
+    subToken = db.StringField(default='', db_field='st')
+
 class UserOpenPlatform(db.EmbeddedDocument):  # 开放平台
     name = db.StringField(default='', db_field='n')  # 名称
     url = db.StringField(default='', db_field='u')  # 地址
@@ -287,6 +293,8 @@ class User(UserMixin, db.Document):  # 会员
     apptype = db.IntField(default=0, db_field='aty')  # 预约模式
     sns = db.EmbeddedDocumentField(SNS, default=SNS(), db_field='sn')
     openplatform = db.ListField(db.EmbeddedDocumentField(UserOpenPlatform), default=[], db_field='sp')  # 开放平台
+    yuntongxunaccount = db.EmbeddedDocumentField(YuntongxunAccount, default=YuntongxunAccount(), db_field='ya') #容联云子帐号
+
 
     @staticmethod
     def getlist_app(roid=2,index=1,count=10):
@@ -363,7 +371,8 @@ class User(UserMixin, db.Document):  # 会员
     def getinfo(uid, feild=[]):  # 获取指定id列表的会员数据
         #.exclude('password_hash') 不包含字段
         u_info = User.objects(_id=uid).exclude('password_hash').first()
-        u_info.avaurl =  common.getavaurl(u_info.avaurl)
+        if u_info is not None:
+            u_info.avaurl =  common.getavaurl(u_info.avaurl)
         return u_info
     @staticmethod
     def getadmininfo(uid):  # 获取指定id 管理员信息
@@ -897,7 +906,7 @@ class User(UserMixin, db.Document):  # 会员
                 'auth': {'expert': self.auth.expert,'expertprocess': self.auth.expertprocess},  # self.auth.vip
                 'grade': common.getgrade(self.stats.comment_count, self.stats.comment_total),
                 'meet_c': self.stats.meet,
-                'follow':[len(item.url)>0 and item.to_json() for item in self.openplatform],
+                'follow':[item.to_json() for item in self.openplatform],
                 #'follow':[{'baidu':self.stats.baidu,'baiduurl':self.stats.baiduurl},{'weixin':self.stats.weixin,'weixinurl':self.stats.weixinurl},{'zhihu':self.stats.zhihu,'zhihuurl':self.stats.zhihuurl},{'sina':self.stats.sina,'sinaurl':self.stats.sinaurl},{'twitter':self.stats.twitter,'twitterurl':self.stats.twitterurl},{'facebook':self.stats.facebook,'facebookurl':self.stats.facebookurl},{'github':self.stats.github,'githuburl':self.stats.githuburl}],
                 # [39.9442, 116.324]
                 'geo': [self.geo['coordinates'][1], self.geo['coordinates'][0]],
@@ -1612,12 +1621,19 @@ class Appointment(db.Document):  # 预约
         return int(common.getappointmentid(aid))
 
     @staticmethod
-    def updateappstate(aid,state,paystate):
+    def updateappstate(aid,state,paystate=-1,uid=0):
         #更新订单状态
+        query = Q(_id=aid)
         update = {}
         update['set__state'] = state
-        update['set__paystate'] = paystate
-        Appointment.objects(_id=aid).update_one(**update)
+        if paystate>-1:
+            update['set__paystate'] = paystate
+        if uid>0:
+            if state==0 or state==2:
+                query = query & Q(appid=uid) 
+            else:
+                query = query & Q(user_id=uid) 
+        Appointment.objects(query).update_one(**update)
 
     def editinfo(self):
         #创建订单信息
@@ -1631,8 +1647,11 @@ class Appointment(db.Document):  # 预约
             self.save()
         return self._id
 
-    def to_json(self, _type=1, type=1):  # type返回相应字段 1列表 0详情
-        uinfo = User.getinfo(_type == 1 and self.appid or self.user_id)
+    def to_json(self, uid, type=1):  # type返回相应字段 1列表 0详情
+        if uid<3:
+            uinfo = User.getinfo(uid == 1 and self.appid or self.user_id)
+        else:
+            uinfo = User.getinfo(uid == self.user_id and self.appid or self.user_id)
         if uinfo is not None:
             if type == 1:
                 json_app = {
@@ -1644,6 +1663,7 @@ class Appointment(db.Document):  # 预约
                     'topic_title': self.topic_title.encode('utf-8'),
                     'appdate': self.appdate,
                     'apptype': self.apptype,
+                    'type': uid == self.user_id and 1 or 2, # 约状态  1我约  2被约
                     #'address': self.address.encode('utf-8'),
                     'price': self.price,
                     #'attachment': self.attachment,

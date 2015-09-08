@@ -7,10 +7,12 @@ from flask import g
 from .authentication import auth
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User, Topic, Comment
+from ..models import Permission, User, Topic, Comment,Appointment
 from ..core.common import jsonify
 from ..core import common
 import logging
+from ..sdk.jgpush import pushmessage
+import jpush as jpush
 #from .. import searchwhoosh
 # from ..models import discovery
 
@@ -349,6 +351,40 @@ def update_expert_apptype():
             apptype=0x02
         User.updateapptype(g.current_user._id,apptype)
         return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+
+@api.route('/expert/updateappstate', methods = ['POST'])
+@auth.login_required
+def update_expert_appstate():
+    '''
+    更新订单状态（专家）
+    URL:/expert/updateappstate
+    POST 参数:
+        appid -- 订单id
+        state -- 状态状态 0拒绝接单 2确认接单
+    返回值
+        {'ret':1} 成功
+        -1 订单状态改变失败
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        appid = common.strtoint(data['appid'],0)
+        state = common.strtoint(data['state'],-1)
+        if appid>0 and (state==0 or state==2):
+            Appointment.updateappstate(uid=g.current_user._id,aid=appid,state=state)
+            a_info = Appointment.getinfo(appid)
+            if a_info is not None:
+                if state==0:
+                    pushmessage(jpush,'口袋专家订单已被拒绝',{'type':'update_appointment','app_id':appid,'state':0},[a_info.user_id])
+                else:
+                    pushmessage(jpush,'口袋专家订单已确认',{'type':'update_appointment','app_id':appid,'state':2},[a_info.user_id])
+            return jsonify(ret=1)
+        else:
+            return jsonify(ret=-1)#订单确认失败
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常

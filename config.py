@@ -22,12 +22,7 @@ class Config:
     #FLASK_MAIL_SENDER = 'Flask Applicationdmin <flask@example.com>'
     FLASK_ADMIN = os.environ.get('FLASK_ADMIN')
 
-    '''
-    FLASK_POSTS_PER_PAGE = 20
-    FLASK_FOLLOWERS_PER_PAGE = 50
-    FLASK_COMMENTS_PER_PAGE = 30
-    FLASK_SLOW_DB_QUERY_TIME = 0.5
-    '''
+
     @staticmethod
     def init_app(app):
         pass
@@ -38,7 +33,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     # mongodb://user1:password1@localhost/test
     MONGODB_SETTINGS = {
-        'db': 'fullteck',
+        'db': 'clr',#fullteck
         'host': 'mongodb://localhost:27017/'
     }
 
@@ -60,10 +55,15 @@ class DevelopmentConfig(Config):
 
     PINGPP_APP_ID = 'app_9qXXjTvjHW98Tmv9'
     PINGPP_API_KEY = 'sk_live_FSqiwUW3uBeY5u47xMskEFtW'
-    
 
     JPush_API_KEY = '2d85bc2c4cc44f976c26286d'
     JPush_MASTER_SECRET = '9e245d142adba0289b329b73'
+
+    #容联云通讯
+    YUNTONGXUN_SID = 'aaf98f894ecd7d6a014ed28bb38c0783' #主账号 ACCOUNT SID
+    YUNTONGXUN_TOKEN = '02a449a36fa347aba7ed5854b7f80c21' #主账号 AUTH TOKEN
+    YUNTONGXUN_APPID = 'aaf98f894ecd7d6a014ed2a653c10813' #APPID
+
 
     SHARE_CALL_TIME = 30 #分享获通话时间 默认每次分享可获得30分钟，一种途径一天可分享1次
 

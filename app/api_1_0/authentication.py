@@ -14,7 +14,7 @@ def verify_password(username_or_token, password):
     #print username_or_token+'___'+password
     #username_or_token = 'eyJhbGciOiJIUzI1NiIsImV4cCI6MTQzOTI4MjY4MywiaWF0IjoxNDM5Mjc5MDgzfQ.eyJpZCI6NzF9.GPqrpHaqL1d42vZaewOa10XQKjyswXz0dDnz5gYlve0'
     #password = '123456'
-    
+
     unlen = len(username_or_token)
     if unlen>0:
         user =None

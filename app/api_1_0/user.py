@@ -11,7 +11,7 @@ from flask.ext.login import login_user, logout_user, login_required, \
 from .authentication import auth
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS,Guestbook
+from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS,Guestbook,YuntongxunAccount
 from ..core.common import jsonify
 from ..core import common
 from .. import mc
@@ -20,6 +20,7 @@ import json
 from ..sdk.yuntongxun import SendTemplateSMS as SMS
 import jpush as jpush
 from ..sdk.jgpush import pushmessage
+from ..sdk.yuntongxun import CreateSubAccount as CSA
 
 @api.route('/user/getcode', methods = ['POST'])
 def get_code():
@@ -101,6 +102,16 @@ def new_user():
                 col1.role_id = 3
                 col1.username = username
                 col1.password = password
+
+                if len(username)==11:
+                    ytx = CSA.CreateSubAccount(username) #注册容联云子帐号（IM）
+                    ytxaccount = YuntongxunAccount()
+                    ytxaccount.voipAccount = ytx['voipAccount']
+                    ytxaccount.subAccountSid = ytx['subAccountSid']
+                    ytxaccount.voipPwd = ytx['voipPwd']
+                    ytxaccount.subToken = ytx['subToken']
+                    col1.yuntongxunaccount = ytxaccount
+
                 col1.editinfo()
                 return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
             else:
@@ -301,30 +312,28 @@ def get_appointment_list(_type=0):
     '''
 
     a_list = Appointment.getlist(_type=_type, appid=g.current_user._id)
-    return jsonify(list=[item.to_json(_type=_type) for item in a_list])
+    return jsonify(list=[item.to_json(uid=_type) for item in a_list])
 
 
 @api.route('/appointment/info/<int:aid>')
-@api.route('/appointment/info/<int:aid>/<int:_type>')  # _type=1我约 _type=2被约
+#@api.route('/appointment/info/<int:aid>/<int:_type>')  # _type=1我约 _type=2被约
 @auth.login_required
 #@permission_required(Permission.DISCOVERY)
-def get_appointment_info(aid,_type=1):
+def get_appointment_info(aid):#,_type=1
     '''
     获取用户预约详情
 
     URL:
-        /appointment/info/<int:aid> (_type 为缺省值 1)
-        /appointment/info/<int:aid>/<int:_type>
+        /appointment/info/<int:aid>
     格式
         JSON
     GET 参数: 
         aid -- 预约ID (默认 0)
-        _type -- 预约类型 (1:我约 2:被约) 
     '''
 
     a_info = Appointment.getinfo(aid=aid)
     if a_info is not None:
-        return jsonify(app=a_info.to_json(_type, 0))
+        return jsonify(app=a_info.to_json(uid=g.current_user._id, type=0))
     else:
         return jsonify(app={})
 
@@ -384,7 +393,7 @@ def add_user_appointment():
         msg.title = '预约消息'
         msg.content = '您有一个新的预约订单请您查看。'
         msg.saveinfo()
-        pushmessage(jpush,'您有一个新的预约订单请您查看。',{'type':'viewapp','app_id':nowid},[app.appid])
+        pushmessage(jpush,'您有一个新的预约订单请您查看。',{'type':'viewapp','app_id':nowid,'apptype':2},[app.appid])
         return jsonify(ret=nowid)  #创建订单成功
     return jsonify(ret=-1)  #认证失败，无法创建订单
 
@@ -806,10 +815,32 @@ def user_snslogin():
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
 
-
 @api.route('/user/addguestbook', methods = ['POST'])
-#@auth.login_required
+@auth.login_required
 def add_guestbook():
+    '''
+    添加留言反馈
+    URL:/user/addguestbook
+    POST 参数:
+        content -- 反馈内容
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        gb = Guestbook()
+        gb.user_id = g.current_user._id
+        gb.content = data['content']
+        gb.saveinfo()
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+@api.route('/guest/addguestbook', methods = ['POST'])
+#@auth.login_required
+def add_guest_guestbook():
     '''
     添加留言反馈
     URL:/user/addguestbook
