@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 from flask import jsonify, request, current_app, url_for
+from flask import g
 from . import api
 from .authentication import auth
 #from ..core import wxpayapi
@@ -62,6 +63,9 @@ def get_payid():
                 Appointment.updateappstate(pay.order_no,3,1) #更新订单状态
                 pushmessage(jpush,'口袋专家订单已完成支付',{'type':'update_appointment','app_id':pay.order_no,'state':3},[o_info.appid])
         else:
+
+            User.updatemoney(oid,pay.amount)
+
             msg = Message()
             msg.user_id = oid
             msg.appointment_id = 0

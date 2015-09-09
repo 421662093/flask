@@ -432,12 +432,15 @@ class User(UserMixin, db.Document):  # 会员
             update = {}
             if len(self.name) > 0:
                 update['set__name'] = self.name
-            update['set__sex'] = self.sex
+            if self.sex>-1:
+                update['set__sex'] = self.sex
             if len(self.avaurl)>0:
                 update['set__avaurl'] = self.avaurl
             if self.role_id==2:
-                update['set__domainid'] = self.domainid
-                update['set__industryid'] = self.industryid
+                if self.domainid>-1:
+                    update['set__domainid'] = self.domainid
+                if self.industryid>-1:
+                    update['set__industryid'] = self.industryid
             update['set__stats__lastaction'] = common.getstamp()
             User.objects(_id=self._id).update_one(**update)
 
@@ -584,6 +587,13 @@ class User(UserMixin, db.Document):  # 会员
         update['set__apptype'] = _type
         User.objects(_id=uid).update_one(**update)
 
+    @staticmethod
+    def updatemoney(uid,money):
+        #充值金额更新
+        update = {}
+        update['inc__money'] = money
+        User.objects(_id=uid).update_one(**update)
+
 
     @staticmethod
     def snslogin(sns,uid):
@@ -658,7 +668,7 @@ class User(UserMixin, db.Document):  # 会员
             update['set__stats__facebookurl'] = self.stats.facebookurl
             update['set__stats__githuburl'] = self.stats.githuburl
             '''
-            
+            update['set__state'] = self.state
             update['set__sort'] = self.sort
             User.objects(_id=self._id).update_one(**update)
 
@@ -1348,6 +1358,10 @@ class Comment(db.Document):  # 评论
     def getlist(uid, page=1, count=10):
         #.exclude('password_hash') 不包含字段
         return Comment.objects(user_id=uid).limit(count)
+
+    @staticmethod
+    def getcount(tid):
+        return Comment.objects(top_id=tid).count()
 
     def to_json(self):
         json_topic = {

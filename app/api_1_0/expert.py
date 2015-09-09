@@ -129,6 +129,7 @@ def get_topic_info(tid):
         tid -- 话题ID (必填) 
     '''
     t_info = Topic.getinfo(tid)
+    c_count = Comment.getcount(tid)
     return jsonify(topic={
         '_id': t_info.id,
         'user_id': t_info.user_id,
@@ -137,7 +138,8 @@ def get_topic_info(tid):
         'pay': t_info.pay.to_json(),  # self.auth.vip
         'date': t_info.date,
         'grade': t_info.grade,
-        'avaurl': common.getavatar(userid=t_info.id)
+        'avaurl': common.getavatar(userid=t_info.id),
+        'comment_count':c_count
     })
 
 
