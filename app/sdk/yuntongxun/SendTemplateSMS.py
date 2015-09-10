@@ -9,7 +9,7 @@ accountSid= conf.YUNTONGXUN_SID
 accountToken= conf.YUNTONGXUN_TOKEN
 #说明：主账号Token，登陆云通讯网站后，可在控制台-应用中看到开发者主账号AUTH TOKEN。
 
-appId='aaf98f894ecd7d6a014ed28c20b50787'; 
+appId=conf.YUNTONGXUN_APPID; 
 #说明：应用Id，如果是在沙盒环境开发，请配置"控制台-应用-测试DEMO"中的APPID。
 #如切换到生产环境，请使用自己创建应用的APPID.
 

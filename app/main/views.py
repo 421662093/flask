@@ -18,7 +18,7 @@ from .. import db
 from ..models import Permission, Role, User, Post, Comment
 from ..decorators import admin_required, permission_required
 '''
-from ..models import RolePermissions, Role, User, UserStats, collection, Topic, Comment, Appointment
+from ..models import RolePermissions, Role, User, UserStats, collection, Topic, Comment, Appointment,YuntongxunAccount
 
 # from ..models import Post
 '''
@@ -80,6 +80,9 @@ def index():
         from flask import g
 
         from ..sdk.yuntongxun import CreateSubAccount as CSA
+
+        #col1.yuntongxunaccount = ytxaccount
+
 
         #CSA.CreateSubAccount('13659488152')
 

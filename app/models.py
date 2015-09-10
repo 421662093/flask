@@ -608,7 +608,14 @@ class User(UserMixin, db.Document):  # 会员
 
     def saveinfo(self):
         self._id = collection.get_next_id(self.__tablename__)
-        if len(self.username)==0:
+
+        if self.username == '-1':
+            self.username = 'sina_'+str(self._id)
+        elif self.username == '-2':
+            self.username = 'qq_'+str(self._id)
+        elif self.username == '-3':
+            self.username = 'weixin_'+str(self._id)
+        elif len(self.username)==0:
             if self.role_id==2:
                 self.username = 'zj_'+str(self._id)
             elif self.role_id==3:

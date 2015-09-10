@@ -32,7 +32,6 @@ def get_payid():
 @api.route('/pay/webhooks', methods=['POST'])
 def get_payid():
 
-    
     try:
 
         data = request.get_json()

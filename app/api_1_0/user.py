@@ -50,7 +50,8 @@ def get_code():
                 return jsonify(ret=-2) #帐号已存在
             code = common.getrandom(100000,999999)
             mc.set('code_'+username,code)
-            smscode = SMS.sendTemplateSMS(username,[code],1)
+            logging.debug(str(code)+'___set')
+            smscode = SMS.sendTemplateSMS(username,[code,10],34443)
             #print str(type(smscode))+'___'+smscode
             if smscode=='000000':
                 return jsonify(ret=1)#验证码已发送
@@ -81,45 +82,48 @@ def new_user():
         -4 手机号格式错误
         -5 系统异常
     '''
-    try:
-        data = request.get_json()#{\"name\":\"大撒旦撒\"}
-        #print data['username'][0]["c"]
-        username = data['username']#request.form.get('username','')
-        password = data['password']#request.form.get('password','')
-        code = data['code']
-        #if request.data is not None:
-            #username = request.data['username']
-            #password = request.data.password
+    
+    data = request.get_json()#{\"name\":\"大撒旦撒\"}
+    #print data['username'][0]["c"]
+    username = data['username']#request.form.get('username','')
+    password = data['password']#request.form.get('password','')
+    code = data['code']
+    code = common.strtoint(code,-1)
+    #if request.data is not None:
+        #username = request.data['username']
+        #password = request.data.password
 
-        if len(username)==11:
-            if len(username)==0 or len(password)==0:
-                return jsonify(ret=-1) #帐号或密码为空
-            if User.isusername(username=username)>0:
-                return jsonify(ret=-2) #帐号已存在
-            rv = mc.get('code_'+username)
-            if rv == code:
-                col1 = User()
-                col1.role_id = 3
-                col1.username = username
-                col1.password = password
-
-                if len(username)==11:
+    if len(username)==11:
+        if len(username)==0 or len(password)==0:
+            return jsonify(ret=-1) #帐号或密码为空
+        if User.isusername(username=username)>0:
+            return jsonify(ret=-2) #帐号已存在
+        rv =common.strtoint(mc.get('code_'+username),0)
+        if rv == code:
+            col1 = User()
+            col1.role_id = 3
+            col1.username = username
+            col1.name = '用户_'+ str(common.getrandom(100000,999999))
+            col1.password_hash = password
+            col1.state = 1
+            if len(username)==11:
+                try:
                     ytx = CSA.CreateSubAccount(username) #注册容联云子帐号（IM）
                     ytxaccount = YuntongxunAccount()
-                    ytxaccount.voipAccount = ytx['voipAccount']
-                    ytxaccount.subAccountSid = ytx['subAccountSid']
-                    ytxaccount.voipPwd = ytx['voipPwd']
-                    ytxaccount.subToken = ytx['subToken']
+                    ytxaccount.voipAccount = ytx[0]['voipAccount']
+                    ytxaccount.subAccountSid = ytx[1]['subAccountSid']
+                    ytxaccount.voipPwd = ytx[2]['voipPwd']
+                    ytxaccount.subToken = ytx[3]['subToken']
                     col1.yuntongxunaccount = ytxaccount
-
-                col1.editinfo()
-                return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
-            else:
-                return jsonify(ret=-3) #验证码错误
-        return jsonify(ret=-4)#手机号格式错误
-    except Exception,e:
-        logging.debug(e)
-        return jsonify(ret=-5)#系统异常
+                except Exception,e:
+                    logging.debug(e)
+                    #return jsonify(ret=-5)#系统异常
+            col1.editinfo()
+            return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
+        else:
+            return jsonify(ret=-3) #验证码错误
+    return jsonify(ret=-4)#手机号格式错误
+    
 
 @api.route('/user/changephone', methods = ['POST'])
 @auth.login_required
@@ -792,7 +796,7 @@ def user_snslogin():
             else:
                 col1 = User()
                 col1.role_id = 3
-                col1.username = ''
+                
                 col1.name = name
                 col1.password = ''
                 col1.avaurl = avaurl
@@ -800,14 +804,17 @@ def user_snslogin():
                 sn.token = token
                 if sns==1:
                     sn.sina = uid
+                    col1.username = '-1'
                 elif sns==2:
                     sn.qq = uid
+                    col1.username = '-2'
                 elif sns==3:
                     sn.weixin = uid
+                    col1.username = '-3'
                 col1.sns = sn
                 col1.saveinfo()
                 user = User.snslogin(sns,uid)
-                user = User.objects(_id=user._id).first()
+                #user = User.objects(_id=user._id).first()
                 login_user(user, True)
             return flask_jsonify({'token': user.generate_auth_token(expiration=3600), 'expiration': 3600,'_id': user._id})
         #return jsonify(ret=1)#添加成功
