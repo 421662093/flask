@@ -89,7 +89,7 @@ def get_token():
     if g.token_used:
         return unauthorized('Invalid credentials') #帐号或密码错误,或身份过期
     return jsonify({'token': g.current_user.generate_auth_token(
-        expiration=3600), 'expiration': 3600,'_id': g.current_user.id})
+        expiration=99999999), 'expiration': 99999999,'_id': g.current_user.id})
     '''
     if g.current_user.is_anonymous() or g.token_used:
         return unauthorized('Invalid credentials')

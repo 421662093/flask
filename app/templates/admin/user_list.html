@@ -172,6 +172,7 @@
 										{% if item.state==1 %}
 										<a id="state_{{item.id}}" href="javascript:unstate({{item.id}});" class="label label-sm label-success">下线</a>
 										{% endif %}
+										<br/><a id="im_{{item.id}}" href="javascript:javascript:createim({{item.id}});" class="label label-sm label-success">创建子帐号</a><br/>
 									</td>
 								</tr>
 								{% endfor %}
@@ -301,5 +302,30 @@ function state(uid){
 	});
 	}
 }
+function createim(uid){
+	//创建IM 子帐号
+	ethis = $("#im_"+uid)
+	if(lock)
+	{
+		lock = false
+		ethis.html('Loading')
+	$.ajax({
+	    type: "POST",
+	    url: '/admin/userlist?type=createim&uid='+uid,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	lock = true
+	    	ethis.html('创建子帐号')
+	    	if (ret.ret==0)
+	    		alert('子帐号已创建')
+	    },
+    	error:function(ret) {
+    		alert('更新失败请重试')
+    	}
+	});
+	}
+}
+
 </script>
 {% endblock %}

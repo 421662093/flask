@@ -50,7 +50,6 @@ def get_code():
                 return jsonify(ret=-2) #帐号已存在
             code = common.getrandom(100000,999999)
             mc.set('code_'+username,code)
-            logging.debug(str(code)+'___set')
             smscode = SMS.sendTemplateSMS(username,[code,10],34443)
             #print str(type(smscode))+'___'+smscode
             if smscode=='000000':
@@ -118,7 +117,7 @@ def new_user():
                 except Exception,e:
                     logging.debug(e)
                     #return jsonify(ret=-5)#系统异常
-            col1.editinfo()
+            col1.saveinfo_app()
             return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
         else:
             return jsonify(ret=-3) #验证码错误
@@ -151,6 +150,7 @@ def change_phone():
         #print data['username'][0]["c"]
         username = data['username']#request.form.get('username','')
         code = data['code']
+        code = common.strtoint(code,-1)
         #if request.data is not None:
             #username = request.data['username']
             #password = request.data.password
@@ -160,7 +160,7 @@ def change_phone():
                 return jsonify(ret=-1) #帐号或密码为空
             if User.isusername(username=username)>0:
                 return jsonify(ret=-2) #帐号已存在
-            rv = mc.get('code_'+username)
+            rv = common.strtoint(mc.get('code_'+username),0)
             if rv == code:
                 ret = User.updatephone(username)
                 if ret==1:
@@ -206,6 +206,33 @@ def update_user_info():
                 user.domainid = common.strtoint(data['domainid'],0)
                 user.industryid = common.strtoint(data['industryid'],0)
             user.useredit()
+            return jsonify(ret=1) #更新成功
+        except Exception,e:
+            logging.debug(e)
+            return jsonify(ret=-1)#系统异常
+
+@api.route('/user/updateemail', methods=['POST'])
+#@permission_required(Permission.DISCOVERY)
+@auth.login_required
+def update_user_email():
+    '''
+    更新邮箱
+
+    URL:/user/updateemail
+    格式
+        JSON
+    POST 参数: 
+        email -- 邮箱
+    返回值
+        {'ret':1} 成功
+        0 更新失败
+        -1 系统异常
+    '''
+    if request.method == 'POST':
+        try: 
+            data = request.get_json()
+            email = data['email']
+            user.updateemail(g.current_user._id,email)
             return jsonify(ret=1) #更新成功
         except Exception,e:
             logging.debug(e)

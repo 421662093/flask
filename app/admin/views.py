@@ -18,6 +18,7 @@ from ..core.common import jsonify
 import logging
 import time
 
+from ..sdk.yuntongxun import CreateSubAccount as CSA
 '''
 @admin.route('/upfile', methods=['POST'])  # , methods=['GET', 'POST']
 @auth.login_required
@@ -84,7 +85,7 @@ def user_list(roid=2,index=1):
         _type = request.args.get('type','')
         uid = request.args.get('uid',0,type=int)
         if uid>0:
-            print uid
+            #print uid
             if _type=='state':# 审核通过
                 User.Update_Q_YUNSOU_STATE(uid,1)
                 User.updatestate(uid,1)
@@ -99,6 +100,20 @@ def user_list(roid=2,index=1):
                 val = request.args.get('val',0)
                 User.updatesort(uid,val)
                 return jsonify(ret=1)
+            elif _type=='createim': # 创建IM 子帐号
+                try:
+                    u_info = User.getinfo(uid)
+                    ytx = CSA.CreateSubAccount(u_info.username) #注册容联云子帐号（IM）
+                    ytxaccount = YuntongxunAccount()
+                    ytxaccount.voipAccount = ytx[0]['voipAccount']
+                    ytxaccount.subAccountSid = ytx[1]['subAccountSid']
+                    ytxaccount.voipPwd = ytx[2]['voipPwd']
+                    ytxaccount.subToken = ytx[3]['subToken']
+                    User.updateYuntongxunAccount(uid,ytxaccount)
+                    return jsonify(ret=1)
+                except Exception,e:
+                    return jsonify(ret=0)
+
         return redirect(url_for('.user_list',roid=roid,index=index))
     else:
     	pagesize = 8

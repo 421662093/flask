@@ -594,6 +594,25 @@ class User(UserMixin, db.Document):  # 会员
         update['inc__money'] = money
         User.objects(_id=uid).update_one(**update)
 
+    @staticmethod
+    def updateemail(uid,email):
+        #更新邮箱 - 用户
+        if uid > 0:
+            update = {}
+            update['set__email'] = email
+            User.objects(_id=uid).update_one(**update)
+            return 1
+        return 0
+
+    @staticmethod
+    def updateYuntongxunAccount(uid,yta):
+        #更新IM 子帐号
+        if uid > 0:
+            update = {}
+            update['set__yuntongxunaccount'] = yta
+            User.objects(_id=uid).update_one(**update)
+            return 1
+        return 0
 
     @staticmethod
     def snslogin(sns,uid):
@@ -626,6 +645,25 @@ class User(UserMixin, db.Document):  # 会员
         self.save()
 
         return self._id
+
+    def saveinfo_app(self):
+        #前端注册用户信息
+        self._id = collection.get_next_id(self.__tablename__)
+        if len(self.username)==0:
+                if self.role_id==2:
+                    self.username = 'zj_'+str(self._id)
+                elif self.role_id==3:
+                    self.username = 'pt_'+str(self._id)
+        istrue = User.isusername(username=self.username)
+        if istrue == 0:
+            self.password = self.password_hash
+            self.date = common.getstamp()
+            self.save()
+
+            return self._id
+        else:
+            return -1
+
     def editinfo(self):
     	#后台更新用户信息
         if self._id > 0:
@@ -1141,7 +1179,7 @@ class Topic(db.Document):  # 话题
     @staticmethod
     def getlist(uid=0,index=1, count=10,state=1):
     	# 获取列表 0全部  -1官方  -2专家
-        uid = int(uid)
+        uid = common.strtoint(uid,0)
         pageindex =(index-1)*count
         query=None
         sort = '-_id'
@@ -1602,6 +1640,7 @@ class Appointment(db.Document):  # 预约
     topic_title = db.StringField(default='', db_field='tt')  # 话题标题
     appdate = db.IntField(default=0, db_field='ad')  # 预约时间
     apptype = db.IntField(default=1, db_field='at')  # 预约方式 1通话 2见面
+    time =  db.IntField(default=0, db_field='t')  # 通话/见面 时间(分钟)
     address = db.StringField(default='', db_field='a')  # 预约地址
     price = db.IntField(default=0, db_field='p')  # 支付价格
     attachment = db.ListField(default=[], db_field='att')  # 附件
@@ -1642,7 +1681,7 @@ class Appointment(db.Document):  # 预约
         return int(common.getappointmentid(aid))
 
     @staticmethod
-    def updateappstate(aid,state,paystate=-1,uid=0):
+    def updateappstate(aid,state,paystate=-1,uid=0,time=0):
         #更新订单状态
         query = Q(_id=aid)
         update = {}
@@ -1650,8 +1689,10 @@ class Appointment(db.Document):  # 预约
         if paystate>-1:
             update['set__paystate'] = paystate
         if uid>0:
-            if state==0 or state==2:
+            if state==0 or state==2 or state==4:
                 query = query & Q(appid=uid) 
+                if state==4 and time>0:
+                    update['set__time'] = time
             else:
                 query = query & Q(user_id=uid) 
         Appointment.objects(query).update_one(**update)
