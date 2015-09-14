@@ -100,6 +100,7 @@ def new_user():
         rv =common.strtoint(mc.get('code_'+username),0)
         if rv == code:
             col1 = User()
+            col1._id = collection.get_next_id('users')
             col1.role_id = 3
             col1.username = username
             col1.name = '用户_'+ str(common.getrandom(100000,999999))
@@ -107,7 +108,7 @@ def new_user():
             col1.state = 1
             if len(username)==11:
                 try:
-                    ytx = CSA.CreateSubAccount(username) #注册容联云子帐号（IM）
+                    ytx = CSA.CreateSubAccount(str(self._id)) #注册容联云子帐号（IM）
                     ytxaccount = YuntongxunAccount()
                     ytxaccount.voipAccount = ytx[0]['voipAccount']
                     ytxaccount.subAccountSid = ytx[1]['subAccountSid']
@@ -162,7 +163,7 @@ def change_phone():
                 return jsonify(ret=-2) #帐号已存在
             rv = common.strtoint(mc.get('code_'+username),0)
             if rv == code:
-                ret = User.updatephone(username)
+                ret = User.updatephone(g.current_user.role_id,username)
                 if ret==1:
                     return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
                 else:
@@ -232,7 +233,7 @@ def update_user_email():
         try: 
             data = request.get_json()
             email = data['email']
-            user.updateemail(g.current_user._id,email)
+            User.updateemail(g.current_user._id,email)
             return jsonify(ret=1) #更新成功
         except Exception,e:
             logging.debug(e)
@@ -424,7 +425,7 @@ def add_user_appointment():
         msg.title = '预约消息'
         msg.content = '您有一个新的预约订单请您查看。'
         msg.saveinfo()
-        pushmessage(jpush,'您有一个新的预约订单请您查看。',{'type':'viewapp','app_id':nowid,'apptype':2},[app.appid])
+        pushmessage(jpush,'您有一个新的预约订单请您查看。',{'type':'viewapp','app_id':str(nowid),'apptype':2},[app.appid])
         return jsonify(ret=nowid)  #创建订单成功
     return jsonify(ret=-1)  #认证失败，无法创建订单
 
@@ -683,9 +684,10 @@ def update_ocp():
         type -- 类型 (必填) 0成为专家 1个人简介  2个人标签 3工作经历 4教育背景
         type=0
             name 姓名
-            industry 行业
-            company 公司
-            job 职位
+            #industry 行业
+            #company 公司
+            #job 职位
+            phone 手机
             weixin 微信号
             qq QQ
         type=1
@@ -705,6 +707,7 @@ def update_ocp():
             major 专业
     返回值
         {'ret':1} 成功
+        -1 type=0 已提交
         -5 系统异常
     '''
     try:
@@ -748,12 +751,15 @@ def update_ocp():
                 be = BecomeExpert()
                 be.user_id = g.current_user._id
                 be.name=data['name']
-                be.industry=data['industry']
-                be.company=data['company']
-                be.job=data['job']
+                #be.industry=data['industry']
+                #be.company=data['company']
+                #be.job=data['job']
+                be.phone=data['phone']
                 be.weixin=data['weixin']
                 be.qq=data['qq']
                 be.saveinfo()
+            else:
+                return jsonify(ret=-1)#已提交
         return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)
@@ -823,7 +829,7 @@ def user_snslogin():
             else:
                 col1 = User()
                 col1.role_id = 3
-                
+
                 col1.name = name
                 col1.password = ''
                 col1.avaurl = avaurl
@@ -843,7 +849,7 @@ def user_snslogin():
                 user = User.snslogin(sns,uid)
                 #user = User.objects(_id=user._id).first()
                 login_user(user, True)
-            return flask_jsonify({'token': user.generate_auth_token(expiration=3600), 'expiration': 3600,'_id': user._id})
+            return flask_jsonify({'token': user.generate_auth_token(expiration=2592000), 'expiration': 2592000,'_id': user._id})
         #return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)

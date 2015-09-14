@@ -472,13 +472,13 @@ class User(UserMixin, db.Document):  # 会员
         User.objects(_id=uid).update_one(**update)
 
     @staticmethod
-    def updatephone(newphone):
+    def updatephone(uid,newphone):
         #更新手机号
         #if g.current_user is not None:
         #    if g.current_user._id > 0:
         update = {}
         update['set__username'] = newphone
-        User.objects(_id=23).update_one(**update)
+        User.objects(_id=uid).update_one(**update)
         return 1
         #return 0
 
@@ -648,7 +648,7 @@ class User(UserMixin, db.Document):  # 会员
 
     def saveinfo_app(self):
         #前端注册用户信息
-        self._id = collection.get_next_id(self.__tablename__)
+        
         if len(self.username)==0:
                 if self.role_id==2:
                     self.username = 'zj_'+str(self._id)
@@ -975,7 +975,8 @@ class User(UserMixin, db.Document):  # 会员
                 'label':self.label,
                 'role_id':self.role_id,
                 'domainid':self.domainid,
-                'industryid':self.industryid
+                'industryid':self.industryid,
+                'phone':self.username
             }
         elif type == 0:
             #普通用户
@@ -1736,7 +1737,7 @@ class Appointment(db.Document):  # 预约
             else:  # 0
                 json_app = {
                     '_id': self.id,
-                    'data': int(str(self.id)[0:8], 16),
+                    'date': self.date,
                     'info': uinfo.to_json(3),
                     'user_id': self.user_id,
                     'appid': self.appid,
@@ -1749,7 +1750,8 @@ class Appointment(db.Document):  # 预约
                     'attachment': self.attachment,
                     'remark': self.remark.encode('utf-8'),
                     'state': self.state,
-                    'paystate': self.paystate
+                    'paystate': self.paystate,
+                    'phone': uinfo.username
                 }
             return json_app
         else:
@@ -1944,9 +1946,10 @@ class BecomeExpert(db.Document):
     _id = db.IntField(primary_key=True)  # id
     user_id = db.IntField(default=0, db_field='ui')  # 用户ID
     name = db.StringField(default='', db_field='n')  # 姓名
-    industry = db.StringField(default='', db_field='i')  # 行业
-    company = db.StringField(default='', db_field='c')  # 公司
-    job = db.StringField(default='', db_field='j')  # 职位
+    #industry = db.StringField(default='', db_field='i')  # 行业
+    #company = db.StringField(default='', db_field='c')  # 公司
+    #job = db.StringField(default='', db_field='j')  # 职位
+    phone = db.StringField(default='', db_field='p')  # 职位
     weixin = db.StringField(default='', db_field='w')  # 微信号
     qq = db.StringField(default='', db_field='q')  # QQ
     date = db.IntField(default=0, db_field='d')  # 创建时间

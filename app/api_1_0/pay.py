@@ -7,7 +7,7 @@ from .authentication import auth
 #from ..core import wxpayapi
 import pingpp
 import json
-from ..models import Appointment,PayLog,Message
+from ..models import Appointment,PayLog,Message,User
 from ..core import common
 from .. import conf
 import logging
@@ -40,7 +40,7 @@ def get_payid():
         pay.paid = data['data']['object']['paid']
         pay.app = data['data']['object']['app']
         pay.channel =  data['data']['object']['channel']
-        pay.order_no = data['data']['object']['order_no']
+        pay.order_no =str(data['data']['object']['order_no'])
         #client_ip
         pay.amount = common.strtoint(data['data']['object']['amount'],0)
         pay.amount_settle = common.strtoint(data['data']['object']['amount_settle'],0)

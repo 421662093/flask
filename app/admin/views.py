@@ -10,7 +10,7 @@ from . import admin
 from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
 from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,\
-                    Inventory,Appointment,Ad,ExpertAuth,BecomeExpert,Guestbook,UserOpenPlatform
+                    Inventory,Appointment,Ad,ExpertAuth,BecomeExpert,Guestbook,UserOpenPlatform,YuntongxunAccount
 from .. import q_image,conf#searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
@@ -103,7 +103,8 @@ def user_list(roid=2,index=1):
             elif _type=='createim': # 创建IM 子帐号
                 try:
                     u_info = User.getinfo(uid)
-                    ytx = CSA.CreateSubAccount(u_info.username) #注册容联云子帐号（IM）
+                    ytx = CSA.CreateSubAccount(str(u_info._id)) #注册容联云子帐号（IM）
+                    #logging.debug('_________'+str(ytx))
                     ytxaccount = YuntongxunAccount()
                     ytxaccount.voipAccount = ytx[0]['voipAccount']
                     ytxaccount.subAccountSid = ytx[1]['subAccountSid']
@@ -112,6 +113,7 @@ def user_list(roid=2,index=1):
                     User.updateYuntongxunAccount(uid,ytxaccount)
                     return jsonify(ret=1)
                 except Exception,e:
+                    logging.debug(e)
                     return jsonify(ret=0)
 
         return redirect(url_for('.user_list',roid=roid,index=index))
