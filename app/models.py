@@ -604,6 +604,16 @@ class User(UserMixin, db.Document):  # 会员
             return 1
         return 0
 
+    def updatebindphone():
+        #更新第三方登录 绑定手机号 - 用户
+        update = {}
+        if len(self.username) > 0:
+            update['set__username'] = self.username
+        if len(self.password_hash) > 0:
+            self.password = self.password_hash
+            update['set__password_hash'] = self.password_hash
+        User.objects(_id=self._id).update_one(**update)
+
     @staticmethod
     def updateYuntongxunAccount(uid,yta):
         #更新IM 子帐号

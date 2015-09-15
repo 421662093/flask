@@ -108,7 +108,7 @@ def new_user():
             col1.state = 1
             if len(username)==11:
                 try:
-                    ytx = CSA.CreateSubAccount(str(self._id)) #注册容联云子帐号（IM）
+                    ytx = CSA.CreateSubAccount(str(col1._id)) #注册容联云子帐号（IM）
                     ytxaccount = YuntongxunAccount()
                     ytxaccount.voipAccount = ytx[0]['voipAccount']
                     ytxaccount.subAccountSid = ytx[1]['subAccountSid']
@@ -765,7 +765,66 @@ def update_ocp():
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
 
+@api.route('/user/bindphone', methods = ['POST'])
+@auth.login_required
+def bind_user_phone():
+    '''
+    第三方登录 绑定手机
 
+    URL:/user/bindphone
+    格式
+        JSON
+    POST 参数:
+        username -- 帐号 (必填)
+        password -- 密码 (必填)
+        code -- 手机验证码 (必填)
+    返回值
+        {'ret':1} 发送成功
+        -1 帐号或密码为空
+        -2 帐号已存在
+        -3 验证码错误
+        -4 手机号格式错误
+        -5 系统异常
+    '''
+    data = request.get_json()
+    #print data['username'][0]["c"]
+    username = data['username']#request.form.get('username','')
+    password = data['password']#request.form.get('password','')
+    code = data['code']
+    code = common.strtoint(code,-1)
+    #if request.data is not None:
+        #username = request.data['username']
+        #password = request.data.password
+
+    if len(username)==11:
+        if len(username)==0 or len(password)==0:
+            return jsonify(ret=-1) #帐号或密码为空
+        if User.isusername(username=username)>0:
+            return jsonify(ret=-2) #帐号已存在
+        rv =common.strtoint(mc.get('code_'+username),0)
+        if rv == code:
+            col1 = User()
+            col1._id = g.current_user._id
+            col1.username = username
+            col1.password_hash = password
+            if len(username)==11:
+                try:
+                    ytx = CSA.CreateSubAccount(str(col1._id)) #注册容联云子帐号（IM）
+                    ytxaccount = YuntongxunAccount()
+                    ytxaccount.voipAccount = ytx[0]['voipAccount']
+                    ytxaccount.subAccountSid = ytx[1]['subAccountSid']
+                    ytxaccount.voipPwd = ytx[2]['voipPwd']
+                    ytxaccount.subToken = ytx[3]['subToken']
+                    col1.yuntongxunaccount = ytxaccount
+                except Exception,e:
+                    logging.debug(e)
+                    #return jsonify(ret=-5)#系统异常
+            col1.updatebindphone()
+            return jsonify(ret=1) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
+        else:
+            return jsonify(ret=-3) #验证码错误
+    return jsonify(ret=-4)#手机号格式错误
+    
 @api.route('/user/updateshare', methods = ['POST'])
 @auth.login_required
 def update_share():
@@ -811,8 +870,9 @@ def user_snslogin():
         token -- 第三方token
         avaurl -- 头像
     返回值
-        {'ret':1} 成功
-        -5 系统异常
+        {'token':,'isbind':1} 成功
+        isbind=1 已绑定 0未绑定
+        ret=-5 系统异常
     '''
     try:
         data = request.get_json()
@@ -849,7 +909,7 @@ def user_snslogin():
                 user = User.snslogin(sns,uid)
                 #user = User.objects(_id=user._id).first()
                 login_user(user, True)
-            return flask_jsonify({'token': user.generate_auth_token(expiration=2592000), 'expiration': 2592000,'_id': user._id})
+            return flask_jsonify({'token': user.generate_auth_token(expiration=2592000), 'expiration': 2592000,'_id': user._id,'isbind':len(user.username)==11 and 1 or 0})
         #return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)
