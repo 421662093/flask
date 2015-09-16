@@ -59,8 +59,8 @@ def get_payid():
         if oid>10000000000:
             o_info = Appointment.getinfo(pay.order_no)
             if o_info is not None:
-                Appointment.updateappstate(pay.order_no,3,1) #更新订单状态
-                pushmessage(jpush,'口袋专家订单已完成支付',{'type':'update_appointment','app_id':pay.order_no,'state':3},[o_info.appid])
+                Appointment.updateappstate_app(pay.order_no,3,1) #更新订单状态
+                pushmessage(jpush,'口袋专家订单已完成支付',{'type':'update_appointment','app_id':str(pay.order_no),'state':3},[o_info.appid])
         else:
 
             User.updatemoney(oid,pay.amount)

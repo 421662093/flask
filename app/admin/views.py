@@ -131,7 +131,31 @@ def user_list(roid=2,index=1):
         	item.role = Role.getinfo(item.role_id)
         func = {'getdomain': common.getdomain,'getindustry': common.getindustry,'stamp2time': common.stamp2time,'getuserstate':common.getuserstate,'can': common.can}
         # orig.get(body='Ross19').update({'$rename': {'body_html': 'body_w'}})
-        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,pagecount=usercount,index=index,uinfo=g.current_user)
+        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,pagecount=usercount,index=index,uinfo=g.current_user,sort=0)
+
+@admin.route('/userlist/sort/<int:roid>/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
+@permission_required('user',Permission.VIEW)
+def user_list_sort(roid=2,index=1):
+
+    if request.method == 'POST':
+        pass
+    else:
+        pagesize = 8
+        count = User.getcount(roid=roid)
+        usercount = common.getpagecount(count,pagesize)
+        if index>usercount:
+            index = usercount
+        if index<1:
+            index=1
+
+        userlist = User.getlist(roid=roid,index=index,count=pagesize,sort='sort')
+        for item in userlist:
+            item.role = Role.getinfo(item.role_id)
+        func = {'getdomain': common.getdomain,'getindustry': common.getindustry,'stamp2time': common.stamp2time,'getuserstate':common.getuserstate,'can': common.can}
+        # orig.get(body='Ross19').update({'$rename': {'body_html': 'body_w'}})
+        return render_template('admin/user_list.html', userlist=userlist,func=func,roid=roid,pagecount=usercount,index=index,uinfo=g.current_user,sort=1)
+
 
 @admin.route('/useredit', methods=['GET', 'POST'])
 @admin.route('/useredit/<int:id>', methods=['GET', 'POST'])
@@ -146,6 +170,7 @@ def user_edit(roid=2,id=0,pindex=1):
     #print request.method + "++++++" + str(form.validate())
     if request.method == 'POST' and form.validate_on_submit():
 
+        s =common.strtoint(request.args.get('s', 0),0)
         user = User()
         user._id = id
         user.sort = request.form.get('sort',0)
@@ -241,11 +266,16 @@ def user_edit(roid=2,id=0,pindex=1):
         user.avaurl = request.form.get('avaurl','')
         user.editinfo()
         #flash('用户更新成功','error')
-        return redirect(url_for('.user_list',roid=roid,index=pindex))
+
+        if s==1:
+            return redirect('/admin/userlist/sort/'+str(roid)+'/'+str(pindex))
+        else:
+            return redirect(url_for('.user_list',roid=roid,index=pindex))
     else:
         isuser = False
         user = None
         rolelist = Role.getlist()
+        sort = request.args.get('s', 0)
         sign=''
         bgsign=''
         avasign=''
@@ -259,7 +289,7 @@ def user_edit(roid=2,id=0,pindex=1):
             if user:
                 isuser = True
         func = {'stamp2time': common.stamp2time,'len': len,'getopenplatform':common.getopenplatform,'can': common.can}
-        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,bgsign=bgsign,sign=sign,avasign=avasign,pindex=pindex,uinfo=g.current_user)
+        return render_template('admin/user_edit.html',roid=roid, user=user, isuser=isuser, form=form,func=func,rolelist=rolelist,DOMAIN=conf.DOMAIN,INDUSTRY=conf.INDUSTRY,bgsign=bgsign,sign=sign,avasign=avasign,pindex=pindex,uinfo=g.current_user,s=sort)
 
 @admin.route('/logout')
 @auth.login_required
@@ -586,6 +616,14 @@ def inventory_edit(iid):
 @permission_required('appointment',Permission.VIEW)
 def appointment_list(index=1):
     if request.method == 'POST':
+
+        _type = request.args.get('type','')
+        appid = common.strtoint(request.args.get('appid',''),0)
+        apptype = common.strtoint(request.args.get('apptype',0),0)
+        state = common.strtoint(request.args.get('state',0),0)
+        if _type=='savestate' and appid>0:
+            Appointment.updateappstate(aid=appid,state=state,apptype=apptype)
+            return jsonify(ret=1)
         return redirect(url_for('.appointment_list'))
     else:
 

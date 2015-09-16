@@ -53,13 +53,10 @@
 										 价格
 									</th>
 									<th>
-										 预约方式
-									</th>
-									<th>
 										 支付状态
 									</th>
 									<th>
-										 预约状态
+										预约方式<br/>预约状态
 									</th>
 									<th>
 										 操作
@@ -86,18 +83,14 @@
 									{{item.price}}元
 									</td>
 									<td>
+									{% if item.paystate==0 %}未支付{%else%}已支付{%endif%}
+									</td>
+									<td>
 									<select id="apptype_{{item._id}}">
 										<option value="1" {% if item.apptype==1 %}selected="selected"{%endif%}>{% if not item.apptype==1 %}*{%endif%}通话</option>
 										<option value="2" {% if item.apptype==2 %}selected="selected"{%endif%}>{% if not item.apptype==2 %}*{%endif%}见面</option>
+										<option value="3" {% if item.apptype==3 %}selected="selected"{%endif%}>{% if not item.apptype==3 %}*{%endif%}立即通话</option>
 									</select>
-									</td>
-									<td>
-									<select id="paystate_{{item._id}}">
-										<option value="0" {% if item.paystate==0 %}selected="selected"{%endif%}>{% if not item.paystate==0 %}*{%endif%}未支付</option>
-										<option value="1" {% if item.paystate==1 %}selected="selected"{%endif%}>{% if not item.paystate==1 %}*{%endif%}已支付</option>
-									</select>
-									</td>
-									<td>
 									<select id="state_{{item._id}}">
 										<option value="0" {% if item.state==0 %}selected="selected"{%endif%}>{% if not item.state==0 %}*{%endif%}预约失败</option>
 										<option value="1" {% if item.state==1 %}selected="selected"{%endif%}>{% if not item.state==1 %}*{%endif%}申请中</option>
@@ -108,7 +101,7 @@
 
 									</td>
 									<td>
-										<a href="#" class="label label-sm label-success">
+										<a id="savebtn_{{item._id}}" href="javascript:savestate('{{item._id}}');" class="label label-sm label-success">
 										保存状态
 										</a>
 									</td>
@@ -163,5 +156,31 @@
 			Demo.init(); // init demo features
             EcommerceOrders.init();
         });
+lock=true
+function savestate(appid){
+	ethis = $("#savebtn_"+appid)
+	if(lock)
+	{
+		apptype = $('#apptype_'+appid).val()
+		state = $('#state_'+appid).val()
+		lock = false
+		ethis.html('Loading')
+	$.ajax({
+	    type: "POST",
+	    url: '/admin/appointmentlist?type=savestate&appid='+appid+'&apptype='+apptype+'&state='+state,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	lock = true
+	    	ethis.html('保存状态')
+	    },
+    	error:function(ret) {
+    		lock = true
+    		ethis.html('保存状态')
+    		alert('更新失败请重试')
+    	}
+	});
+	}
+}
 </script>
 {% endblock %}

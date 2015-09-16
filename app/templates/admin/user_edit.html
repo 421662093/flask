@@ -80,7 +80,7 @@
 								<div class="tab-content no-space">
 									<div class="tab-pane active" id="tab_general">
 										<div class="form-body">
-										<form class="form-horizontal form-row-seperated" action='{{ url_for('.user_edit',roid=roid,pindex=pindex, id=isuser and user._id or 0, _external=True) }}' method="post" name="firstname" id="firstname">{{form.hidden_tag()}}
+										<form class="form-horizontal form-row-seperated" action='{{ url_for('.user_edit',roid=roid,pindex=pindex, id=isuser and user._id or 0, _external=True) }}?s={{s}}' method="post" name="firstname" id="firstname">{{form.hidden_tag()}}
 											<!--<div class="form-group">
 												<label class="col-md-2 control-label">用户组: <span class="required">
 												* </span>
@@ -264,7 +264,7 @@
 												<div class="col-md-10">
 													<img id="fileurlimg" style="width:275px;" src="{{user.fileurl}}"/>
 													<form id="uploadForm">
-														<input type="file" name="FileContent"></input><a href='javascript:upimg();'>上传</a> 1030宽*658高(像素) JPG
+														<input type="file" name="FileContent"></input><a href='javascript:upimg();'>上传</a> <a href='javascript:delupimg();'>删除</a> 1030宽*658高(像素) JPG
 													</form>
 												</div>
 											</div>
@@ -471,6 +471,31 @@ function upimg()
     	}
 	});
 }
+
+function delupimg()
+{
+	if(confirm("是否删除介绍图片？"))
+	{
+	var url_del = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/introfile_{{user._id}}/del?sign=' + encodeURIComponent(sign);
+	$.ajax({
+	    type: "POST",
+	    url: url_del,
+	    data: {},
+	    dataType: 'json',
+	    success: function(ret) {
+	    	$('#fileurl').val('')
+	    	$('#fileurlimg').attr('src','')
+	    	alert('删除成功')
+	    },
+    	error:function(ret) {
+    		$('#fileurl').val('')
+	    	$('#fileurlimg').attr('src','')
+    		alert('删除成功')
+    	}
+	});
+	}
+}
+
 function upavaimg()
 {
 	var url_del = 'http://web.image.myqcloud.com/photos/v2/10001870/kdzj2015/0/avatar_{{user._id}}/del?sign=' + encodeURIComponent(avasign);

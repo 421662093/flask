@@ -366,8 +366,9 @@ def update_expert_appstate():
     URL:/expert/updateappstate
     POST 参数:
         appid -- 订单id
-        state -- 状态状态 0拒绝接单 2确认接单 4已完成
+        state -- 状态状态 -1取消订单 0拒绝接单 2确认接单 4已完成
         time -- 见面时间(分钟) 当state为4时有效
+        cancelremark -- 取消备注
     返回值
         {'ret':1} 成功
         -1 订单状态改变失败
@@ -378,16 +379,19 @@ def update_expert_appstate():
         appid = common.strtoint(data['appid'],0)
         state = common.strtoint(data['state'],-1)
         time = common.strtoint(data['time'],0)
-        if appid>0 and (state==0 or state==2 or state==4):
-            Appointment.updateappstate(uid=g.current_user._id,aid=appid,state=state,time=time)
+        cancelremark = data['cancelremark']
+        if appid>0 and (state==0 or state==2 or state==4 or state==-1):
+            Appointment.updateappstate_app(uid=g.current_user._id,aid=appid,state=state,time=time,cancelremark=cancelremark)
             a_info = Appointment.getinfo(appid)
             if a_info is not None:
                 if state==0:
-                    pushmessage(jpush,'口袋专家订单已被拒绝',{'type':'update_appointment','app_id':appid,'state':0},[a_info.user_id])
+                    pushmessage(jpush,'口袋专家订单已被拒绝',{'type':'update_appointment','app_id':str(appid),'state':0},[a_info.user_id])
                 elif state==2:
-                    pushmessage(jpush,'口袋专家订单已确认',{'type':'update_appointment','app_id':appid,'state':2},[a_info.user_id])
+                    pushmessage(jpush,'口袋专家订单已确认',{'type':'update_appointment','app_id':str(appid),'state':2},[a_info.user_id])
                 elif state==4:
-                    pushmessage(jpush,'口袋专家订单已完成',{'type':'update_appointment','app_id':appid,'state':4},[a_info.user_id])
+                    pushmessage(jpush,'口袋专家订单已完成',{'type':'update_appointment','app_id':str(appid),'state':4},[a_info.user_id])
+                elif state==-1:
+                    pushmessage(jpush,'口袋专家订单已被取消',{'type':'update_appointment','app_id':str(appid),'state':-1},[a_info.user_id])
             return jsonify(ret=1)
         else:
             return jsonify(ret=-1)#订单确认失败

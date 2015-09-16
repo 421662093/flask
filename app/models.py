@@ -284,7 +284,7 @@ class User(UserMixin, db.Document):  # 会员
         db.EmbeddedDocumentField(Edu), default=[], db_field='ed')  # 教育背景
     auth = db.EmbeddedDocumentField(UserAuth, default=UserAuth(), db_field='au')  # 用户认证
     state = db.IntField(default=1, db_field='sta')# 状态 1 正常  -1新增  -2待审核 0暂停
-    sort = db.IntField(default=0, db_field='so')  # 排序
+    sort = db.IntField(default=100, db_field='so')  # 排序
     thinktank = db.ListField(default=[], db_field='t')  # 智囊团
     wish = db.ListField(default=[], db_field='w')  # 心愿单
     money = db.IntField(default=0, db_field='m')  # 账户余额
@@ -303,14 +303,14 @@ class User(UserMixin, db.Document):  # 会员
         return User.objects(role_id=roid,state=1).order_by("sort").skip(pageindex).limit(count)
 
     @staticmethod
-    def getlist(roid=0,index=1,count=10):
+    def getlist(roid=0,index=1,count=10,sort='-_id'):
         #用于后端
         #.exclude('password_hash') 不包含字段
         pageindex =(index-1)*count
         if roid == 0:
-            return User.objects.order_by("-_id").skip(pageindex).limit(count)
+            return User.objects.order_by(sort).skip(pageindex).limit(count)
         else:
-            return User.objects(role_id=roid).order_by("-_id").skip(pageindex).limit(count)
+            return User.objects(role_id=roid).order_by(sort).skip(pageindex).limit(count)
 
     @staticmethod
     def getcount(roid=0):
@@ -436,7 +436,7 @@ class User(UserMixin, db.Document):  # 会员
                 update['set__sex'] = self.sex
             if len(self.avaurl)>0:
                 update['set__avaurl'] = self.avaurl
-            if self.role_id==2:
+            if self.role_id==2 or self.role_id==1:
                 if self.domainid>-1:
                     update['set__domainid'] = self.domainid
                 if self.industryid>-1:
@@ -481,6 +481,17 @@ class User(UserMixin, db.Document):  # 会员
         User.objects(_id=uid).update_one(**update)
         return 1
         #return 0
+
+    def updateforgetpaw(self):
+        #忘记密码
+        update = {}
+        if len(self.password_hash) > 0:
+            self.password = self.password_hash
+            update['set__password_hash'] = self.password_hash
+            User.objects(username=self.username).update_one(**update)
+            return 1
+        else:
+            return 0
 
     @staticmethod
     def updatewish(uid,neweid,_type=1):
@@ -604,7 +615,7 @@ class User(UserMixin, db.Document):  # 会员
             return 1
         return 0
 
-    def updatebindphone():
+    def updatebindphone(self):
         #更新第三方登录 绑定手机号 - 用户
         update = {}
         if len(self.username) > 0:
@@ -686,9 +697,11 @@ class User(UserMixin, db.Document):  # 会员
                 update['set__username'] = self.username
             if len(self.name) > 0:
                 update['set__name'] = self.name
+            print self.password_hash
             if len(self.password_hash) > 0:
                 self.password = self.password_hash
                 update['set__password_hash'] = self.password_hash
+            print self.password_hash
             update['set__confirmed'] = self.confirmed
             update['set__domainid'] = self.domainid
             update['set__industryid'] = self.industryid
@@ -1650,13 +1663,14 @@ class Appointment(db.Document):  # 预约
     topic_id = db.IntField(default=0, db_field='ti')  # 话题id
     topic_title = db.StringField(default='', db_field='tt')  # 话题标题
     appdate = db.IntField(default=0, db_field='ad')  # 预约时间
-    apptype = db.IntField(default=1, db_field='at')  # 预约方式 1通话 2见面
+    apptype = db.IntField(default=1, db_field='at')  # 预约方式 1通话 2见面 3立即通话
     time =  db.IntField(default=0, db_field='t')  # 通话/见面 时间(分钟)
     address = db.StringField(default='', db_field='a')  # 预约地址
     price = db.IntField(default=0, db_field='p')  # 支付价格
     attachment = db.ListField(default=[], db_field='att')  # 附件
     remark = db.StringField(default='', db_field='r')  # 备注
-    state = db.IntField(default=0, db_field='s')  # 预约状态  0预约失败 1申请中 2待付款 3进行中 4已完成
+    state = db.IntField(default=0, db_field='s')  # 预约状态 -1取消订单 0预约失败 1申请中 2待付款 3进行中 4已完成
+    cancelremark = db.StringField(default='', db_field='cr')  # 取消备注
     paystate = db.IntField(default=0, db_field='ps')  # 支付状态 0未支付 1已支付
     date = db.IntField(default=0, db_field='d')  # 创建时间
 
@@ -1692,7 +1706,23 @@ class Appointment(db.Document):  # 预约
         return int(common.getappointmentid(aid))
 
     @staticmethod
-    def updateappstate(aid,state,paystate=-1,uid=0,time=0):
+    def updateappstate(aid,state,apptype):
+        #更新订单状态 -- 后台
+        update = {}
+        update['set__state'] = state
+        update['set__apptype'] = apptype
+        if state==3:
+            update['set__paystate'] = 1
+        elif state==1 or state==2:
+            update['set__paystate'] = 0
+
+        if apptype==3:
+            update['set__appdate'] = 0
+
+        Appointment.objects(_id=aid).update_one(**update)
+
+    @staticmethod
+    def updateappstate_app(aid,state,paystate=-1,uid=0,time=0,cancelremark=''):
         #更新订单状态
         query = Q(_id=aid)
         update = {}
@@ -1700,12 +1730,14 @@ class Appointment(db.Document):  # 预约
         if paystate>-1:
             update['set__paystate'] = paystate
         if uid>0:
-            if state==0 or state==2 or state==4:
+            if state==0 or state==2 or state==4 or state==-1:
                 query = query & Q(appid=uid) 
                 if state==4 and time>0:
                     update['set__time'] = time
+                elif state==-1:
+                    update['set__cancelremark'] = cancelremark
             else:
-                query = query & Q(user_id=uid) 
+                query = query & Q(user_id=uid)
         Appointment.objects(query).update_one(**update)
 
     def editinfo(self):
@@ -1728,7 +1760,7 @@ class Appointment(db.Document):  # 预约
         if uinfo is not None:
             if type == 1:
                 json_app = {
-                    '_id': self.id,
+                    '_id': str(self.id),
                     'info': uinfo.to_json(3),
                     'user_id': self.user_id,
                     'appid': self.appid,
@@ -1746,7 +1778,7 @@ class Appointment(db.Document):  # 预约
                 }
             else:  # 0
                 json_app = {
-                    '_id': self.id,
+                    '_id': str(self.id),
                     'date': self.date,
                     'info': uinfo.to_json(3),
                     'user_id': self.user_id,
@@ -1988,6 +2020,8 @@ class Guestbook(db.Document):
     _id = db.IntField(primary_key=True)  # id
     user_id = db.IntField(default=0, db_field='ui')  # 用户ID
     content = db.StringField(default='', db_field='c')  # 留言内容
+    name = db.StringField(default='', db_field='n') 
+    phone = db.StringField(default='', db_field='p') 
     date = db.IntField(default=0, db_field='d')  # 创建时间
 
     def saveinfo(self):

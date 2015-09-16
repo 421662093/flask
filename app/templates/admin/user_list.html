@@ -105,11 +105,15 @@
                                     <th>
                                          创建时间
                                     </th>
-									<th>
+									<th style="width:60px">
 										 状态
 									</th>
-									<th>
-										 排序
+									<th style="width:60px">
+										 {% if sort==0 %}
+										 <a href="/admin/userlist/sort/{{roid}}/1">排序</a>
+										 {% else %}
+										 <a href="/admin/userlist/{{roid}}/1">排序↓</a>
+										 {% endif %}
 									</th>
 									<th>
 										 操作
@@ -155,7 +159,7 @@
 									<input type="text" class="sortupdate" uid="{{item.id}}" id="sort_{{item.id}}" old="{{item.sort}}" value="{{item.sort}}" style="width:30px">
                                     </td>
 									<td>
-										<a href="/admin/useredit/{{item.id}}/{{roid==2 and 2 or 3}}/{{index==-1 and 1 or index}}" class="label label-sm label-success">
+										<a href="/admin/useredit/{{item.id}}/{{roid==2 and 2 or 3}}/{{index==-1 and 1 or index}}?s={{sort}}" class="label label-sm label-success">
 										编辑
 										</a><br/>
 										{% if roid==2 %}
@@ -189,7 +193,11 @@
 							<div class="col-md-7 col-sm-12">
 							<div class="dataTables_paginate paging_bootstrap_full_number" id="sample_1_paginate">
 							<ul class="pagination" style="visibility: visible;">
+							{% if sort==1 %}
+							<script>Pagebtn('/admin/userlist/sort/{{roid}}',{{pagecount}},{{index}})</script>
+							{% else %}
 							<script>Pagebtn('/admin/userlist/{{roid}}',{{pagecount}},{{index}})</script>
+							{% endif %}
 							</ul>
 							</div>
 							</div>

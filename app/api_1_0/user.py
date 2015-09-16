@@ -61,6 +61,45 @@ def get_code():
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
 
+@api.route('/user/getforgetpawcode', methods = ['POST'])
+def get_forgetpaw_code():
+    '''
+    验证手机号是否存在，并发送手机验证码
+
+    URL:/user/getforgetpawcode
+    格式
+        JSON
+    POST 参数:
+        username -- 帐号 (必填)
+    返回值
+        {'ret':1} 发送成功
+        -1 帐号为空
+        -2 帐号不存在
+        -3 验证码发送失败,联系运营商
+        -4 手机号格式错误
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        username = data['username']
+        if len(username)==11:
+            if len(username)==0:
+                return jsonify(ret=-1) #帐号或密码为空
+            if User.isusername(username=username)==0:
+                return jsonify(ret=-2) #帐号已存在
+            code = common.getrandom(100000,999999)
+            mc.set('code_'+username,code)
+            smscode = SMS.sendTemplateSMS(username,[code,10],34443)
+            #print str(type(smscode))+'___'+smscode
+            if smscode=='000000':
+                return jsonify(ret=1)#验证码已发送
+            else:
+                return jsonify(ret=-3)#验证码发送失败,联系运营商
+        return jsonify(ret=-4)#手机号格式错误
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
 @api.route('/user/reg', methods = ['POST'])
 def new_user():
     '''
@@ -165,7 +204,63 @@ def change_phone():
             if rv == code:
                 ret = User.updatephone(g.current_user.role_id,username)
                 if ret==1:
+                    mc.set('code_'+username,'')
                     return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
+                else:
+                    return jsonify(ret=-6)
+            else:
+                return jsonify(ret=-3) #验证码错误
+        return jsonify(ret=-4)#手机号格式错误
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+@api.route('/user/forgetpaw', methods = ['POST'])
+def forget_paw():
+    '''
+    忘记密码 -- 用户
+
+    URL:/user/forgetpaw
+    格式
+        JSON
+    POST 参数:
+        username -- 帐号 (必填)
+        password -- 密码 (必填)
+        code -- 手机验证码 (必填)
+    返回值
+        {'ret':1} 发送成功
+        -1 帐号或密码为空
+        -2 手机号不存在
+        -3 验证码错误
+        -4 手机号格式错误
+        -5 系统异常
+        -6 忘记密码异常
+    '''
+    try:
+        data = request.get_json()#{\"name\":\"大撒旦撒\"}
+        #print data['username'][0]["c"]
+        username = data['username']#request.form.get('username','')
+        password = data['password']
+        code = data['code']
+        code = common.strtoint(code,-1)
+        #if request.data is not None:
+            #username = request.data['username']
+            #password = request.data.password
+
+        if len(username)==11:
+            if len(username)==0:
+                return jsonify(ret=-1) #手机号不能为空
+            if User.isusername(username=username)==0:
+                return jsonify(ret=-2) #手机号不存在
+            rv = common.strtoint(mc.get('code_'+username),0)
+            if rv == code:
+                u_info = User()
+                u_info.username = username
+                u_info.password_hash = password
+                ret = u_info.updateforgetpaw()
+                if ret==1:
+                    mc.set('code_'+username,'')
+                    return jsonify(ret=1) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
                 else:
                     return jsonify(ret=-6)
             else:
@@ -203,7 +298,7 @@ def update_user_info():
             isava = common.strtoint(data['isava'],0)
             if isava==1:
                 user.avaurl = 'http://kdzj2015-10001870.image.myqcloud.com/kdzj2015-10001870/0/avatar_'+str(user._id)+'/original?random='+str(common.getstamp())
-            if user.role_id==2:
+            if user.role_id==2 or user.role_id==1:
                 user.domainid = common.strtoint(data['domainid'],0)
                 user.industryid = common.strtoint(data['industryid'],0)
             user.useredit()
@@ -404,13 +499,15 @@ def add_user_appointment():
         app.topic_title = t_info.title
         app.topic_id = tid
         app.appdate = common.strtoint(data['appdate'],0)
-        app.apptype = common.strtoint(data['at'],1)
+        app.apptype = at
         app.address = data['address']
 
         if app.apptype==1:
             app.price = t_info.pay.call
         elif app.apptype==2:
             app.price = t_info.pay.meet
+        elif app.apptype==3:
+            app.price = t_info.pay.call + 200
 
         app.attachment = []
         #app.remark = data['remark']
@@ -922,7 +1019,7 @@ def add_guestbook():
     添加留言反馈
     URL:/user/addguestbook
     POST 参数:
-        content -- 反馈内容
+        content -- 反馈内容 (会员)
     返回值
         {'ret':1} 成功
         -5 系统异常
@@ -932,6 +1029,8 @@ def add_guestbook():
         gb = Guestbook()
         gb.user_id = g.current_user._id
         gb.content = data['content']
+        gb.name = g.current_user.name
+        gb.phone = g.current_user.username
         gb.saveinfo()
         return jsonify(ret=1)#添加成功
     except Exception,e:
@@ -943,9 +1042,9 @@ def add_guestbook():
 def add_guest_guestbook():
     '''
     添加留言反馈
-    URL:/user/addguestbook
+    URL:/guest/addguestbook
     POST 参数:
-        content -- 反馈内容
+        content -- 反馈内容 （游客）
     返回值
         {'ret':1} 成功
         -5 系统异常
@@ -954,6 +1053,7 @@ def add_guest_guestbook():
         data = request.get_json()
         gb = Guestbook()
         gb.content = data['content']
+        gb.name = '陌生人'
         gb.saveinfo()
         return jsonify(ret=1)#添加成功
     except Exception,e:
