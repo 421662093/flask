@@ -8,6 +8,7 @@ from .decorators import permission_required
 from ..models import Permission, Inventory, Topic, Ad, User
 from ..core.common import jsonify
 from ..core import common
+from .. import conf
 # from ..models import discovery
 
 
@@ -28,6 +29,7 @@ def get_discovery_list():
         'ad': [item.to_json() for item in i_list],
         'topic_team': [item.to_json(1) for item in tt_list],
         'topic': [item.to_json(2) for item in t_list],
+        'hidepay':conf.HIDE_PAY
     })
 
 

@@ -1060,5 +1060,62 @@ def add_guest_guestbook():
         logging.debug(e)
         return jsonify(ret=-5)#系统异常
 
+@api.route('/user/addrlyrecord', methods = ['POST'])
+@auth.login_required
+def add_user_rlyrecord():
+    '''
+    添加通话信息
+    URL:/user/addrlyrecord
+    POST 参数:
+        call_id -- 通话id
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        rec = RLYRecord()
+        rec.user_id = g.current_user._id
+        rec.call_id = common.strtoint(data['call_id'],0)
+        rec.calltime = 0
+        rec.saveinfo()
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+@api.route('/user/updaterlyrecord', methods = ['POST'])
+def update_user_rlyrecord():
+    '''
+    更新通话信息
+    URL:/user/updaterlyrecord
+    POST 参数:
+        call_id -- 通话id
+        calltime -- 通话时间
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        rec = RLYRecord()
+        #rec.user_id = g.current_user._id
+        rec.action = data['action']
+        rec.orderid = data['orderid']
+        rec.subid = data['subid']
+        rec.caller = data['caller']
+        rec.called = data['called']
+        rec.starttime = common.strtoint(data['starttime'],0)
+        rec.endtime = common.strtoint(data['endtime'],0)
+        rec.recordurl = data['recordurl']
+        rec.byetype = data['byetype']
+
+        rec.call_id = common.strtoint(data['call_id'],0)
+        rec.calltime = common.strtoint(data['calltime'],0)
+        rec.updateinfo()
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
 
 

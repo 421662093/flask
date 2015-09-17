@@ -330,8 +330,16 @@ class User(UserMixin, db.Document):  # 会员
     def getlist_uid(uidlist, feild=[], count=10):
         # 获取指定id列表的会员数据
         #.exclude('password_hash') 不包含字段
-        return User.objects(_id__in=uidlist).limit(
-            count).exclude('password_hash')
+
+        ulist = []
+
+        for item in uidlist:
+            uinfo = User.objects(_id=item).exclude('password_hash').first()
+            ulist.append(uinfo)
+
+        return ulist
+        #return User.objects(_id__in=uidlist).limit(
+        #    count).exclude('password_hash')
 
     @staticmethod
     def getthinktanklist_uid(uidlist):
@@ -1371,7 +1379,6 @@ class Topic(db.Document):  # 话题
                 'exp_count': len(self.expert),
                 'expert': [item.to_json(1) for item in User.getlist_uid(uidlist=self.expert)],
                 'stats': self.stats.to_json()
-                #'expert': [50, 38, 47, 39]
             }
         elif type == 3:
             #专家团详情页
@@ -1669,7 +1676,7 @@ class Appointment(db.Document):  # 预约
     price = db.IntField(default=0, db_field='p')  # 支付价格
     attachment = db.ListField(default=[], db_field='att')  # 附件
     remark = db.StringField(default='', db_field='r')  # 备注
-    state = db.IntField(default=0, db_field='s')  # 预约状态 -1取消订单 0预约失败 1申请中 2待付款 3进行中 4已完成
+    state = db.IntField(default=0, db_field='s')  # 预约状态 0订单失败 1申请中 2待付款 3进行中 4等待用户确认 5已完成
     cancelremark = db.StringField(default='', db_field='cr')  # 取消备注
     paystate = db.IntField(default=0, db_field='ps')  # 支付状态 0未支付 1已支付
     date = db.IntField(default=0, db_field='d')  # 创建时间
@@ -2037,3 +2044,41 @@ class Guestbook(db.Document):
     @staticmethod
     def getcount():
         return Guestbook.objects.count()
+
+class RLYRecord(db.Document):
+    #容联云通讯 通话录音
+    __tablename__ = 'rlyrecord'
+    meta = {
+        'collection': __tablename__,
+    }
+    _id = db.IntField(primary_key=True)  # id
+    user_id = db.IntField(default=0, db_field='ui') # 用户ID
+    action = db.StringField(default='', db_field='a') # 请求类型
+    orderid = db.StringField(default='', db_field='o') # 订单id
+    subid = db.StringField(default='', db_field='s') # 子账号id
+    caller = db.StringField(default='', db_field='cr') # 主叫号码
+    called = db.StringField(default='', db_field='cd') # 被叫号码
+    starttime = db.IntField(default=0, db_field='st') # 通话开始时间
+    endtime = db.IntField(default=0, db_field='et') # 通话结束时间
+    recordurl = db.StringField(default='', db_field='ru') # 通话录音完整下载地址
+    byetype = db.StringField(default='', db_field='bt') # 通话挂机类型
+    date = db.IntField(default=0, db_field='d')  # 创建时间
+
+    def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        self.date = common.getstamp()
+        self.save()
+
+    def updateinfo(self):
+        update = {}
+        update['set__calltime'] = self.calltime
+        RLYRecord.objects(user_id=self.user_id,call_id=self.call_id).update_one(**update)
+
+    @staticmethod
+    def getlist(index=1, count=10):
+        pageindex =(index-1)*count
+        return RLYRecord.objects.order_by("-_id").skip(pageindex).limit(count)
+
+    @staticmethod
+    def getcount():
+        return RLYRecord.objects.count()

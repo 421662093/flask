@@ -366,7 +366,7 @@ def update_expert_appstate():
     URL:/expert/updateappstate
     POST 参数:
         appid -- 订单id
-        state -- 状态状态 -1取消订单 0拒绝接单 2确认接单 4已完成
+        state -- 状态状态 -1取消订单 0拒绝接单 2确认接单 4等待用户确认 5已完成
         time -- 见面时间(分钟) 当state为4时有效
         cancelremark -- 取消备注
     返回值
@@ -380,18 +380,20 @@ def update_expert_appstate():
         state = common.strtoint(data['state'],-1)
         time = common.strtoint(data['time'],0)
         cancelremark = data['cancelremark']
-        if appid>0 and (state==0 or state==2 or state==4 or state==-1):
+        if appid>0 and (state==0 or state==2 or state==4 or state==-1 or state==5):
+            if state==-1:
+                state=0
             Appointment.updateappstate_app(uid=g.current_user._id,aid=appid,state=state,time=time,cancelremark=cancelremark)
             a_info = Appointment.getinfo(appid)
             if a_info is not None:
                 if state==0:
-                    pushmessage(jpush,'口袋专家订单已被拒绝',{'type':'update_appointment','app_id':str(appid),'state':0},[a_info.user_id])
+                    pushmessage(jpush,'口袋专家订单已被取消',{'type':'update_appointment','app_id':str(appid),'state':0},[a_info.user_id])
                 elif state==2:
                     pushmessage(jpush,'口袋专家订单已确认',{'type':'update_appointment','app_id':str(appid),'state':2},[a_info.user_id])
                 elif state==4:
-                    pushmessage(jpush,'口袋专家订单已完成',{'type':'update_appointment','app_id':str(appid),'state':4},[a_info.user_id])
-                elif state==-1:
-                    pushmessage(jpush,'口袋专家订单已被取消',{'type':'update_appointment','app_id':str(appid),'state':-1},[a_info.user_id])
+                    pushmessage(jpush,'口袋专家订单等待用户确认',{'type':'update_appointment','app_id':str(appid),'state':4},[a_info.user_id])
+                elif state==5:
+                    pushmessage(jpush,'口袋专家订单用户已确认',{'type':'update_appointment','app_id':str(appid),'state':5},[a_info.appid])
             return jsonify(ret=1)
         else:
             return jsonify(ret=-1)#订单确认失败

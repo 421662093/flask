@@ -64,8 +64,11 @@ class DevelopmentConfig(Config):
     YUNTONGXUN_TOKEN = '02a449a36fa347aba7ed5854b7f80c21' #主账号 AUTH TOKEN
     YUNTONGXUN_APPID = 'aaf98f894ecd7d6a014ed2a653c10813' #APPID
 
+    #RECHARGE_SCALE = 1 #充值比例 1:5  1人民币兑换5个专家币
 
     SHARE_CALL_TIME = 30 #分享获通话时间 默认每次分享可获得30分钟，一种途径一天可分享1次
+
+    HIDE_PAY = 0 #隐藏支付功能
 
     #上传配置
     UPLOAD_FOLDER = 'uploads' #上传目录

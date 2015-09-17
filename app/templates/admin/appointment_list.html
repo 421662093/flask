@@ -90,7 +90,7 @@
 										<option value="1" {% if item.apptype==1 %}selected="selected"{%endif%}>{% if not item.apptype==1 %}*{%endif%}通话</option>
 										<option value="2" {% if item.apptype==2 %}selected="selected"{%endif%}>{% if not item.apptype==2 %}*{%endif%}见面</option>
 										<option value="3" {% if item.apptype==3 %}selected="selected"{%endif%}>{% if not item.apptype==3 %}*{%endif%}立即通话</option>
-									</select>
+									</select><br/>
 									<select id="state_{{item._id}}">
 										<option value="0" {% if item.state==0 %}selected="selected"{%endif%}>{% if not item.state==0 %}*{%endif%}预约失败</option>
 										<option value="1" {% if item.state==1 %}selected="selected"{%endif%}>{% if not item.state==1 %}*{%endif%}申请中</option>
