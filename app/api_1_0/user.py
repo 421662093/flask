@@ -11,7 +11,8 @@ from flask.ext.login import login_user, logout_user, login_required, \
 from .authentication import auth
 from . import api
 from .decorators import permission_required
-from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS,Guestbook,YuntongxunAccount
+from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS,Guestbook,YuntongxunAccount, \
+    RLYRecord
 from ..core.common import jsonify
 from ..core import common
 from .. import mc
@@ -441,7 +442,6 @@ def get_appointment_list(_type=0):
     a_list = Appointment.getlist(_type=_type, appid=g.current_user._id)
     return jsonify(list=[item.to_json(uid=_type) for item in a_list])
 
-
 @api.route('/appointment/info/<int:aid>')
 #@api.route('/appointment/info/<int:aid>/<int:_type>')  # _type=1我约 _type=2被约
 @auth.login_required
@@ -515,6 +515,7 @@ def add_user_appointment():
         app.paystate = 0
         nowid = app.editinfo()
 
+        '''
         msg = Message()
         msg.user_id = app.appid
         msg.appointment_id = nowid
@@ -522,6 +523,7 @@ def add_user_appointment():
         msg.title = '预约消息'
         msg.content = '您有一个新的预约订单请您查看。'
         msg.saveinfo()
+        '''
         pushmessage(jpush,'您有一个新的预约订单请您查看。',{'type':'viewapp','app_id':str(nowid),'apptype':2},[app.appid])
         return jsonify(ret=nowid)  #创建订单成功
     return jsonify(ret=-1)  #认证失败，无法创建订单
@@ -855,6 +857,8 @@ def update_ocp():
                 be.weixin=data['weixin']
                 be.qq=data['qq']
                 be.saveinfo()
+                User.updatecontact(g.current_user._id,1,be.weixin)
+                User.updatecontact(g.current_user._id,2,be.qq)
             else:
                 return jsonify(ret=-1)#已提交
         return jsonify(ret=1)#添加成功
@@ -1119,3 +1123,27 @@ def update_user_rlyrecord():
         return jsonify(ret=-5)#系统异常
 
 
+@api.route('/user/updatecontact', methods = ['POST'])
+@auth.login_required
+def update_user_contact():
+    '''
+    更新联系方式 微信 QQ (所有会员)
+    URL:/user/updatecontact
+    POST 参数:
+        type -- 1 微信 2 QQ
+        val -- 帐号
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        #rec.user_id = g.current_user._id
+        _type = common.strtoint(data['type'],1)
+        val = data['val']
+
+        User.updatecontact(g.current_user._id,_type,val)
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常

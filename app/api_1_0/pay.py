@@ -64,7 +64,7 @@ def get_payid():
         else:
 
             User.updatemoney(oid,pay.amount)
-
+            '''
             msg = Message()
             msg.user_id = oid
             msg.appointment_id = 0
@@ -72,6 +72,7 @@ def get_payid():
             msg.title = '充值成功'
             msg.content = '您已充值成功。'
             msg.saveinfo()
+            '''
             pushmessage(jpush,'口袋专家充值已完成支付',{'type':'recharge','state':1},[oid])
     except Exception,e:
         logging.debug(e)

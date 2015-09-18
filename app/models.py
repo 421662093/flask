@@ -254,6 +254,8 @@ class User(UserMixin, db.Document):  # 会员
     }
     _id = db.IntField(primary_key=True)
     email = db.StringField(default='', max_length=64, db_field='e')  # 邮箱
+    weixin = db.StringField(default='', max_length=64, db_field='wx')  # 微信
+    qq = db.StringField(default='', max_length=10, db_field='qq')  # QQ
     name = db.StringField(
         default='', max_length=64, required=True, db_field='n')  # 姓名
     username = db.StringField(
@@ -642,6 +644,17 @@ class User(UserMixin, db.Document):  # 会员
             User.objects(_id=uid).update_one(**update)
             return 1
         return 0
+
+    @staticmethod
+    def updatecontact(uid,_type,val):
+        #更新联系方式 微信 QQ (所有会员)
+        update = {}
+        if _type==1:
+            update['set__weixin'] = val
+        else:
+            update['set__qq'] = val
+        User.objects(_id=uid).update_one(**update)
+        return 1
 
     @staticmethod
     def snslogin(sns,uid):
@@ -1035,7 +1048,11 @@ class User(UserMixin, db.Document):  # 会员
                 'calltime':self.calltime,
                 'wish':self.wish,
                 'calltype':(self.apptype&0x01)==0x01 and 1 or 0, #通话模式开启
-                'meettype':(self.apptype&0x02)==0x02 and 1 or 0 #见面模式开启
+                'meettype':(self.apptype&0x02)==0x02 and 1 or 0, #见面模式开启
+                'phone':self.username,
+                'weixin':self.weixin,
+                'qq':self.qq,
+                'email':self.email
             }
         elif type == 1:
             json_user = {
@@ -2073,6 +2090,11 @@ class RLYRecord(db.Document):
         update = {}
         update['set__calltime'] = self.calltime
         RLYRecord.objects(user_id=self.user_id,call_id=self.call_id).update_one(**update)
+
+    @staticmethod
+    def getinfo(aid):
+        # 获取通讯记录 (orderid)
+        return RLYRecord.objects(orderid=aid).first()
 
     @staticmethod
     def getlist(index=1, count=10):
