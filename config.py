@@ -33,7 +33,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     # mongodb://user1:password1@localhost/test
     MONGODB_SETTINGS = {
-        'db': 'clr',#fullteck
+        'db': 'fullteck',#clr
         'host': 'mongodb://localhost:27017/'
     }
 
@@ -68,7 +68,7 @@ class DevelopmentConfig(Config):
 
     SHARE_CALL_TIME = 30 #分享获通话时间 默认每次分享可获得30分钟，一种途径一天可分享1次
 
-    HIDE_PAY = 0 #隐藏支付功能
+    HIDE_PAY = 1 #隐藏支付功能
 
     #上传配置
     UPLOAD_FOLDER = 'uploads' #上传目录

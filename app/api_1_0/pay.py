@@ -56,14 +56,15 @@ def get_payid():
         pay.description = data['data']['object']['description']
         pay.saveinfo()
         oid = common.strtoint(data['data']['object']['order_no'],0)
-        if oid>10000000000:
+        userid = common.strtoint(data['data']['object']['description'],0)
+        if userid==0:
             o_info = Appointment.getinfo(pay.order_no)
             if o_info is not None:
                 Appointment.updateappstate_app(pay.order_no,3,1) #更新订单状态
                 pushmessage(jpush,'口袋专家订单已完成支付',{'type':'update_appointment','app_id':str(pay.order_no),'state':3},[o_info.appid])
         else:
 
-            User.updatemoney(oid,pay.amount)
+            User.updatemoney(userid,pay.amount)
             '''
             msg = Message()
             msg.user_id = oid
@@ -129,15 +130,20 @@ def do_recharge():
     返回值
         返回charge JSON对象(pingpp)
     '''
-    form = request.get_json()
-    if isinstance(form, dict):
-        form['app'] = dict(id=conf.PINGPP_APP_ID)
-        form['order_no'] = g.current_user._id
-        form['currency'] = "cny"
-        form['client_ip'] = "127.0.0.1"
-        form['subject'] = '口袋专家充值'
-        form['body'] = "口袋专家充值"
-    pingpp.api_key = conf.PINGPP_API_KEY
-    response_charge = pingpp.Charge.create(api_key=pingpp.api_key, **form)
-    return jsonify(response_charge)
-    #return Response(json.dumps(response_charge), mimetype='application/json')
+    try:
+        form = request.get_json()
+        if isinstance(form, dict):
+            form['app'] = dict(id=conf.PINGPP_APP_ID)
+            form['order_no'] = common.getappointmentid(g.current_user._id)
+            form['currency'] = "cny"
+            form['client_ip'] = "127.0.0.1"
+            form['subject'] = '口袋专家充值'
+            form['body'] = "口袋专家充值"
+            form['description'] = str(g.current_user._id)
+        pingpp.api_key = conf.PINGPP_API_KEY
+        response_charge = pingpp.Charge.create(api_key=pingpp.api_key, **form)
+        return jsonify(response_charge)
+        #return Response(json.dumps(response_charge), mimetype='application/json')
+    except Exception,e:
+        logging.debug(str(e).encode('gbk'))
+        return jsonify(ret=-5)#系统异常

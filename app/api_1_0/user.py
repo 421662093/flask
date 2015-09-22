@@ -12,7 +12,7 @@ from .authentication import auth
 from . import api
 from .decorators import permission_required
 from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collection,Topic,TopicPay,BecomeExpert,SNS,Guestbook,YuntongxunAccount, \
-    RLYRecord
+    RLYRecord,Comment
 from ..core.common import jsonify
 from ..core import common
 from .. import mc
@@ -422,6 +422,23 @@ def update_user_edu():
         state = user.updateedu()
         return jsonify(ret=state)
 
+@api.route('/message/list')
+@auth.login_required
+#@permission_required(Permission.DISCOVERY)
+def get_message_list():
+    '''
+    获取订单消息
+
+    URL:
+        /message/list
+    格式
+        JSON
+    '''
+
+    a_list = Appointment.getlist_app(uid=g.current_user._id,state=3)
+    return jsonify(list=[item.to_json_message(uid=g.current_user._id) for item in a_list])
+
+
 @api.route('/appointment/list')
 @api.route('/appointment/list/<int:_type>')  # _type=1我约 _type=2被约
 @auth.login_required
@@ -547,11 +564,12 @@ def get_user_thinktank():
     else:
         return jsonify(list=[])
 
+'''
 @api.route('/user/message', methods=['GET'])
 @api.route('/user/message/<int:pageindex>', methods=['GET'])
 @auth.login_required
 def get_user_message(pageindex=1):
-    '''
+    ''''''
     获取用户消息列表
 
     URL:/user/message
@@ -567,13 +585,13 @@ def get_user_message(pageindex=1):
         appointment_id -- 预约订单ID
         date -- 创建时间
         type -- 消息类型 1预约成功 2预约失败 3温馨提醒 4消息提醒
-    '''
+    ''''''
     m_list = Message.getlist(uid=g.current_user._id,index=pageindex)
     if m_list is not None:
         return jsonify(list=[item.to_json() for item in m_list])
     else:
         return jsonify(list=[])
-
+'''
 @api.route('/user/info')
 @auth.login_required
 #@permission_required(Permission.DISCOVERY)
@@ -1144,6 +1162,73 @@ def update_user_contact():
 
         User.updatecontact(g.current_user._id,_type,val)
         return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+
+@api.route('/user/updatetopiczan', methods = ['POST'])
+@auth.login_required
+def update_topiczan():
+    '''
+    话题团点赞
+    URL:/user/updatetopiczan
+    POST 参数:
+        tid -- 话题ID (必填)
+        type -- 方式 1添加 0取消
+    返回值
+        {'ret':1} 成功
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        tid = common.strtoint(data['tid'],0)
+
+        _type = data['type']
+        if tid>0:
+            User.updatetopiczan(g.current_user._id,tid,_type)
+        return jsonify(ret=1)#添加成功
+    except Exception,e:
+        logging.debug(e)
+        return jsonify(ret=-5)#系统异常
+
+@api.route('/user/addcomment', methods = ['POST'])
+@auth.login_required
+def add_user_comment():
+    '''
+    添加评论
+    URL:/user/addcomment
+    POST 参数:
+        appid -- 订单ID (必填)
+        xinxin -- 星星数量
+        comment -- 评价
+        label -- 标签
+    返回值
+        {'ret':1} 成功
+        -1 订单不存在
+        -5 系统异常
+    '''
+    try:
+        data = request.get_json()
+        appid = common.strtoint(data['appid'],0)
+        xinxin = common.strtoint(data['xinxin'],0)
+        label = data['label']
+        app = Appointment.getinfo(appid)
+
+        if app!=None and app.state==5:
+            com = Comment()
+            com.user_id=g.current_user._id
+            com.name = g.current_user.name
+            com.top_id = app.topic_id
+            com.top_title = app.topic_title
+            com.content = data['comment']
+            com.grade = xinxin
+            com.saveinfo()
+            User.updatecomment(g.current_user._id,label,xinxin)
+            Appointment.updateappstate(appid,6)
+            return jsonify(ret=1)#添加成功
+        else:
+            return jsonify(ret=-1)
     except Exception,e:
         logging.debug(e)
         return jsonify(ret=-5)#系统异常

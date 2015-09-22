@@ -110,7 +110,7 @@ def get_expert_info(uid):
     '''
     u_info = User.getinfo(uid)
     t_list = Topic.getlist(uid=uid, count=3)
-    c_list = Comment.getlist(uid=uid, page=1, count=2)
+    c_list = Comment.getlist(uid=uid, index=1, count=2)
     return jsonify(expert={
         'info': u_info.to_json(-1),
         'topic': [item.to_json() for item in t_list],
@@ -156,7 +156,7 @@ def get_comment_list(uid, page=1):
         uid -- 专家ID (必填) 
         page -- 页码 (选填 默认 1) 
     '''
-    c_list = Comment.getlist(uid=uid, page=page, count=10)
+    c_list = Comment.getlist(uid=uid, index=page, count=10)
     return jsonify(list=[item.to_json() for item in c_list])
 
 @api.route('/expert/firstsearch')

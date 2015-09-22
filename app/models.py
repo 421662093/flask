@@ -148,23 +148,25 @@ class UserStats(db.EmbeddedDocument):  # 会员统计
     lastaction = db.IntField(default=0, db_field='la')  # 最后更新时间
     rand = db.IntField(default=common.getrandom(), db_field='r')  # 随机数 用于随机获取专家列表
     message_count = 0  # 消息个数
-    oldx = db.IntField(default=0, db_field='x')  # 旧字段 无效
+    topic_zan = db.ListField(default=[], db_field='tz')  # 话题赞
 
-    baidu = db.IntField(default=0, db_field='b')  # 百度关注数
-    weixin = db.IntField(default=0, db_field='w')  # 微信关注数
-    zhihu = db.IntField(default=0, db_field='z')  # 知乎关注数
-    sina = db.IntField(default=0, db_field='s')  # 新浪关注数
-    twitter = db.IntField(default=0, db_field='t')  # 推特关注数
-    facebook = db.IntField(default=0, db_field='f')  # 脸谱关注数
-    github = db.IntField(default=0, db_field='g')  # GIT关注数
+    oldx = db.IntField(default=0, db_field='x')  # 旧字段 无效*
 
-    baiduurl = db.StringField(default='', db_field='bu')  # 百度地址
-    weixinurl = db.StringField(default='', db_field='wu')  # 微信地址
-    zhihuurl = db.StringField(default='', db_field='zu')  # 知乎地址
-    sinaurl = db.StringField(default='', db_field='su')  # 新浪地址
-    twitterurl = db.StringField(default='', db_field='tu')  # 推特地址
-    facebookurl = db.StringField(default='', db_field='fu')  # 脸谱地址
-    githuburl = db.StringField(default='', db_field='gu')  # GIT地址
+    baidu = db.IntField(default=0, db_field='b')  # 百度关注数*
+    weixin = db.IntField(default=0, db_field='w')  # 微信关注数*
+    zhihu = db.IntField(default=0, db_field='z')  # 知乎关注数*
+    sina = db.IntField(default=0, db_field='s')  # 新浪关注数*
+    twitter = db.IntField(default=0, db_field='t')  # 推特关注数*
+    facebook = db.IntField(default=0, db_field='f')  # 脸谱关注数*
+    github = db.IntField(default=0, db_field='g')  # GIT关注数*
+
+    baiduurl = db.StringField(default='', db_field='bu')  # 百度地址*
+    weixinurl = db.StringField(default='', db_field='wu')  # 微信地址*
+    zhihuurl = db.StringField(default='', db_field='zu')  # 知乎地址*
+    sinaurl = db.StringField(default='', db_field='su')  # 新浪地址*
+    twitterurl = db.StringField(default='', db_field='tu')  # 推特地址*
+    facebookurl = db.StringField(default='', db_field='fu')  # 脸谱地址*
+    githuburl = db.StringField(default='', db_field='gu')  # GIT地址*
 
     wxshare = db.IntField(default=0, db_field='ws')  # 微信分享 分享后记录当天时间戳，一天可分享一次
     pyshare = db.IntField(default=0, db_field='ps')  # 朋友圈分享 分享后记录当天时间戳，一天可分享一次
@@ -337,7 +339,8 @@ class User(UserMixin, db.Document):  # 会员
 
         for item in uidlist:
             uinfo = User.objects(_id=item).exclude('password_hash').first()
-            ulist.append(uinfo)
+            if uinfo!=None:
+                ulist.append(uinfo)
 
         return ulist
         #return User.objects(_id__in=uidlist).limit(
@@ -453,6 +456,10 @@ class User(UserMixin, db.Document):  # 会员
                     update['set__industryid'] = self.industryid
             update['set__stats__lastaction'] = common.getstamp()
             User.objects(_id=self._id).update_one(**update)
+
+            if self.role_id==2:
+                u_info = User.objects(_id=self._id).first()
+                User.Create_Q_YUNSOU_DATA(u_info)
 
     def updateworkexp(self):
         #更新工作经历 - 用户
@@ -653,6 +660,29 @@ class User(UserMixin, db.Document):  # 会员
             update['set__weixin'] = val
         else:
             update['set__qq'] = val
+        User.objects(_id=uid).update_one(**update)
+        return 1
+
+    @staticmethod
+    def updatetopiczan(uid,newtid,_type=1):
+        #添加话题赞 1关注 0取消关注
+        update = {}
+        if _type==1:
+            Topic.objects(_id=newtid).modify(inc__stats__like=1)
+            update['add_to_set__stats__topic_zan'] = newtid
+        else:
+            Topic.objects(_id=newtid).modify(inc__stats__like=-1)
+            update['pull__stats__topic_zan'] = newtid
+        User.objects(_id=uid).update_one(**update)
+        return 1
+        #return 0
+
+    @staticmethod
+    def updatecomment(uid,label,xinxin):
+        update = {}
+        update['add_to_set__label'] = label
+        update['inc__stats__comment_total'] = xinxin
+        update['inc__stats__comment_count'] =1
         User.objects(_id=uid).update_one(**update)
         return 1
 
@@ -1395,7 +1425,7 @@ class Topic(db.Document):  # 话题
                 #'date': self.date,
                 'exp_count': len(self.expert),
                 'expert': [item.to_json(1) for item in User.getlist_uid(uidlist=self.expert)],
-                'stats': self.stats.to_json()
+                #'stats': self.stats.to_json()
             }
         elif type == 3:
             #专家团详情页
@@ -1422,7 +1452,7 @@ class Topic(db.Document):  # 话题
                 'intro': self.intro.encode('utf-8'),
                 'date': self.date,
                 'expert': u_info is not None and u_info.to_json(3) or {},
-                'stats': self.stats.to_json()
+                #'stats': self.stats.to_json()
 
                 #'expert': [50, 38, 47, 39]
             }
@@ -1444,13 +1474,21 @@ class Comment(db.Document):  # 评论
     top_title = db.StringField(
         default='', max_length=64, required=True, db_field='tt')
     content = db.StringField(default='', db_field='c')
-    date = db.IntField(default=common.getstamp(), db_field='d')
+    date = db.IntField(default=0, db_field='d')
     grade = db.IntField(default=0, db_field='g')
 
+    def saveinfo(self):
+        self._id = collection.get_next_id(self.__tablename__)
+        self.date = common.getstamp()
+        self.save()
+        
+        return self._id
+
     @staticmethod
-    def getlist(uid, page=1, count=10):
+    def getlist(uid, index=1, count=10):
         #.exclude('password_hash') 不包含字段
-        return Comment.objects(user_id=uid).limit(count)
+        pageindex =(index-1)*count
+        return Comment.objects(user_id=uid).order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
     def getcount(tid):
@@ -1530,7 +1568,7 @@ class InvTopic(db.EmbeddedDocument):  # 清单话题
             '_id': self._id,
             'title': self.title.encode('utf-8'),
             'content': self.content.encode('utf-8'),
-            'expert': [item.to_json(3) for item in User.getlist_uid(uidlist=self.expert)],
+            'expert':[item.to_json(3) for item in User.getlist_uid(uidlist=self.expert)],
             'sort': self.sort
         }
         return json_invt
@@ -1693,7 +1731,7 @@ class Appointment(db.Document):  # 预约
     price = db.IntField(default=0, db_field='p')  # 支付价格
     attachment = db.ListField(default=[], db_field='att')  # 附件
     remark = db.StringField(default='', db_field='r')  # 备注
-    state = db.IntField(default=0, db_field='s')  # 预约状态 0订单失败 1申请中 2待付款 3进行中 4等待用户确认 5已完成
+    state = db.IntField(default=0, db_field='s')  # 预约状态 0订单失败 1申请中 2待付款 3进行中 4等待用户确认 5已完成 6已评价
     cancelremark = db.StringField(default='', db_field='cr')  # 取消备注
     paystate = db.IntField(default=0, db_field='ps')  # 支付状态 0未支付 1已支付
     date = db.IntField(default=0, db_field='d')  # 创建时间
@@ -1707,6 +1745,13 @@ class Appointment(db.Document):  # 预约
             return Appointment.objects(appid=appid).count()
         elif _type == 1:
             return Appointment.objects(user_id=appid).count()
+
+    @staticmethod
+    # _type=1我约 _type=2被约  /  appid 约/被约 专家id
+    def getlist_app(uid,state=0,index=1, count=10):
+        pageindex =(index-1)*count
+        query = Q(state=state) & (Q(user_id=uid)|Q(appid=uid))
+        return Appointment.objects(query).order_by("-date").skip(pageindex).limit(count)
 
     @staticmethod
     # _type=1我约 _type=2被约  /  appid 约/被约 专家id
@@ -1730,11 +1775,12 @@ class Appointment(db.Document):  # 预约
         return int(common.getappointmentid(aid))
 
     @staticmethod
-    def updateappstate(aid,state,apptype):
+    def updateappstate(aid,state,apptype=-1):
         #更新订单状态 -- 后台
         update = {}
         update['set__state'] = state
-        update['set__apptype'] = apptype
+        if apptype>-1:
+            update['set__apptype'] = apptype
         if state==3:
             update['set__paystate'] = 1
         elif state==1 or state==2:
@@ -1775,6 +1821,33 @@ class Appointment(db.Document):  # 预约
             self._id = Appointment.createid()
             self.save()
         return self._id
+
+    def to_json_message(self,uid):  # type返回相应字段 1列表 0详情
+        if self.appid==uid:
+            uinfo = User.getinfo(self.user_id)
+        else:
+            uinfo = User.getinfo(self.appid)
+        if uinfo is not None:
+            json_app = {
+                '_id': str(self.id),
+                'info': uinfo.to_json(3),
+                'user_id': self.user_id,
+                'appid': self.appid,
+                'topic_id': self.topic_id,
+                'topic_title': self.topic_title.encode('utf-8'),
+                'appdate': self.appdate,
+                'apptype': self.apptype,
+                'type': uid == self.user_id and 1 or 2, # 约状态  1我约  2被约
+                #'address': self.address.encode('utf-8'),
+                'price': self.price,
+                #'attachment': self.attachment,
+                #'remark': self.remark.encode('utf-8'),
+                'state': self.state,
+                'paystate': self.paystate
+            }
+            return json_app
+        else:
+            return {}
 
     def to_json(self, uid, type=1):  # type返回相应字段 1列表 0详情
         if uid<3:
