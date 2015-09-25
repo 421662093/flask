@@ -1177,6 +1177,7 @@ class TopicStats(db.EmbeddedDocument):  # 话题统计
     topic_count = db.IntField(default=0, db_field='tc')  # 评论人数
     topic_total = db.IntField(default=0, db_field='tt')  # 评论总分
     like = db.IntField(default=0, db_field='l')  # 喜欢数
+    lastaction = db.IntField(default=0, db_field='la')  # 最后更新时间
 
     def to_json(self):
         json_ts = {
@@ -1215,7 +1216,7 @@ class Topic(db.Document):  # 话题
     content = db.StringField(default='', db_field='c')
     pay = db.EmbeddedDocumentField(TopicPay, default=TopicPay(), db_field='p')
     grade = db.IntField(db_field='g')
-    date = db.IntField(default=common.getstamp(), db_field='d')
+    date = db.IntField(default=0, db_field='d')
     expert = db.ListField(db_field='e')  # 关联专家
     config = db.EmbeddedDocumentField(
         TopicConfig, default=TopicConfig(), db_field='tc')  # 话题配置信息
@@ -1256,12 +1257,11 @@ class Topic(db.Document):  # 话题
         return Topic.objects(state=-1).exclude('content').order_by("-_id").skip(pageindex).limit(count)
 
     @staticmethod
-    def getlist(uid=0,index=1, count=10,state=1):
+    def getlist(uid=0,index=1, count=10,state=1,sort='-_id'):
     	# 获取列表 0全部  -1官方  -2专家
         uid = common.strtoint(uid,0)
         pageindex =(index-1)*count
         query=None
-        sort = '-_id'
         if state==1:
             query = Q(state__gte=0)
         else:
@@ -1354,12 +1354,13 @@ class Topic(db.Document):  # 话题
             update['set__pay__meet'] = self.pay.meet
             update['set__pay__calltime'] = self.pay.calltime
             update['set__pay__meettime'] = self.pay.meettime
-
+            update['set__stats__lastaction'] = common.getstamp()
             #update['set__sort'] = self.sort
             Topic.objects(_id=self._id,user_id=self.user_id).update_one(**update)
             return 1
         else:
             self._id = collection.get_next_id(self.__tablename__)
+            self.date = common.getstamp()
             self.save()
             return self._id
 
@@ -1391,6 +1392,7 @@ class Topic(db.Document):  # 话题
                 update['set__stats__topic_total'] = self.stats.topic_total
             update['set__sort'] = self.sort
             update['set__discoverysort'] = self.discoverysort
+            update['set__stats__lastaction'] = common.getstamp()
 
             Topic.objects(_id=self._id).update_one(**update)
 
@@ -1399,6 +1401,7 @@ class Topic(db.Document):  # 话题
             return 1
         else:
             self._id = collection.get_next_id(self.__tablename__)
+            self.date = common.getstamp()
             self.save()
             logmsg = '创建话题-'+str(self._id)+'-'+self.title
             Log.saveinfo(remark=logmsg)
@@ -1581,7 +1584,8 @@ class Inventory(db.Document):  # 清单
     }
     _id = db.IntField(primary_key=True)  # id
     title = db.StringField(default='', max_length=64, db_field='t')  # 标题
-    date = db.IntField(default=common.getstamp(), db_field='d')  # 创建时间
+    date = db.IntField(default=0, db_field='d')  # 创建时间
+    lastaction = db.IntField(default=0, db_field='la')  # 最后更新时间
     topic = db.ListField(
         db.EmbeddedDocumentField(InvTopic), db_field='to')  # 清单话题
     sort = db.IntField(default=0, db_field='s')  # 排序
@@ -1612,6 +1616,7 @@ class Inventory(db.Document):  # 清单
 
             update['set__topic'] = self.topic
             update['set__sort'] = self.sort
+            update['set__lastaction'] = common.getstamp()
             Inventory.objects(_id=self._id).update_one(**update)
 
             logmsg = '编辑清单-'+str(self._id)+'-'+self.title
@@ -1619,6 +1624,7 @@ class Inventory(db.Document):  # 清单
             return 1
         else:
             self._id = collection.get_next_id(self.__tablename__)
+            self.date = common.getstamp()
             self.save()
             logmsg = '创建清单-'+str(self._id)+'-'+self.title
             Log.saveinfo(remark=logmsg)

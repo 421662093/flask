@@ -76,6 +76,10 @@
 <tr class="separator:aba553c448587fe1245d73fb42bf47741"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af76dad7f4f1c0ff33d1487959ea61b1d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapp_1_1api__1__0_1_1expert.html#af76dad7f4f1c0ff33d1487959ea61b1d">update_expert_apptime</a> ()</td></tr>
 <tr class="separator:af76dad7f4f1c0ff33d1487959ea61b1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43304a981a0b995362481e9e626e5998"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapp_1_1api__1__0_1_1expert.html#a43304a981a0b995362481e9e626e5998">update_expert_apptype</a> ()</td></tr>
+<tr class="separator:a43304a981a0b995362481e9e626e5998"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a365c94a73099856dc8caad457e6750b1"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceapp_1_1api__1__0_1_1expert.html#a365c94a73099856dc8caad457e6750b1">update_expert_appstate</a> ()</td></tr>
+<tr class="separator:a365c94a73099856dc8caad457e6750b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">函数说明</h2>
 <a class="anchor" id="a90c29c044f8ce0bb1d8c550e73b9a143"></a>
@@ -136,7 +140,7 @@ expert
         name 姓名
         sex 性别
         auth 认证
-            expertprocess 认证专家流程  0未认证 1-5
+            expertprocess 认证专家流程  0未认证 1-4
             expert 认证专家 1已认证 0未认证
         bgurl 顶部背景图片
         avaurl 头像地址
@@ -148,14 +152,9 @@ expert
         job 职位
         label 标签
         meet_c 见面次数
-        follow 第三方
-            {baidu 关注数,baiduurl 地址} 百度
-            {weixin 关注数,weixinurl 地址} 微信
-            {zhihu 关注数,zhihuurl 地址} 知乎
-            {sina 关注数,sinaurl 地址} 新浪
-            {twitter 关注数,twitterurl 地址} 推特
-            {facebook 关注数,facebookurl 地址} 脸谱
-            {github 关注数,githuburl 地址} Github
+        follow 第三方List
+            name 名称
+            url 地址
         edu 教育背景List
             name 学校名称
             start 开始时间
@@ -342,6 +341,32 @@ GET 参数:
 </pre> 
 </div>
 </div>
+<a class="anchor" id="a365c94a73099856dc8caad457e6750b1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def app.api_1_0.expert.update_expert_appstate </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">更新订单状态（专家）
+URL:/expert/updateappstate
+POST 参数:
+    appid -- 订单id
+    state -- 状态状态 -1取消订单 0拒绝接单 2确认接单 4等待用户确认 5已完成
+    time -- 见面时间(分钟) 当state为4时有效
+    cancelremark -- 取消备注
+返回值
+    {'ret':1} 成功
+    -1 订单状态改变失败
+    -5 系统异常
+</pre> 
+</div>
+</div>
 <a class="anchor" id="af76dad7f4f1c0ff33d1487959ea61b1d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -358,6 +383,29 @@ GET 参数:
 URL:/expert/updateapptime
 POST 参数:
     apptime -- 预约时间数组[时间戳1,时间戳2]
+返回值
+    {'ret':1} 成功
+    -5 系统异常
+</pre> 
+</div>
+</div>
+<a class="anchor" id="a43304a981a0b995362481e9e626e5998"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def app.api_1_0.expert.update_expert_apptype </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">更新专家预约模式
+URL:/expert/updateapptime
+POST 参数:
+    call -- 通话模式 1开启 0关闭
+    meet -- 见面模式 1开启 0关闭
 返回值
     {'ret':1} 成功
     -5 系统异常

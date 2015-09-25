@@ -327,7 +327,7 @@ def plugin_list():
 def user_topiclist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-2,text)
-        func = {'stamp2time': common.stamp2time,'can': common.can}
+        func = {'stamp2time': common.stamp2time,'gettopicstate':common.gettopicstate,'can': common.can}
         return render_template('admin/topic_list.html', topiclist=topiclist,func=func,uid=-2,text=text,index=-1,uinfo=g.current_user)
 
 @admin.route('/topicteamlist/search/<string:text>', methods=['GET'])
@@ -336,7 +336,7 @@ def user_topiclist_search(text=''):
 def user_topicteamlist_search(text=''):
     if len(text)>0:
         topiclist = Topic.list_search(-1,text)
-        func = {'stamp2time': common.stamp2time,'can': common.can}
+        func = {'stamp2time': common.stamp2time,'gettopicstate':common.gettopicstate,'can': common.can}
         return render_template('admin/topicteam_list.html', topiclist=topiclist,func=func,uid=-1,text=text,index=-1,uinfo=g.current_user)
 
 
@@ -375,7 +375,28 @@ def topic_list(uid=-2,index=1):
         topiclist = Topic.getlist(uid=uid,index=index,count=pagesize)
         func = {'stamp2time': common.stamp2time,'gettopicstate':common.gettopicstate,'can': common.can}
 
-        return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user)
+        return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user,sort=0)
+
+
+@admin.route('/topiclist/sort/<string:uid>/<int:index>', methods=['GET', 'POST'])
+@auth.login_required
+@permission_required('topic',Permission.VIEW)
+def topic_list_sort(uid=-2,index=1):
+
+    if request.method == 'POST':
+        pass
+    else:
+        pagesize = 8
+        count = Topic.getcount(uid)
+        tpcount = common.getpagecount(count,pagesize)
+        if index>tpcount:
+            index = tpcount
+        if index<1:
+            index=1
+        topiclist = Topic.getlist(uid=uid,index=index,count=pagesize,sort='sort')
+        func = {'stamp2time': common.stamp2time,'gettopicstate':common.gettopicstate,'can': common.can}
+
+        return render_template('admin/topic_list.html',topiclist=topiclist, func=func,uid=uid,pagecount=tpcount,index=index,uinfo=g.current_user,sort=1)
 
 @admin.route('/topicrecycle',methods=['GET', 'POST'])
 @admin.route('/topicrecycle/<int:index>', methods=['GET', 'POST'])

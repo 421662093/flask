@@ -48,7 +48,10 @@
 										 标题
 									</th>
 									<th>
-										 时间
+										 更新时间
+									</th>
+									<th>
+										 创建时间
 									</th>
 									<th>
 										 排序
@@ -66,6 +69,9 @@
 									</td>
 									<td>
 									{{item.title}}
+									</td>
+									<td>
+									{{func.stamp2time(item.lastaction == 0 and item.date or item.stats.lastaction,'%Y-%m-%d %H:%M')}}
 									</td>
 									<td>
 									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}

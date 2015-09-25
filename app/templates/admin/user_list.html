@@ -142,7 +142,7 @@
 									{{item.job}}
 									</td>
 									<td>
-									{{func.stamp2time(item.stats.lastaction,'%Y-%m-%d %H:%M')}}
+									{{func.stamp2time(item.stats.lastaction == 0 and item.date or item.stats.lastaction,'%Y-%m-%d %H:%M')}}
 									</td>
                                     <td>
                                     {{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}

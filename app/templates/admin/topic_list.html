@@ -56,17 +56,27 @@
 										 ID
 									</th>
 									<th>
+										 专家ID
+									</th>
+									<th>
 										 标题
 									</th>
 									<th style="width:300px">
 										 简介
 									</th>
 									<th>
-										 时间
+										 更新时间
 									</th>
-                                    <th>
-                                         排序
-                                    </th>
+									<th>
+										 创建时间
+									</th>
+                                    <th style="width:60px">
+										 {% if sort==0 %}
+										 <a href="/admin/topiclist/sort/{{uid}}/1">排序</a>
+										 {% else %}
+										 <a href="/admin/topiclist/{{uid}}/1">排序↓</a>
+										 {% endif %}
+									</th>
                                     <th>
 										 状态
 									</th>
@@ -82,10 +92,16 @@
 									{{item.id}}
 									</td>
 									<td>
+									{{item.user_id}}
+									</td>
+									<td>
 									{{item.title}}
 									</td>
 									<td>
 									{{item.intro}}
+									</td>
+									<td>
+									{{func.stamp2time(item.stats.lastaction == 0 and item.date or item.stats.lastaction,'%Y-%m-%d %H:%M')}}
 									</td>
 									<td>
 									{{func.stamp2time(item.date,'%Y-%m-%d %H:%M')}}
@@ -121,7 +137,12 @@
 							<div class="col-md-7 col-sm-12">
 							<div class="dataTables_paginate paging_bootstrap_full_number" id="sample_1_paginate">
 							<ul class="pagination" style="visibility: visible;">
+
+							{% if sort==1 %}
+							<script>Pagebtn('/admin/topiclist/sort/{{uid}}',{{pagecount}},{{index}})</script>
+							{% else %}
 							<script>Pagebtn('/admin/topiclist/{{uid}}',{{pagecount}},{{index}})</script>
+							{% endif %}
 							</ul>
 							</div>
 							</div>

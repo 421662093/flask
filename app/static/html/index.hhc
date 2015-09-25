@@ -81,13 +81,16 @@
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_expertsearch_first_list"><param name="Local" value="expert_8py.html#adbc903e06dc21ff52496dde9502a8d32"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_expertsearch_list"><param name="Local" value="expert_8py.html#a231f17add6f77504a34b2471ec0d89fc"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_topic_info"><param name="Local" value="expert_8py.html#acf792e35e5b48243540dbac094c1628c"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="update_expert_appstate"><param name="Local" value="expert_8py.html#a365c94a73099856dc8caad457e6750b1"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_expert_apptime"><param name="Local" value="expert_8py.html#af76dad7f4f1c0ff33d1487959ea61b1d"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="update_expert_apptype"><param name="Local" value="expert_8py.html#a43304a981a0b995362481e9e626e5998"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_expert_inv"><param name="Local" value="expert_8py.html#a6bcc721401e0183a61d6dca2ce7e5cd7"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_intro"><param name="Local" value="expert_8py.html#aba553c448587fe1245d73fb42bf47741"><param name="ImageNumber" value="11"></OBJECT>
           </UL>
         <LI><OBJECT type="text/sitemap"><param name="Name" value="pay.py"><param name="Local" value="pay_8py.html"><param name="ImageNumber" value="1"></OBJECT>
           <UL>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="do_charge"><param name="Local" value="pay_8py.html#a34668377e37350b407ecbddc69e0ecbc"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="do_recharge"><param name="Local" value="pay_8py.html#a282e34eae614dface5767b070af4de82"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_payid"><param name="Local" value="pay_8py.html#a01e5abc755b4a6e7a8c5c7c6b1126752"><param name="ImageNumber" value="11"></OBJECT>
           </UL>
         <LI><OBJECT type="text/sitemap"><param name="Name" value="sys.py"><param name="Local" value="sys_8py.html"><param name="ImageNumber" value="1"></OBJECT>
@@ -97,21 +100,32 @@
           </UL>
         <LI><OBJECT type="text/sitemap"><param name="Name" value="user.py"><param name="Local" value="user_8py.html"><param name="ImageNumber" value="1"></OBJECT>
           <UL>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="add_guest_guestbook"><param name="Local" value="user_8py.html#a7896b09c861c48305106d0f9c184fb4a"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="add_guestbook"><param name="Local" value="user_8py.html#aaa4d6f6a5a926df2af8831c7d0c8d575"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="add_user_appointment"><param name="Local" value="user_8py.html#ad6c1e946dc1153f1dbc267d309135dea"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="add_user_comment"><param name="Local" value="user_8py.html#a00f250eb27dda6e0909404b0d9c3b12e"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="add_user_rlyrecord"><param name="Local" value="user_8py.html#a45574fd76cd4680078bcd48e1e462fba"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="bind_user_phone"><param name="Local" value="user_8py.html#a7c93ceae1416dc8559a680ff52c5d95a"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="change_phone"><param name="Local" value="user_8py.html#a3decbd5fa1b9c12c3c07f4fd24c9334d"><param name="ImageNumber" value="11"></OBJECT>
-          <LI><OBJECT type="text/sitemap"><param name="Name" value="get_appointment_info"><param name="Local" value="user_8py.html#a612d69aae95b49b644832971825b8c0b"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="forget_paw"><param name="Local" value="user_8py.html#a7247bd481a00327ab66b7f28009b694b"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="get_appointment_info"><param name="Local" value="user_8py.html#ab0c62b12dafc69ab2f3e365de39a56ba"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_appointment_list"><param name="Local" value="user_8py.html#ac5e8e848c1b276331fd4973c7cceebc0"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_code"><param name="Local" value="user_8py.html#aaa1dafab3a77326e0392cf339082e647"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="get_forgetpaw_code"><param name="Local" value="user_8py.html#a89da7a6daeb2bfdcd45923e7b843f546"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="get_message_list"><param name="Local" value="user_8py.html#adbf0ca572c456c2672a365934ab044b2"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_user_info"><param name="Local" value="user_8py.html#aa9a18cd0a720a6b498b2bd35be03ea4e"><param name="ImageNumber" value="11"></OBJECT>
-          <LI><OBJECT type="text/sitemap"><param name="Name" value="get_user_message"><param name="Local" value="user_8py.html#a5024fd93f333168232806a99ad6cbbd4"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_user_thinktank"><param name="Local" value="user_8py.html#a7c088bb5f7150ff7ea87f1ddea02ba5e"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="get_user_wish"><param name="Local" value="user_8py.html#a87d06d052af0b620ed79eb30b38dbff4"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="new_user"><param name="Local" value="user_8py.html#a55691ec00cfa22b8722440ac1c0e5488"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_ocp"><param name="Local" value="user_8py.html#a59970954545af8670d30330ede81432d"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_share"><param name="Local" value="user_8py.html#abb0873e34fcd78133649248500212027"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="update_topiczan"><param name="Local" value="user_8py.html#a4af24f3513b6783e3d1d351311db2f11"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_contact"><param name="Local" value="user_8py.html#a18b78d43a0f1126b63a6a559550df935"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_edu"><param name="Local" value="user_8py.html#a8717211160238bc1ebc8017125817a3b"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_email"><param name="Local" value="user_8py.html#a9b41580209128354ab384a4383ed8473"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_info"><param name="Local" value="user_8py.html#a112fe5de3606f23f630ad74b003c3793"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_password"><param name="Local" value="user_8py.html#aeb3490c84ceb14d756200260e7c8b2fd"><param name="ImageNumber" value="11"></OBJECT>
+          <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_rlyrecord"><param name="Local" value="user_8py.html#a697e49befcd1e9bcac1e8ad2dc5d3f79"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_topic"><param name="Local" value="user_8py.html#aba3f803f01094c46bab3a2537f5a0e1b"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_user_workexp"><param name="Local" value="user_8py.html#a0bfdfa2ffc75a64ccceb916fecf3ca4e"><param name="ImageNumber" value="11"></OBJECT>
           <LI><OBJECT type="text/sitemap"><param name="Name" value="update_wish"><param name="Local" value="user_8py.html#a7c93d9eed896ab2dcd9134e48eeb88af"><param name="ImageNumber" value="11"></OBJECT>
