@@ -1222,7 +1222,7 @@ class Topic(db.Document):  # 话题
         TopicConfig, default=TopicConfig(), db_field='tc')  # 话题配置信息
     stats = db.EmbeddedDocumentField(
         TopicStats, default=TopicStats(), db_field='ts')  # 话题统计信息
-    sort = db.IntField(default=0, db_field='s')  # 排序
+    sort = db.IntField(default=100, db_field='s')  # 排序
     discoverysort = db.IntField(default=0, db_field='ds')  # 发现首页排序
     state = db.IntField(default=0, db_field='st')# 状态 1 正常 0待审核 -1已删除
 
