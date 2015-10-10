@@ -5,7 +5,7 @@ from mongoengine import EmbeddedDocument, EmbeddedDocumentField,Q
 from flask import g
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import (
-    TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+    TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired,URLSafeSerializer)
 import hashlib
 
 '''
@@ -1140,15 +1140,15 @@ class User(UserMixin, db.Document):  # 会员
         return json_user
 
     def generate_auth_token(self, expiration):
-        s = Serializer(current_app.config['SECRET_KEY'],
-                       expires_in=expiration)
-        return s.dumps({'id': self.id}).decode('ascii')
+        #s = URLSafeSerializer(current_app.config['SECRET_KEY'], salt=current_app.config['SECRET_SALT'])
+        s = Serializer(current_app.config['SECRET_KEY'],expires_in=expiration)
+        return s.dumps({'id': self.id}, salt=current_app.config['SECRET_SALT']).decode('ascii')
 
     @staticmethod
     def verify_auth_token(token):
         # token =
         # 'eyJhbGciOiJIUzI1NiIsImV4cCI6MTQzMzkzMDUwNiwiaWF0IjoxNDMzOTI2OTA2fQ.eyJpZCI6NH0.kf4L_xi-7vF655_g6-y7XgajANtzkPsFVnxYDp8g0ZY'
-
+        #s = URLSafeSerializer(current_app.config['SECRET_KEY'], salt=current_app.config['SECRET_SALT'])
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
