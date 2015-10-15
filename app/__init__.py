@@ -4,6 +4,7 @@ from flask import Flask
 from flask.ext.mongoengine import MongoEngine
 import redis
 import tencentyun
+import os 
 # from flask.ext.bootstrap import Bootstrap
 # from flask.ext.mail import Mail
 # from flask.ext.sqlalchemy import SQLAlchemy
@@ -13,6 +14,7 @@ from datetime import datetime
 #from core import search
 from sdk.QcloudApi.qcloudapi import QcloudApi
 import memcache
+from sdk.rongyun.rong import ApiClient
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -27,6 +29,9 @@ mail = Mail()
 moment = Moment()
 pagedown = PageDown()
 '''
+#融云 您应该将key 和 secret 保存在服务器的环境变量中
+os.environ.setdefault('rongcloud_app_key', conf.RONGCLOUD_APP_KEY)
+os.environ.setdefault('rongcloud_app_secret', conf.RONGCLOUD_APP_SECRET)
 
 db = MongoEngine()
 mc = memcache.Client([conf.QCLOUD_MEMCACHED_IP],debug=0)
@@ -40,7 +45,7 @@ q_config = {
         'method': 'get'
     }
 q_search = QcloudApi(q_module, q_config)
-
+rong_api = ApiClient()
 #searchwhoosh = search.WhooshExpert()
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'

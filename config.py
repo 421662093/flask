@@ -64,6 +64,8 @@ class DevelopmentConfig(Config):
     YUNTONGXUN_TOKEN = '02a449a36fa347aba7ed5854b7f80c21' #主账号 AUTH TOKEN
     YUNTONGXUN_APPID = 'aaf98f894ecd7d6a014ed2a653c10813' #APPID
 
+    RONGCLOUD_APP_KEY = 'pvxdm17jxqi5r'
+    RONGCLOUD_APP_SECRET = 'RoKfTA4d4DzlLM'
     #RECHARGE_SCALE = 1 #充值比例 1:5  1人民币兑换5个专家币
 
     SHARE_CALL_TIME = 30 #分享获通话时间 默认每次分享可获得30分钟，一种途径一天可分享1次

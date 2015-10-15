@@ -15,7 +15,7 @@ from ..models import Permission, User,WorkExp,Edu, Appointment,Message,collectio
     RLYRecord,Comment
 from ..core.common import jsonify
 from ..core import common
-from .. import mc
+from .. import mc,rong_api,conf
 import logging
 import json
 from ..sdk.yuntongxun import SendTemplateSMS as SMS
@@ -155,11 +155,22 @@ def new_user():
                     ytxaccount.voipPwd = ytx[2]['voipPwd']
                     ytxaccount.subToken = ytx[3]['subToken']
                     col1.yuntongxunaccount = ytxaccount
+
+                    retjson = rong_api.call_api(
+                        action="/user/getToken",
+                        params={
+                            "userId": str(col1._id),
+                            "name":col1.name,
+                            "portraitUri":conf.DEFAULT_AVATAR
+                        }
+                    )
+                    if retjson['code']==200:
+                        col1.rong_token = retjson['token']
                 except Exception,e:
                     logging.debug(e)
                     #return jsonify(ret=-5)#系统异常
             col1.saveinfo_app()
-            return jsonify(ret=1,username=username) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
+            return jsonify(ret=1,username=username,rong_token=col1.rong_token) #注册成功 ,'token':col1.generate_auth_token(expiration=3600)
         else:
             return jsonify(ret=-3) #验证码错误
     return jsonify(ret=-4)#手机号格式错误
@@ -635,6 +646,13 @@ def get_user_info():
             apptime 预约时间（专家可预约时间）
             calltime 通话时间 (分享可获得)
             wish 心愿单 数组[用户id,用户id]
+            calltype #通话模式开启
+            meettype #见面模式开启
+            phone 手机号
+            weixin 微信
+            qq QQ
+            email 邮箱
+            rong_token 融云TOKEN
     '''
     u_info = User.getinfo(g.current_user._id)
     return jsonify(info=u_info.to_json())
@@ -1008,7 +1026,7 @@ def user_snslogin():
             else:
                 col1 = User()
                 col1.role_id = 3
-
+                col1._id = collection.get_next_id('users')
                 col1.name = name
                 col1.password = ''
                 col1.avaurl = avaurl
@@ -1024,11 +1042,21 @@ def user_snslogin():
                     sn.weixin = uid
                     col1.username = '-3'
                 col1.sns = sn
-                col1.saveinfo()
+                retjson = rong_api.call_api(
+                    action="/user/getToken",
+                    params={
+                        "userId": str(col1._id),
+                        "name":col1.name,
+                        "portraitUri":col1.avaurl
+                    }
+                )
+                if retjson['code']==200:
+                    col1.rong_token = retjson['token']
+                col1.saveinfo_snslogin()
                 user = User.snslogin(sns,uid)
                 #user = User.objects(_id=user._id).first()
                 login_user(user, True)
-            return flask_jsonify({'token': user.generate_auth_token(expiration=2592000), 'expiration': 2592000,'_id': user._id,'isbind':len(user.username)==11 and 1 or 0})
+            return flask_jsonify({'token': user.generate_auth_token(expiration=2592000),'rong_token':col1.rong_token, 'expiration': 2592000,'_id': user._id,'isbind':len(user.username)==11 and 1 or 0})
         #return jsonify(ret=1)#添加成功
     except Exception,e:
         logging.debug(e)

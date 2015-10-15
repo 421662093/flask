@@ -19,7 +19,7 @@ from ..models import Permission, Role, User, Post, Comment
 from ..decorators import admin_required, permission_required
 '''
 from ..models import RolePermissions, Role, User, UserStats, collection, Topic, Comment, Appointment,YuntongxunAccount
-
+from .. import rong_api,conf
 # from ..models import Post
 '''
 @main.after_app_request
@@ -74,13 +74,23 @@ def index():
 
         import jpush as jpush
         from ..sdk.jgpush import pushmessage
-        pushmessage(jpush,'口袋专家测试测试11111111',{'type':'viewapp','app_id':157785751945953,'apptype':2},[])
+        #pushmessage(jpush,'口袋专家测试测试11111111',{'type':'viewapp','app_id':157785751945953,'apptype':2},[])
         from flask.ext.login import login_user, logout_user, login_required,current_user
         from ..tests import test_expert, test_user, test_discovery, test_sys
         from flask import g
 
         from ..sdk.yuntongxun import CreateSubAccount as CSA
 
+        token = rong_api.call_api(
+            action="/user/getToken",
+            params={
+                "userId": str(1),
+                "name":'测试',
+                "portraitUri":conf.DEFAULT_AVATAR
+            }
+        )
+
+        print token['token']+'____'+str(token['code'])
         #col1.yuntongxunaccount = ytxaccount
 
 
@@ -140,7 +150,7 @@ def index():
         if uwsgi_reload == 1:
             import uwsgi  #uwsgi服务支持
             uwsgi.reload()  # 重启uwsgi 服务器
-        return render_template('index.html', deta={'body':'11111111111'})
+        return render_template('index.html', deta={'body':token})
 
 '''
 

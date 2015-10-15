@@ -298,7 +298,7 @@ class User(UserMixin, db.Document):  # 会员
     sns = db.EmbeddedDocumentField(SNS, default=SNS(), db_field='sn')
     openplatform = db.ListField(db.EmbeddedDocumentField(UserOpenPlatform), default=[], db_field='sp')  # 开放平台
     yuntongxunaccount = db.EmbeddedDocumentField(YuntongxunAccount, default=YuntongxunAccount(), db_field='ya') #容联云子帐号
-
+    rong_token = db.StringField(default='', db_field='rt')  # 融云token
 
     @staticmethod
     def getlist_app(roid=2,index=1,count=10):
@@ -697,6 +697,23 @@ class User(UserMixin, db.Document):  # 会员
             query=Q(sns__weixin=uid)
         return User.objects(query).first()
 
+    def saveinfo_snslogin(self):
+        if self.username == '-1':
+            self.username = 'sina_'+str(self._id)
+        elif self.username == '-2':
+            self.username = 'qq_'+str(self._id)
+        elif self.username == '-3':
+            self.username = 'weixin_'+str(self._id)
+        elif len(self.username)==0:
+            if self.role_id==2:
+                self.username = 'zj_'+str(self._id)
+            elif self.role_id==3:
+                self.username = 'pt_'+str(self._id)
+
+        self.password = self.password_hash
+        self.date = common.getstamp()
+        self.save()
+
     def saveinfo(self):
         self._id = collection.get_next_id(self.__tablename__)
 
@@ -1082,7 +1099,8 @@ class User(UserMixin, db.Document):  # 会员
                 'phone':self.username,
                 'weixin':self.weixin,
                 'qq':self.qq,
-                'email':self.email
+                'email':self.email,
+                'rong_token':self.rong_token
             }
         elif type == 1:
             json_user = {
@@ -1151,7 +1169,7 @@ class User(UserMixin, db.Document):  # 会员
         #s = URLSafeSerializer(current_app.config['SECRET_KEY'], salt=current_app.config['SECRET_SALT'])
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
-            data = s.loads(token)
+            data = s.loads(token, salt=current_app.config['SECRET_SALT'])
         except SignatureExpired:
             return None  # valid token, but expired
         except BadSignature:
