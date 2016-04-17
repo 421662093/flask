@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+'''test koudaizhuanjia'''
 import os
 COV = None
 if os.environ.get('FLASK_COVERAGE'):  # 代码覆盖率统计模块
